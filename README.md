@@ -23,6 +23,15 @@ This repository maintains the documentation of Athenna using Docusaurus and Gith
 
 <img src=".github/docusaurus.png" width="200px" align="right" hspace="30px" vspace="100px">
 
+## Links
+
+Access the documentation page [clicking here](https://athenna.io)
+
+## Contributing
+
+If you want to contribute to this documentation feel free to open a pull request, it will be a pleasure to receive your help.
+And if something is not clear in the documentation please open an Issue that we will improve our communication!
+
 ---
 
 Made with 🖤 by [jlenon7](https://github.com/jlenon7) 👋
