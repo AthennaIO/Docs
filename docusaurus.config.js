@@ -9,7 +9,7 @@ const config = {
   title: 'Athenna',
   tagline: 'The plug and play Node.js framework',
   url: 'https://athenna.io',
-  baseUrl: '/Docs',
+  baseUrl: '/Docs/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.ico',
