@@ -30,7 +30,7 @@ export default function Home(): JSX.Element {
   return (
     <Layout
       title={`Hello from ${siteConfig.title}`}
-      description="Description will go into a meta tag in <head />">
+      description="Athenna is a Node.js framework that focus in API development with fast integration and good usability">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

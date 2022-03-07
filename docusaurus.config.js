@@ -8,7 +8,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 const config = {
   title: 'Athenna',
   tagline: 'The plug and play Node.js framework',
-  url: 'https://athenna.io',
+  url: 'athenna.io',
   baseUrl: '/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -16,8 +16,6 @@ const config = {
   organizationName: 'AthennaIO',
   deploymentBranch: 'main',
   projectName: 'Docs',
-  trailingSlash: false,
-
   presets: [
     [
       'classic',
