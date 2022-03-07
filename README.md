@@ -1,41 +1,28 @@
-# Website
+# Docs 🦖
 
-This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
+> Athenna documentation repository. Written with Docusaurus!
 
-### Installation
+[![GitHub followers](https://img.shields.io/github/followers/jlenon7.svg?style=social&label=Follow&maxAge=2592000)](https://github.com/jlenon7?tab=followers)
+[![GitHub stars](https://img.shields.io/github/stars/athennaio/docs.svg?style=social&label=Star&maxAge=2592000)](https://github.com/athennaio/docs/stargazers/)
 
-```
-$ yarn
-```
+<p>
+    <a href="https://www.buymeacoffee.com/secjs" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
+</p>
 
-### Local Development
+<p>
+  <img alt="GitHub language count" src="https://img.shields.io/github/languages/count/athennaio/docs?style=for-the-badge&logo=appveyor">
 
-```
-$ yarn start
-```
+  <img alt="Repository size" src="https://img.shields.io/github/repo-size/athennaio/docs?style=for-the-badge&logo=appveyor">
 
-This command starts a local development server and opens up a browser window. Most changes are reflected live without having to restart the server.
+  <img alt="License" src="https://img.shields.io/badge/license-MIT-brightgreen?style=for-the-badge&logo=appveyor">
 
-### Build
+  <img alt="Commitizen" src="https://img.shields.io/badge/commitizen-friendly-brightgreen?style=for-the-badge&logo=appveyor">
+</p>
 
-```
-$ yarn build
-```
+This repository maintains the documentation of Athenna using Docusaurus and Github Pages.
 
-This command generates static content into the `build` directory and can be served using any static contents hosting service.
+<img src=".github/docusaurus.png" width="200px" align="right" hspace="30px" vspace="100px">
 
-### Deployment
+---
 
-Using SSH:
-
-```
-$ USE_SSH=true yarn deploy
-```
-
-Not using SSH:
-
-```
-$ GIT_USER=<Your GitHub username> yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+Made with 🖤 by [jlenon7](https://github.com/jlenon7) 👋
