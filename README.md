@@ -2,11 +2,11 @@
 
 > Athenna documentation repository. Written with Docusaurus!
 
-[![GitHub followers](https://img.shields.io/github/followers/jlenon7.svg?style=social&label=Follow&maxAge=2592000)](https://github.com/jlenon7?tab=followers)
+[![GitHub followers](https://img.shields.io/github/followers/athennaio.svg?style=social&label=Follow&maxAge=2592000)](https://github.com/athennaio?tab=followers)
 [![GitHub stars](https://img.shields.io/github/stars/athennaio/docs.svg?style=social&label=Star&maxAge=2592000)](https://github.com/athennaio/docs/stargazers/)
 
 <p>
-    <a href="https://www.buymeacoffee.com/secjs" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
+    <a href="https://www.buymeacoffee.com/athenna" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
 </p>
 
 <p>
@@ -21,7 +21,7 @@
 
 This repository maintains the documentation of Athenna using Docusaurus and Github Pages.
 
-<img src=".github/docusaurus.png" width="200px" align="right" hspace="30px" vspace="100px">
+<img src=".github/logo.svg" width="200px" align="right" hspace="30px" vspace="100px">
 
 ## Links
 
