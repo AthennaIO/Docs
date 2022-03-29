@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[121],{8070:function(t){t.exports=JSON.parse('[{"name":"Getting Started","permalink":"/docs/tags/getting-started","count":3}]')}}]);
