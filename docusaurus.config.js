@@ -18,23 +18,23 @@ const config = {
   projectName: 'Docs',
   presets: [
     [
-      'classic',
+      '@docusaurus/preset-classic',
       /** @type {import('@docusaurus/preset-classic').Options} */
-      ({
+      {
         docs: {
+          sidebarCollapsed: true,
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl: 'https://github.com/AthennaIO/Docs',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
-      }),
+      },
     ],
   ],
-
   themeConfig:
   /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
-      ({
+      {
         navbar: {
           title: 'Athenna',
           logo: {
@@ -44,7 +44,7 @@ const config = {
           items: [
             {
               type: 'doc',
-              docId: 'intro',
+              docId: 'getting-started/installation',
               position: 'left',
               label: 'Tutorial',
             },
@@ -63,7 +63,7 @@ const config = {
               items: [
                 {
                   label: 'Tutorial',
-                  to: '/docs/intro',
+                  to: '/docs/getting-started/installation',
                 },
               ],
             },
@@ -71,8 +71,8 @@ const config = {
               title: 'Community',
               items: [
                 {
-                  label: 'Slack',
-                  href: 'https://join.slack.com/t/athenna-workspace/shared_invite/zt-12m729t01-qv7iD0eFdyQWS9mhSfCSmQ',
+                  label: 'Discord',
+                  href: 'https://discord.gg/vaZgRUkMsm',
                 },
                 {
                   label: 'Twitter',
@@ -96,7 +96,7 @@ const config = {
           theme: lightCodeTheme,
           darkTheme: darkCodeTheme,
         },
-      }),
+      },
 };
 
 module.exports = config;

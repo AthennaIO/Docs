@@ -1,0 +1,161 @@
+---
+sidebar_position: 2
+
+id: configuration
+title: Configuration
+tags:
+- Getting Started
+---
+
+# Configuration
+
+- #### [Introduction](#id-introduction)
+- #### [Environment configuration](#id-environment-configuration)
+    - #### [Determining the current environment](#id-determining-the-current-environment)
+    - #### [Get an environment variable value](#id-get-an-environment-variable-value)
+    - #### [Get a configuration value](#id-get-a-configuration-value)
+- #### [Debug mode](#id-debug-mode)
+
+## Introduction {#id-introduction}
+
+All the configuration files for the Athenna framework are stored in the `config` directory. Each option is documented,
+so feel free to look through the files and get familiar with the options available to you.
+
+These configuration files allow you to configure things like your database connection information, your filesystem
+information to handle file uploads, as well as various other core configuration values.
+
+## Environment configuration {#id-environment-configuration}
+
+It is often helpful to have different configuration values based on the environment where the application is running.
+For example, you may wish to use a different storage driver locally than you do on your production server.
+
+To make this a cinch, Athenna utilizes the `dotenv` Node.js library. In a fresh Athenna installation, the root directory
+of your application will contain a `.env.example` file that defines many common environment variables. During the Athenna
+installation process, this file will automatically be copied to `.env`.
+
+Athenna default `.env` file contains some common configuration values that may differ based on whether your application
+is running locally or on a production. These values are then retrieved from various Athenna configuration files within
+the `config` directory using Athenna `Env` function.
+
+If you are developing with a team, you may wish to continue including a `.env.example` file with your application. By
+putting placeholder values in the example configuration file, other developers on your team can clearly see which
+environment variables are needed to run your application.
+
+:::tip
+
+Any variable in your `.env` file can be overridden by external environment variables such as server-level or system-level
+environment variables.
+
+:::
+
+:::danger
+
+Your `.env` file should not be committed to your application source control, since each developer/server using your application
+could require a different environment configuration. Furthermore, this would be a security risk in the event an intruder
+gains access to your source control repository, since any sensitive credentials would get exposed.
+
+:::
+
+### Determining the current environment {#id-determining-the-current-environment}
+
+Before loading your application's environment variables, Athenna determines if either the `NODE_ENV` environment variable
+has been externally provided or if the `--env` CLI argument has been specified. If so, Athenna will attempt to load an
+`.env.${NODE_ENV}` file if it exists. If it does not exist, the default .env file will be loaded.
+
+### Get an environment variable value {#id-get-an-environment-variable-value}
+
+You can get environment variables using the `Env()` function. If `APP_NAME` cannot be found, the constant `appName` will
+have the value `Athenna`:
+
+```typescript
+const defaultValue = 'Athenna'
+
+const appName = Env('APP_NAME', defaultValue)
+```
+
+All variables in your `.env` files are always parsed as strings. But the `Env` function can parse it for you when you
+call the function to get the value:
+
+<table>
+    <thead>
+    <tr>
+        <th>.env</th>
+        <th>Env()</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>true</td>
+        <td>true</td>
+    </tr>
+    <tr>
+        <td>(true)</td>
+        <td>true</td>
+    </tr>
+    <tr>
+        <td>"false"</td>
+        <td>"false"</td>
+    </tr>
+    <tr>
+        <td>10</td>
+        <td>10</td>
+    </tr>
+    <tr>
+        <td>(10)</td>
+        <td>10</td>
+    </tr>
+    <tr>
+        <td>"10"</td>
+        <td>"10"</td>
+    </tr>
+    <tr>
+        <td>{`{"name":"Paulo"}`}</td>
+        <td>{`{ name: 'Paulo' }`}</td>
+    </tr>
+    <tr>
+        <td>{`"{"name":"Paulo"}"`}</td>
+        <td>{`"{"name":"Paulo"}"`}</td>
+    </tr>
+    </tbody>
+</table>
+
+Environment variables can parse other environment variables too. See the example above:
+
+```dotenv
+HOST=localhost
+PORT=1335
+
+APP_DOMAIN=http://${HOST}:${PORT}
+```
+
+```typescript
+console.log(Env('APP_DOMAIN')) // "http://localhost:1335"
+```
+
+### Get a configuration value {#id-get-a-configuration-value}
+
+You may easily access your configuration values using the global `Config` helper class from anywhere in your application.
+The configuration values may be accessed using `"dot (.)"` syntax, which includes the name of the file and option you
+wish to access. A default value may also be specified and will be returned if the configuration option does not exist:
+
+```typescript
+console.log(Config.get('app.name', 'Athenna')) // MyAppName
+```
+
+:::tip
+
+You can notice that `Config` helper class has a method called `load`. This method loads all the config values in memory.
+So if you try to use `process.env.APP_NAME = 'NEW APP NAME'` and call `Config.get('app.name')`, it's still going to return
+the old `APP_NAME` value. To solve this you can use `load` method to reload your configuration files in your application ecosystem.
+
+:::
+
+## Debug mode {#id-debug-mode}
+
+The debug option in your config/app configuration file determines how much information about your application is actually
+displayed to you and for who is going to consume your application. By default, this option is set to respect the value of
+the `APP_DEBUG` environment variable, which is stored in your `.env` file.
+
+For local development, you should set the `APP_DEBUG` environment variable to `true`. In your production and pipelines environment,
+this value should always be `false`. If the variable is set to `true` in production, you risk exposing sensitive configuration
+values to your application's end users.

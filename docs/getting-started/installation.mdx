@@ -1,0 +1,84 @@
+---
+sidebar_position: 1
+
+id: installation
+title: Installation
+tags:
+- Getting Started
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+# Installation
+
+- #### [Your first Athenna project](#id-your-first-athenna-project)
+    - #### [Prerequisites](#id-prerequisites)
+    - #### [Installing via package manager](#id-installing-via-package-manager)
+- #### [Initial configuration](#id-initial-configuration)
+  - #### [Environment configuration](#id-environment-configuration)
+  - #### [Directory/Language configuration](#id-directory-language-configuration)
+
+## Your first Athenna project {#id-your-first-athenna-project}
+
+### Prerequisites {#id-prerequisites}
+Before scaffolding a new Athenna project, first you need to install Node.js and NPM.
+We recommend using [nvm](https://github.com/nvm-sh/nvm) to do that.
+
+> [Click here to install nvm and get npm and Node.js running on your machine](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+### Installing via package manager {#id-installing-via-package-manager}
+
+We want it to be as easy as possible to get started with Athenna. With that in mind, we developed a CLI to assist in
+the creation of a new project, as well as the creation and installation of new components.
+
+<Tabs>
+<TabItem value="npm" label="npm" default>
+
+```shell
+npm install -g @athenna/cli
+```
+
+</TabItem>
+<TabItem value="yarn" label="yarn" default>
+
+```shell
+yarn global add @athenna/cli
+```
+
+</TabItem>
+</Tabs>
+
+## Initial configuration {#id-initial-configuration}
+
+All the configuration files for the Athenna framework are stored in the `config` directory. Each option is documented,
+so feel free to look through the files and get familiar with the options available to you.
+
+Athenna needs almost no additional configuration out of the box. You are free to get started developing! However, you
+may wish to review the `config/app` file and its documentation. It contains several options such as `timezone` and
+`locale` that you may wish to change according to your application.
+
+### Environment configuration {#id-environment-configuration}
+
+Many of Athenna configuration options values depends on whether your application is running, on your local machine or
+on a production server. Many important configuration values are defined using the `.env` file that exists at the root
+of your application.
+
+Your `.env` file should not be committed to your application's source control, since each developer/server using your
+application could require a different environment configuration. Furthermore, this would be a security risk in the event
+an intruder gains access to your source control repository, since any sensitive credentials would get exposed.
+
+:::tip
+
+For more information about the `.env` file and environment configuration, check out the full [configuration documentation](configuration).
+
+:::
+
+### Directory/Language configuration {#id-directory-language-configuration}
+
+By default, Athenna use TypeScript for development. But when you run the development and the production application,
+the @athenna/cli first compiles all the application and create the `build` folder to run your code using JavaScript.
+
+You can run Athenna using `ts-node` to run the application without the build process. Briefly, running the application
+with TypeScript code instead of JavaScript. To get this working you need to set the environment variable `NODE_TS=true`
+in the startup of your application. You can check the script `"test"` in your `package.json` file to get an example
