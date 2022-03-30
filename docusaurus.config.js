@@ -51,7 +51,7 @@ const config = {
               type: 'doc',
               docId: 'getting-started/installation',
               position: 'left',
-              label: 'Tutorial',
+              label: 'Guides',
             },
             {
               href: 'https://github.com/athennaio',
@@ -67,7 +67,7 @@ const config = {
               title: 'Docs',
               items: [
                 {
-                  label: 'Tutorial',
+                  label: 'Guides',
                   to: '/docs/getting-started/installation',
                 },
               ],
