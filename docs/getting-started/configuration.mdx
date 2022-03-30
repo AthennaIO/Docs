@@ -74,8 +74,8 @@ const defaultValue = 'Athenna'
 const appName = Env('APP_NAME', defaultValue)
 ```
 
-All variables in your `.env` files are always parsed as strings. But the `Env` function can parse it for you when you
-call the function to get the value:
+All variables in your `.env` files are always parsed as strings. But the `Env` function has an auto cast system to parse
+it for you when you call the function to get the value:
 
 <table>
     <thead>
@@ -87,38 +87,59 @@ call the function to get the value:
     <tbody>
     <tr>
         <td>true</td>
-        <td>true</td>
+        <td>"true"</td>
     </tr>
     <tr>
         <td>(true)</td>
         <td>true</td>
     </tr>
     <tr>
-        <td>"false"</td>
-        <td>"false"</td>
+        <td>"(false)"</td>
+        <td>false</td>
     </tr>
     <tr>
         <td>10</td>
-        <td>10</td>
+        <td>"10"</td>
     </tr>
     <tr>
         <td>(10)</td>
         <td>10</td>
     </tr>
     <tr>
-        <td>"10"</td>
-        <td>"10"</td>
+        <td>"(10)"</td>
+        <td>10</td>
     </tr>
     <tr>
         <td>{`{"name":"Paulo"}`}</td>
+        <td>{`"{"name":"Paulo"}"`}</td>
+    </tr>
+    <tr>
+        <td>{`({"name":"Paulo"})`}</td>
         <td>{`{ name: 'Paulo' }`}</td>
     </tr>
     <tr>
-        <td>{`"{"name":"Paulo"}"`}</td>
-        <td>{`"{"name":"Paulo"}"`}</td>
+        <td>{`"({"name":"Paulo"})"`}</td>
+        <td>{`{ name: 'Paulo' }`}</td>
     </tr>
     </tbody>
 </table>
+
+:::tip
+
+Maybe you want to force that your environment variable have the parentheses chars `(your-value)` or `(true)`. For that,
+the `Env` function has the third parameter called `autoCast` that by default is always true, but you can set as false, and
+it will not cast the value for your.
+
+```typescript
+process.env.APP_DEBUG = '(true)'
+
+const defaultValue = false
+const autoCast = false
+
+console.log(Env('APP_DEBUG', defaultValue, autoCast)) // '(true)'
+```
+
+:::
 
 Environment variables can parse other environment variables too. See the example above:
 
