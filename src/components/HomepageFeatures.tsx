@@ -11,32 +11,16 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
+    title: 'Why Athenna ?',
     image: '/img/undraw_docusaurus_mountain.svg',
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
-      </>
-    ),
-  },
-  {
-    title: 'Focus on What Matters',
-    image: '/img/undraw_docusaurus_tree.svg',
-    description: (
-      <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
-      </>
-    ),
-  },
-  {
-    title: 'Powered by React',
-    image: '/img/undraw_docusaurus_react.svg',
-    description: (
-      <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+          <b>Athenna</b> is a <b>Node.js framework</b> that focus in many types of application development, such as <b>Http servers</b>,
+          <b> workers</b>, <b>CLI's</b> and more! <b>Athenna</b> lets you focus in the development of your business rules, no more
+          configuring project. Just scaffold the project with our <code>athenna new project</code> and
+          everything is working! With <b>Athenna</b> you can build more than a simple Http server, here your can
+          build workers, CLI's, and in the future, GRPc and GraphQL applications! What are you waiting for?
+          hit <b>Get Started</b> button and go check the documentation!
       </>
     ),
   },
@@ -54,7 +38,7 @@ function Feature({title, image, description}: FeatureItem) {
       </div>
       <div className="text--center padding-horiz--md">
         <h3>{title}</h3>
-        <p>{description}</p>
+        <p style={{ fontSize: 18 }}>{description}</p>
       </div>
     </div>
   );
@@ -64,7 +48,7 @@ export default function HomepageFeatures(): JSX.Element {
   return (
     <section className={styles.features}>
       <div className="container">
-        <div className="row">
+        <div className="row--align-center">
           {FeatureList.map((props, idx) => (
             <Feature key={idx} {...props} />
           ))}

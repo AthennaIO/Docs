@@ -2,9 +2,9 @@ import React from 'react';
 import clsx from 'clsx';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import styles from './index.module.css';
 import HomepageFeatures from '../components/HomepageFeatures';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 
 function HomepageHeader() {
   const {siteConfig} = useDocusaurusContext();
@@ -30,7 +30,7 @@ export default function Home(): JSX.Element {
   return (
     <Layout
       title={`Hello from ${siteConfig.title}`}
-      description="Athenna is a Node.js framework that focus in API development with fast integration and good usability">
+      description="Athenna is a Node.js framework that focus in many types of application development, such as Http servers, workers, CLI's and more!">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

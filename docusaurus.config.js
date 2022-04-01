@@ -92,10 +92,6 @@ const config = {
           ],
           copyright: `Copyright © ${new Date().getFullYear()} Athenna, Inc. Built with Docusaurus.`,
         },
-        prism: {
-          theme: lightCodeTheme,
-          darkTheme: darkCodeTheme,
-        },
       },
 };
 

@@ -4,8 +4,12 @@
  * work well for content-centric websites.
  */
 
+@import url('./code-block.css');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400&display=swap');
+
 /* You can override the default Infima variables here. */
 :root {
+  --ifm-font-family-base: 'Roboto';
   --ifm-color-primary: #9669FF;
   --ifm-color-primary-dark: #3F2C6B;
   --ifm-color-primary-darker: #392861;
@@ -28,12 +32,40 @@ html[data-theme='dark'] {
 }
 
 .docusaurus-highlight-code-line {
-  background-color: rgba(0, 0, 0, 0.1);
+  background-color: rgb(72, 77, 91);
   display: block;
   margin: 0 calc(-1 * var(--ifm-pre-padding));
   padding: 0 var(--ifm-pre-padding);
 }
 
-html[data-theme='dark'] .docusaurus-highlight-code-line {
-  background-color: rgba(0, 0, 0, 0.3);
+/* Se você tiver um tema diferente de destaque de sintaxe para o modo escuro. */
+[data-theme='dark'] .docusaurus-highlight-code-line {
+  /* Color which works with dark mode syntax highlighting theme */
+  background-color: rgb(100, 100, 100);
+}
+
+@media screen and (max-width: 996px) {
+  :root {
+    --ifm-font-size-base: 16px;
+  }
+  article header h1 {
+    font-size: 1.5rem !important;
+  }
+  .hero .hero__title {
+    font-size: 2.5rem;
+  }
+}
+
+@media screen and (min-width: 997px) {
+  :root {
+    --ifm-font-size-base: 15px;
+  }
+  article header h1 {
+    font-size: 2rem !important;
+  }
+}
+
+.margin-top-bot {
+  margin-top: 14px !important;
+  margin-bottom: 14px !important;
 }
