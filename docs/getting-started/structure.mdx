@@ -31,6 +31,14 @@ tags:
 
 ## Introduction {#id-introduction}
 
+:::info
+
+We highly recommend using the Athenna `athenna make` command to generate the files of your application. If using the CLI,
+it will automatically generate the file and add the type to the `providers/Container` file. We are going to see how this
+guy work forward in the [providers' folder section](#id-the-providers-directory).
+
+:::
+
 ## The root directory {#id-the-root-directory}
 
 ### The app directory {#id-the-app-directory}
@@ -142,7 +150,8 @@ For example, you may wish to display certain attributes for a subset of users an
 The `Services` directory contains the business logic of your application. The entrypoint of your application should have
 only the logic responsible to receive the request, delegate to your service and return what service return. Every file in
 `Services` will be registered inside the `Ioc container` by the `ServicesProvider` class. This way you can easily use this
-services inside your controllers using the `constructor` method. You can explore the container in more detail in the
+services inside your controllers using the `constructor` method in camelCase format, example: the class name is `UserService`
+but in the `constructor` you call the `userService`. You can explore the container in more detail in the
 [container architecture concepts section](/docs/architecture-concepts/container)
 
 ### The Validators directory {#id-the-Validators-directory}

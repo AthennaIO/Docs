@@ -70,13 +70,6 @@ export class MyAppProvider extends ServiceProvider {
   register(): void {
     this.container.singleton('MyApp/Service', MyAppService)
   }
-
-  /**
-   * Bootstrap any application services.
-   *
-   * @return void
-   */
-  boot(): void {}
 }
 ```
 
@@ -92,6 +85,7 @@ check for these properties and register their bindings:
 ```typescript
 import { ServiceProvider } from '@athenna/ioc'
 import { MyAppService } from 'app/Utils/MyAppService'
+import { MyAppResource } from 'app/Utils/MyAppResource'
 import { MyAppRepository } from 'app/Utils/MyAppRepository'
 
 export class MyAppProvider extends ServiceProvider {
@@ -101,6 +95,13 @@ export class MyAppProvider extends ServiceProvider {
    */
   public bindings = {
       'MyApp/Service': MyAppService
+  }
+
+  /**
+   * All the container instances that should be registered.
+   */
+  public instances = {
+      'MyApp/Resource': new MyAppResource()
   }
 
   /**
@@ -126,18 +127,11 @@ import { MyAppRepository } from 'app/Utils/MyAppRepository'
 export class MyAppProvider extends ServiceProvider {
 
   /**
-   * Register any application services.
-   *
-   * @return void
-   */
-  register(): void {}
-
-  /**
    * Bootstrap any application services.
    *
    * @return void
    */
-  boot(): void {
+  public boot(): void {
     const myAppRepository = this.container.safeUse('MyApp/Repository')
 
     this.container.instance('MyApp/Service', new MyAppService(myAppRepository))

@@ -28,6 +28,7 @@ Let's look at a simple example:
 
 ```typescript
 import { ContextContract } from '@athenna/http'
+import { Container } from 'providers/Container'
 import { WelcomeServiceContract } from 'app/Contracts/WelcomeServiceContract'
 
 export class WelcomeController {
@@ -39,7 +40,7 @@ export class WelcomeController {
    * @param container
    * @return WelcomeController
    */
-  constructor(container) {
+  constructor(container: Container) {
     this.welcomeService = container.welcomeService
   }
 
@@ -161,11 +162,15 @@ exist, use the `safeUse` method.
 Alternatively, and importantly, you can use the constructor of a class that is resolved by the container, including controllers,
 services, middleware, and more. In practice, this is how most of your objects should be resolved by the container.
 
+You can use the type `ContainerContract` and `Container` to set all the types that your container can resolve. Check the
+`providers/Container` file.
+
 For example, you may add the container value in the controller's constructor. The service will automatically be resolved
 and injected into the class:
 
 ```typescript
 import { ContextContract } from '@athenna/http'
+import { Container } from 'providers/Container'
 import { WelcomeServiceContract } from 'app/Contracts/WelcomeServiceContract'
 
 export class WelcomeController {
@@ -177,7 +182,7 @@ export class WelcomeController {
    * @param container
    * @return WelcomeController
    */
-  constructor(container) {
+  constructor(container: Container) {
     this.welcomeService = container.welcomeService
   }
 
