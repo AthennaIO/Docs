@@ -9,6 +9,8 @@
 
 /* You can override the default Infima variables here. */
 :root {
+  font-size: 14px;
+  --doc-sidebar-width: 320px !important;
   --ifm-font-family-base: 'Roboto';
   --ifm-color-primary: #9669FF;
   --ifm-color-primary-dark: #3F2C6B;
@@ -29,19 +31,6 @@ html[data-theme='dark'] {
   --ifm-color-primary-light: #9685FF;
   --ifm-color-primary-lighter: #ADA1FF;
   --ifm-color-primary-lightest: #C6BDFF;
-}
-
-.docusaurus-highlight-code-line {
-  background-color: rgb(72, 77, 91);
-  display: block;
-  margin: 0 calc(-1 * var(--ifm-pre-padding));
-  padding: 0 var(--ifm-pre-padding);
-}
-
-/* Se você tiver um tema diferente de destaque de sintaxe para o modo escuro. */
-[data-theme='dark'] .docusaurus-highlight-code-line {
-  /* Color which works with dark mode syntax highlighting theme */
-  background-color: rgb(100, 100, 100);
 }
 
 @media screen and (max-width: 996px) {
@@ -68,4 +57,57 @@ html[data-theme='dark'] {
 .margin-top-bot {
   margin-top: 14px !important;
   margin-bottom: 14px !important;
+}
+
+.menu {
+  background-color: #f5f5fa !important;
+  padding: 2em !important;
+}
+
+[data-theme='dark'] .menu {
+  background-color: #18191a !important;
+}
+
+@media screen and (min-width: 1280px) {
+  .menu {
+    padding-left: 4em !important;
+    padding-right: 4em !important;
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .menu {
+    padding-left: 2em !important;
+    padding-right: 2em !important;
+  }
+
+  .row .col {
+    padding-right: 10em !important;
+    margin: 0px 80px 0px 80px !important;
+  }
+}
+
+.navbar__title {
+  font-size: 25px !important;
+}
+
+.hash-link::before {
+  content: none !important;
+}
+
+.markdown a {
+  font-weight: normal !important;
+  --ifm-link-color: #1c1e21 !important;
+}
+
+[data-theme='dark'] .markdown a {
+  font-weight: normal !important;
+  --ifm-link-color: #fff !important;
+}
+
+.markdown li::marker {
+    content: "#  " !important;
+    color: #9669FF !important;
+    border: none !important;
+    font-weight: bold !important;
 }
