@@ -16,9 +16,147 @@ tags:
 - #### [Registering providers](#id-registering-providers)
 
 ## Introduction {#id-introduction}
+
+Service providers are the central place of all Athenna application bootstrapping. Your own application, as well as all
+of Athenna core services, are bootstrapped via service providers.
+
+But, what do we mean by "bootstrapped"? In general, we mean registering things, including registering service container
+bindings, event listeners, middleware, and even routes. Service providers are the central place to configure your application.
+
+If you open the `config/app` file included with Athenna, you will see a providers array. These are all the service provider
+classes that will be loaded for your application. By default, a set of Athenna core service providers are listed in this array.
+These providers bootstrap the core Athenna components, such as the http, route, logger, services and others.
+
+In this overview, you will learn how to write your own service providers and register them with your Athenna application.
+
+:::tip
+
+If you would like to learn more about how Athenna works internally, check out our documentation on the Athenna [request lifecycle](lifecycle).
+
+:::
+
 ## Writing service providers {#id-writing-service-providers}
 
+All service providers extend the `ServiceProvider` class. Most service providers contain a `register` and a `boot` method.
+Within the `register` method, you should only bind things into the service container. You should never attempt to register
+any event listeners, routes, or any other piece of functionality within the register method.
+
+The Athenna CLI can generate a new provider via the `make:provider` command:
+
+```shell
+athenna make:provider MyAppProvider
+```
+
 ### The register method {#id-the-register-method}
+
+As mentioned previously, within the `register` method, you should only bind things into the service container. You should
+never attempt to register any event listeners, routes, or any other piece of functionality within the register method.
+Otherwise, you may accidentally use a service that is provided by a service provider which has not loaded yet.
+
+Let's take a look at a basic service provider. Within any of your service provider methods, you always have access to
+the `this.container` property which provides access to the service container:
+
+```typescript
+import { ServiceProvider } from '@athenna/ioc'
+import { MyAppService } from 'app/Utils/MyAppService'
+
+export class MyAppProvider extends ServiceProvider {
+
+  /**
+   * Register any application services.
+   *
+   * @return void
+   */
+  register(): void {
+    this.container.singleton('MyApp/Service', MyAppService)
+  }
+
+  /**
+   * Bootstrap any application services.
+   *
+   * @return void
+   */
+  boot(): void {}
+}
+```
+
+This service provider only defines a `register` method, and uses that method to define an implementation of `MyAppService`
+in the service container. If you're not yet familiar with Athenna service container, check out [its documentation](container).
+
+#### The bindings and singletons properties
+
+If your service provider registers many simple bindings, you may wish to use the `bindings` and `singletons` properties instead
+of manually registering each container binding. When the service provider is loaded by the framework, it will automatically
+check for these properties and register their bindings:
+
+```typescript
+import { ServiceProvider } from '@athenna/ioc'
+import { MyAppService } from 'app/Utils/MyAppService'
+import { MyAppRepository } from 'app/Utils/MyAppRepository'
+
+export class MyAppProvider extends ServiceProvider {
+
+  /**
+   * All the container bindings that should be registered.
+   */
+  public bindings = {
+      'MyApp/Service': MyAppService
+  }
+
+  /**
+   * All the container singletons that should be registered.
+   */
+  public singletons = {
+      'MyApp/Repository': MyAppRepository
+  }
+}
+```
+
 ### The boot method {#id-the-boot-method}
 
+So, what if we need to register a dependency that needs another dependency within our service provider? This should be
+done within the `boot` method. This method is called after all other service providers have been registered, meaning you
+have access to all other services that have been registered by the framework:
+
+```typescript
+import { ServiceProvider } from '@athenna/ioc'
+import { MyAppService } from 'app/Utils/MyAppService'
+import { MyAppRepository } from 'app/Utils/MyAppRepository'
+
+export class MyAppProvider extends ServiceProvider {
+
+  /**
+   * Register any application services.
+   *
+   * @return void
+   */
+  register(): void {}
+
+  /**
+   * Bootstrap any application services.
+   *
+   * @return void
+   */
+  boot(): void {
+    const myAppRepository = this.container.safeUse('MyApp/Repository')
+
+    this.container.instance('MyApp/Service', new MyAppService(myAppRepository))
+  }
+}
+```
+
 ## Registering providers {#id-registering-providers}
+
+All service providers are registered in the `config/app` configuration file. This file contains a providers array where
+you can list the class names of your service providers. By default, a set of Athenna core service providers are listed
+in this array. These providers bootstrap the core Athenna components, such as the http, route, services and others.
+
+To register your provider, add it to the array:
+
+```typescript
+providers: [
+  // Other service providers
+
+  require('providers/MyAppProvider'),
+],
+```

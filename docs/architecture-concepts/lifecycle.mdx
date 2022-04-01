@@ -7,24 +7,91 @@ tags:
 - Architecture Concepts
 ---
 
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
 # Application Lifecycle
 
 - #### [Introduction](#id-introduction)
 - #### [Lifecycle overview](#id-lifecycle-overview)
   - #### [First steps](#id-first-steps)
-  - #### [Kernels](#id-kernels)
   - #### [Service providers](#id-service-providers)
-  - #### [Routing](#id-routing)
+  - #### [Routes](#id-routes)
   - #### [Finishing up](#id-finishing-up)
 - #### [Focus on service providers](#id-focus-on-service-providers)
 
 ## Introduction {#id-introduction}
+
+When using any tool in the "real world", you feel more confident if you understand how that tool works. Application
+development is no different. When you understand how your development tools function, you feel more comfortable and
+confident using them.
+
+The goal of this document is to give you a good, high-level overview of how the Athenna framework works. By getting to
+know the overall framework better, everything feels less "magical" and you will be more confident building your
+applications. If you don't understand all the terms right away, don't lose heart! Just try to get a basic grasp of what
+is going on, and your knowledge will grow as you explore other sections of the documentation.
+
 ## Lifecycle overview {#id-lifecycle-overview}
 
 ### First steps {#id-first-steps}
-### Kernels {#id-kernels}
+
+The entry point for all types of an Athenna application is the `bootstrap/main` file. The first action taken by Athenna
+itself is to create an instance of the container and then of the application.
+
 ### Service providers {#id-service-providers}
-### Routing {#id-routing}
+
+One of the most important kernel bootstrapping actions is loading the service providers for your application. All the
+service providers for the application are configured in the `config/app` configuration file's providers array.
+
+Athenna will iterate through this list of providers and instantiate each of them. After instantiating the providers,
+the `register` method will be called on all the providers. Then, once all the providers have been registered, the
+`boot` method will be called on each provider. This is so service providers may depend on every container binding being
+registered and available by the time their boot method is executed.
+
+Service providers are responsible for bootstrapping all the framework's various components, such as the database, http server,
+validation, services and routing components. Essentially every major feature offered by Athenna is bootstrapped and
+configured by a service provider. Since they bootstrap and configure so many features offered by the framework, service
+providers are the most important aspect of the entire Athenna bootstrap process.
+
+### Routes {#id-routes}
+
+The `routes` folder is the kernel of your application. The route files that you will find here are:
+
+<Tabs>
+<TabItem value="http" label="http" default>
+
+This file is responsible to create a contract between your client and your application. Is
+in here that we define all of ours routes and the controllers who will handle the client request.
+
+One of the most important service providers in your application is the `HttpRouteProvider`. This service provider adds in
+the container the `Route` class instance used inside `http` file. This service provider also adds `routes/http` as a `preload`
+file of the application.
+
+</TabItem>
+</Tabs>
+
 ### Finishing up {#id-finishing-up}
 
+<Tabs>
+<TabItem value="http" label="http" default>
+
+Once the route or controller method returns a response, the response will travel back outward through the route's
+middleware, giving the application a chance to modify or examine the outgoing response.
+
+Finally, once the response travels back through the middleware we send the response content to the client. We've finished
+our journey through the entire Athenna request lifecycle!
+
+</TabItem>
+</Tabs>
+
 ## Focus on service providers {#id-focus-on-service-providers}
+
+Service providers are truly the key to bootstrapping an Athenna application. The application instance is created, the
+service providers are registered, and the request is handed to the bootstrapped application. It's really that simple!
+
+Having a firm grasp of how an Athenna application is built and bootstrapped via service providers is very valuable.
+Your application's default service providers are stored in the `providers` directory.
+
+By default, the `CustomProvider` is fairly empty. This provider is a great place to add your application's own
+bootstrapping and service container bindings. For large applications, you may wish to create several service providers,
+each with more granular bootstrapping for specific services used by your application.
