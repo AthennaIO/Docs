@@ -17,7 +17,7 @@ const FeatureList: FeatureItem[] = [
       <>
           <b>Athenna</b> is a <b>Node.js framework</b> that focus in many types of application development, such as <b>Http servers</b>,
           <b> workers</b>, <b>CLI's</b> and more! <b>Athenna</b> lets you focus in the development of your business rules, no more
-          configuring project. Just scaffold the project with our <code>athenna new:project</code> and
+          configuring project. Just scaffold the project with our <code>athenna new</code> and
           everything is working! With <b>Athenna</b> you can build more than a simple Http server, here your can
           build workers, CLI's, and in the future, GRPc and GraphQL applications! What are you waiting for?
           hit <b>Get Started</b> button and go check the documentation!
