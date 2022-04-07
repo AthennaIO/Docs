@@ -13,6 +13,7 @@ const config = {
   organizationName: 'AthennaIO',
   deploymentBranch: 'main',
   projectName: 'Docs',
+  staticDirectories: ['public', 'static'],
   presets: [
     [
       '@docusaurus/preset-classic',

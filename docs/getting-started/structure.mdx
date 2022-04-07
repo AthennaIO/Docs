@@ -91,6 +91,38 @@ The `providers` directory contains all the service providers for your applicatio
 application by binding services in the service container, registering events, or performing any other tasks to
 prepare your application to run.
 
+Inside this directory we also have the `Container` file. This file is just a type that defines the type that exists
+inside the container. Very useful to use inside other providers constructor such as `Services`. See the example above:
+
+```typescript
+import { Container } from 'providers/Container'
+import { MyAppService } from 'app/Utils/MyAppService'
+
+export class UserService {
+  private myAppService: MyAppService
+
+  /**
+   * Create a new controller instance.
+   *
+   * @param container
+   * @return WelcomeController
+   */
+  public constructor(container: Container) {
+      // container.myAppService is from MyAppService type
+      this.myAppService = container.myAppService
+  }
+
+  /**
+   * Find one user by id.
+   *
+   * @param id
+   */
+  async findOne(id: string) {
+      return { id }
+  }
+}
+```
+
 ### The routes directory {#id-the-routes-directory}
 
 The `routes` directory contains all the route definitions for your application. By default, several route files are
@@ -134,8 +166,9 @@ run the `athenna list make` command in your terminal.
 
 ### The Http directory {#id-the-Http-directory}
 
-The `Http` directory contains your controllers and middlewares. Almost all the logic to handle http requests entering
-your application will be placed in this directory.
+This directory does not exist by default if you have not created your project in CLI using the project type `http`, but
+you can create it if you execute the `athenna install http` command. The `Http` directory contains your controllers and
+middlewares. Almost all the logic to handle http requests entering your application will be placed in this directory.
 
 ### The Models directory {#id-the-Models-directory}
 
@@ -170,7 +203,14 @@ only the logic responsible to receive the request, delegate to your service and 
 `Services` will be registered inside the `Ioc container` by the `ServicesProvider` class. This way you can easily use this
 services inside your controllers using the `constructor` method in camelCase format, example: the class name is `UserService`
 but in the `constructor` you call the `userService`. You can explore the container in more detail in the
-[container architecture concepts section](/docs/architecture-concepts/container)
+[container architecture concepts section](/docs/architecture-concepts/container).
+
+:::tip
+
+Remember, we highly recommend using the Athenna `athenna make:service` command to generate your services. If using the CLI,
+it will automatically generate the file and add the type to the `providers/Container` file.
+
+:::
 
 ### The Validators directory {#id-the-Validators-directory}
 

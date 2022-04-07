@@ -146,8 +146,8 @@ it for you when you call the function to get the value:
 :::tip
 
 Maybe you want to force that your environment variable have the parentheses chars `(your-value)` or `(true)`. For that,
-the `Env` function has the third parameter called `autoCast` that by default is always true, but you can set as false, and
-it will not cast the value for your.
+the `Env` function has the third parameter called `autoCast` that by default is always `true`, if you set as `false` it
+will not cast the value for you.
 
 ```typescript
 process.env.APP_DEBUG = '(true)'
@@ -155,7 +155,8 @@ process.env.APP_DEBUG = '(true)'
 const defaultValue = false
 const autoCast = false
 
-console.log(Env('APP_DEBUG', defaultValue, autoCast)) // '(true)'
+console.log(Env<boolean>('APP_DEBUG', defaultValue)) // true
+console.log(Env<string>('APP_DEBUG', defaultValue, autoCast)) // '(true)'
 ```
 
 :::
@@ -170,7 +171,7 @@ APP_DOMAIN=http://${HOST}:${PORT}
 ```
 
 ```typescript
-console.log(Env('APP_DOMAIN')) // "http://localhost:1335"
+console.log(Env<string>('APP_DOMAIN')) // "http://localhost:1335"
 ```
 
 ### Get a configuration value {#id-get-a-configuration-value}
@@ -180,7 +181,7 @@ The configuration values may be accessed using `"dot (.)"` syntax, which include
 wish to access. A default value may also be specified and will be returned if the configuration option does not exist:
 
 ```typescript
-console.log(Config.get('app.name', 'Athenna')) // MyAppName
+console.log(Config.get<string>('app.name', 'Athenna')) // MyAppName
 ```
 
 :::tip

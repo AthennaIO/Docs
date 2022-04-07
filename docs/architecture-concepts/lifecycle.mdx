@@ -11,6 +11,8 @@ tags:
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
+import ThemedImage from '@theme/ThemedImage';
+import useBaseUrl from "@docusaurus/useBaseUrl";
 
 <nav aria-label="breadcrumbs">
     <ul class="breadcrumbs">
@@ -34,6 +36,7 @@ import TabItem from '@theme/TabItem';
 - #### [Lifecycle overview](#id-lifecycle-overview)
   - #### [First steps](#id-first-steps)
   - #### [Service providers](#id-service-providers)
+  - #### [Kernels](#id-kernels)
   - #### [Routes](#id-routes)
   - #### [Finishing up](#id-finishing-up)
 - #### [Focus on service providers](#id-focus-on-service-providers)
@@ -54,7 +57,16 @@ is going on, and your knowledge will grow as you explore other sections of the d
 ### First steps {#id-first-steps}
 
 The entry point for all types of an Athenna application is the `bootstrap/main` file. The first action taken by Athenna
-itself is to create an instance of the container and then of the application.
+itself is to create an instance of the application and then boot it.
+
+:::info
+
+Athenna has the class called `Ignite`. This class is responsible for resolving your environment, your language type (ts, js),
+resolving your environment files and configuration files of `config` folder and booting/registering your providers. In the
+end of all, `fire` method returns a new `Application` instance, and it's with this instance that we are going to choose
+what type of application we want to run (http, worker, console, etc...).
+
+:::
 
 ### Service providers {#id-service-providers}
 
@@ -71,6 +83,50 @@ validation, services and routing components. Essentially every major feature off
 configured by a service provider. Since they bootstrap and configure so many features offered by the framework, service
 providers are the most important aspect of the entire Athenna bootstrap process.
 
+### Kernels {#id-kernels}
+
+Each Athenna application type have a `Kernel`. This classes serves configurations for each type of application.
+
+<Tabs>
+<TabItem value="Http Kernel" label="Http Kernel" default>
+
+The Kernel of `Http` folder extends the `HttpKernel` class from `@athenna/http`, which defines some bootstraps that will
+be run before the `routes/http` file is preloaded. These bootstraps configure error handling, configure logging, detect
+the application environment, and perform other tasks that need to be done before the request is actually handled. Typically,
+these classes handle internal Athenna configuration that you do not need to worry about.
+
+The Kernel of `Http` folder also defines a list of global middlewares that all requests must pass through before being
+handled by the application. It also defines your named middlewares to use inside `routes/http` file. See the example:
+
+```typescript
+/**
+* The application's global HTTP middlewares.
+*
+* This middlewares are run during every request to your http server.
+*/
+protected globalMiddlewares = [import('../Http/Middlewares/ResponseMiddleware')]
+```
+
+Or you can define as a named middleware and choose what routes are going to use it inside `routes/http`:
+
+```typescript
+/**
+* The application's named HTTP middlewares.
+*
+* Here you define all your named middlewares to use inside routes/http file.
+*/
+protected namedMiddlewares = {
+    response: import('../Http/Middlewares/ResponseMiddleware')
+}
+```
+
+```typescript
+Route.get('/', 'WelcomeController.show').middleware('response')
+```
+
+</TabItem>
+</Tabs>
+
 ### Routes {#id-routes}
 
 The `routes` folder is the kernel of your application. The route files that you will find here are:
@@ -85,6 +141,17 @@ One of the most important service providers in your application is the `HttpRout
 the container the `Route` class instance used inside `http` file. This service provider also adds `routes/http` as a `preload`
 file of the application.
 
+When the client request arrives, the server first execute all `handle` method of your global middlewares. Than it will execute
+the `handle` method of all your route middlewares. Once it finish, it goes for your controller or handler function. See the example:
+
+<ThemedImage
+    alt="Handle request image"
+    sources={{
+        light: useBaseUrl('/img/handle-request-1-light.png'),
+        dark: useBaseUrl('/img/handle-request-1-dark.png'),
+    }}
+/>
+
 </TabItem>
 </Tabs>
 
@@ -93,10 +160,32 @@ file of the application.
 <Tabs>
 <TabItem value="http" label="http" default>
 
-Once the route or controller method returns a response, the response will travel back outward through the route's
-middleware, giving the application a chance to modify or examine the outgoing response.
+Once the controller/handler function returns a response, the response will travel back outward through the `intercept`
+method of each global middleware and than route's middleware, giving the application a chance to modify or examine the
+outgoing response. See the example:
 
-Finally, once the response travels back through the middleware we send the response content to the client. We've finished
+<ThemedImage
+    alt="Handle request image"
+    sources={{
+        light: useBaseUrl('/img/handle-request-2-light.png'),
+        dark: useBaseUrl('/img/handle-request-2-dark.png'),
+    }}
+/>
+
+As you can see in the example the response content is sent to the client. The request finish for the client but not for
+the server. Now it's time to execute the `terminate` method from our global and route's middleware. The `terminate` method
+is executed when a response has been sent, so you will not be able to send more data to the client. It can however be
+useful for sending data to external services, for example, create metrics of the entire request. See the example:
+
+<ThemedImage
+    alt="Handle request image"
+    sources={{
+        light: useBaseUrl('/img/handle-request-3-light.png'),
+        dark: useBaseUrl('/img/handle-request-3-dark.png'),
+    }}
+/>
+
+Finally, once the `terminate` method is executed in all middlewares the request finish in the server. We've finished
 our journey through the entire Athenna request lifecycle!
 
 </TabItem>

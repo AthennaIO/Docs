@@ -1,6 +1,6 @@
-import useBaseUrl from '@docusaurus/useBaseUrl';
-import React from 'react';
 import clsx from 'clsx';
+import React from 'react';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import styles from './HomepageFeatures.module.css';
 
 type FeatureItem = {
