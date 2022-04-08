@@ -150,7 +150,7 @@ export class MyAppProvider extends ServiceProvider {
    * @return void
    */
   public boot(): void {
-    const myAppRepository = this.container.safeUse('MyApp/Repository')
+    const myAppRepository = this.container.safeUse<MyAppRepository>('MyApp/Repository')
 
     this.container.instance('MyApp/Service', new MyAppService(myAppRepository))
   }

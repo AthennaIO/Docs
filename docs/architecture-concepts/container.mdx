@@ -45,8 +45,8 @@ via the constructor or, in some cases, "setter" methods.
 Let's look at a simple example:
 
 ```typescript
-import { ContextContract } from '@athenna/http'
 import { Container } from 'providers/Container'
+import { ContextContract } from '@athenna/http'
 import { WelcomeServiceContract } from 'app/Contracts/WelcomeServiceContract'
 
 export class WelcomeController {
@@ -93,7 +93,7 @@ If a class has no dependencies or only depends on other concrete classes (not in
 to be instructed on how to resolve that class. For example, you may place the following code in your `routes/http` file:
 
 ```typescript
-import { Route } from '@athenna/core/container'
+import { Route } from '@athenna/http'
 import { WelcomeServiceContract } from 'app/Contracts/WelcomeServiceContract'
 
 Route.get('/welcome', async (ctx) => {
@@ -132,7 +132,7 @@ Within a service provider, you always have access to the container via the `ioc`
 using the `bind` method, passing the alias name that we wish to register along with our dependency:
 
 ```typescript
-import { StringNormalizer } from 'app/Utils/StringNormalized'
+import { StringNormalizer } from 'app/Utils/StringNormalizer'
 
 ioc.bind('App/Utils/StringNormalizer', StringNormalizer)
 ```
@@ -143,7 +143,7 @@ The `singleton` method binds a class or interface into the container that should
 binding is resolved, the same object instance will be returned on subsequent calls into the container:
 
 ```typescript
-import { StringNormalizer } from 'app/Utils/StringNormalized'
+import { StringNormalizer } from 'app/Utils/StringNormalizer'
 
 ioc.singleton('App/Utils/StringNormalizer', StringNormalizer)
 ```
@@ -154,7 +154,7 @@ You may also bind an existing object instance into the container using the `inst
 always be returned on subsequent calls into the container:
 
 ```typescript
-import { StringNormalizer } from 'app/Utils/StringNormalized'
+import { StringNormalizer } from 'app/Utils/StringNormalizer'
 
 ioc.instance('App/Utils/StringNormalizer', new StringNormalizer())
 ```
@@ -167,7 +167,7 @@ You may use the `use` or `safeUse` method to resolve a class instance from the c
 dependency you wish to resolve:
 
 ```typescript
-import { StringNormalizer } from 'app/Utils/StringNormalized'
+import { StringNormalizer } from 'app/Utils/StringNormalizer'
 
 const stringNormalized = ioc.use<StringNormalizer>('App/Utils/StringNormalizer')
 ```
@@ -187,8 +187,8 @@ For example, you may add the container value in the controller's constructor. Th
 and injected into the class:
 
 ```typescript
-import { ContextContract } from '@athenna/http'
 import { Container } from 'providers/Container'
+import { ContextContract } from '@athenna/http'
 import { WelcomeServiceContract } from 'app/Contracts/WelcomeServiceContract'
 
 export class WelcomeController {
