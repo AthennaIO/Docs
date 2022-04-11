@@ -35,7 +35,7 @@ import TabItem from '@theme/TabItem';
 - #### [When to use facades](#id-when-to-use-facades)
 - #### [How facades work](#id-how-facades-work)
 - #### [Facade class reference](#id-facade-class-reference)
-- #### [Build your own facade](#id-build-your-own-facade)
+- #### [Writing facades](#id-writing-facades)
 
 ## Introduction {#id-introduction}
 
@@ -160,12 +160,10 @@ documentation for a given facade root. The service container binding key is also
     </tbody>
 </table>
 
-## Build your own facade {#id-build-your-own-facade}
+## Writing facades {#id-writing-facades}
 
-Here is a simple tutorial on how you can build your own facade inside Athenna.
-
-First you need to create a new [`service provider`](/docs/architecture-concepts/providers) to resolve your dependency
-inside the [`service container`](/docs/architecture-concepts/container). Just run `athenna make:provider HelperProvider`
+First you need to create a new [`service provider`](/docs/architecture-concepts/providers#id-writing-service-providers)
+to resolve your dependency inside the [`service container`](/docs/architecture-concepts/container). Just run `athenna make:provider HelperProvider`
 and `providers/HelperProvider` and register your binding:
 
 ```typescript
@@ -198,7 +196,14 @@ file inside the `providers` array.
 
 :::
 
-Finally, with your provider registered you can just run `athenna make:facade String` command to generate your facade:
+The Athenna CLI can generate a new Facade via the make:facade command:
+
+```shell
+`athenna make:facade String`
+```
+
+The Facade file will be generated inside `providers/Facades` folder. Open this file and change the alias to your
+provider alias:
 
 ```typescript
 import { Facade } from '@athenna/ioc'
