@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[121],{8070:function(e){e.exports=JSON.parse('[{"name":"Architecture Concepts","permalink":"/docs/tags/architecture-concepts","count":9},{"name":"Getting Started","permalink":"/docs/tags/getting-started","count":6},{"name":"The Basics","permalink":"/docs/tags/the-basics","count":2}]')}}]);
