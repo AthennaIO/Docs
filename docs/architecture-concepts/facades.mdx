@@ -1,0 +1,76 @@
+---
+sidebar_position: 4
+
+id: facades
+title: Facades
+hide_title: true
+hide_table_of_contents: true
+tags:
+- Getting Started
+- Architecture Concepts
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<nav aria-label="breadcrumbs">
+    <ul class="breadcrumbs">
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/">🏠</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link">Architecture Concepts</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/docs/architecture-concepts/facades">Facades</a>
+        </li>
+    </ul>
+</nav>
+
+<span class="badge badge--secondary margin-top-bot">version 1.0.0</span>
+
+# Facades
+
+- #### [Introduction](#id-introduction)
+- #### [When to use facades](#id-when-to-use-facades)
+    - #### [Facades vs. Dependency injection](#id-facades-vs-dependency-injection)
+    - #### [Facades vs. Helper functions](#id-facades-vs-helper-functions)
+- #### [How facades work](#id-how-facades-work)
+- #### [Facade class reference](#id-facade-class-reference)
+- #### [Build your own facade](#id-build-your-own-facade)
+
+## Introduction {#id-introduction}
+
+Throughout the Athenna documentation, you will see examples of code that interacts with Athenna features via "facades".
+Facades provide a "static" interface to class that are available in the application's [`service container`](/docs/architecture-concepts/container).
+Athenna ships with many facades which provide access to almost all of Athenna features.
+
+Athenna facades serve as "static proxies" to underlying classes in the service container, providing the benefit of a terse,
+expressive syntax while maintaining more testability and flexibility than traditional static methods. It's perfectly fine
+if you don't totally understand how facades work under the hood - just go with the flow and continue learning about Athenna.
+
+All of Athenna facades are defined in their own packages. So, we can easily access a facade like so:
+
+```typescript
+import { Log } from '@athenna/logger' // Log Facade
+import { Route } from '@athenna/http' // Route Facade
+
+Route.get('/welcome', function ({ response }) {
+    Log.success('New request received 😝')
+
+    return response.status(200).send({ hello: 'world' })
+});
+```
+
+Throughout the Athenna documentation, many of the examples will use facades to demonstrate various features of the framework.
+
+### Helper functions
+
+To complement facades, Athenna offers a variety of global "helper functions" that make it even easier to interact with
+common Athenna features. Some common helper functions you may interact with are `Env`, `Config`, `Path`, and more. Each
+helper function offered by Athenna is documented with their corresponding feature; however, a complete list is available
+within the dedicated [helper documentation](/docs/getting-started/helpers).
+
+## When to use facades
+
+...
