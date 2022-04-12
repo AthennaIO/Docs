@@ -35,6 +35,7 @@ export default function Home(): JSX.Element {
       <Head>
           <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"/>
           <meta name="theme-color" content="#242526" media="(prefers-color-scheme: dark)"/>
+          <link rel="manifest" href="manifest.json"/>
       </Head>
       <HomepageHeader />
       <main>

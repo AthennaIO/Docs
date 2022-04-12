@@ -114,11 +114,6 @@ const config = {
           },
           {
             tagName: 'meta',
-            name: 'theme-color',
-            content: 'rgb(37, 194, 160)',
-          },
-          {
-            tagName: 'meta',
             name: 'apple-mobile-web-app-capable',
             content: 'yes',
           },
@@ -136,7 +131,6 @@ const config = {
             tagName: 'link',
             rel: 'mask-icon',
             href: '/img/logo.svg',
-            color: 'rgb(37, 194, 160)',
           },
           {
             tagName: 'meta',

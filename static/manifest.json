@@ -1,11 +1,10 @@
 {
+  "$schema": "https://json.schemastore.org/web-manifest-combined.json",
   "name": "Athenna Framework",
   "short_name": "Athenna",
-  "theme_color": "#2196f3",
-  "background_color": "#424242",
+  "start_url": ".",
   "display": "standalone",
-  "scope": "./",
-  "start_url": "./index.html",
+  "description": "Node.js framework that focus in many types of application development.",
   "icons": [
     {
       "src": "img/icons/icon-72x72.png",
