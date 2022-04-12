@@ -114,6 +114,11 @@ const config = {
           },
           {
             tagName: 'meta',
+            name: 'theme-color',
+            content: 'rgb(80,27,134)',
+          },
+          {
+            tagName: 'meta',
             name: 'apple-mobile-web-app-capable',
             content: 'yes',
           },
@@ -130,12 +135,13 @@ const config = {
           {
             tagName: 'link',
             rel: 'mask-icon',
-            href: 'img/logo.svg',
+            href: 'img/logo.png',
+            color: 'rgb(80,27,134)',
           },
           {
             tagName: 'meta',
             name: 'msapplication-TileImage',
-            content: 'img/logo.png',
+            content: 'img/docusaurus.png',
           },
           {
             tagName: 'meta',
