@@ -135,7 +135,7 @@ Route.get('/user/:id', ({ response, params }) => {
 You may define as many route parameters as required by your route:
 
 ```typescript
-Route.get('/posts/{post}/comments/{comment}', ({ response, params }) => {
+Route.get('/posts/:postId/comments/:commentId', ({ response, params }) => {
     return response.send({ params })
 })
 ```
