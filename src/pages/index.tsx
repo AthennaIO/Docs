@@ -33,7 +33,7 @@ export default function Home(): JSX.Element {
       title={`Hello from ${siteConfig.title}`}
       description="Athenna is a Node.js framework that focus in many types of application development, such as Http servers, workers, CLI's and more!">
       <Head>
-          <meta property="og:image" content="img/icons/icon-192x192.png" />
+          <meta property="og:image" content="img/og-image.png" />
           <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"/>
           <meta name="theme-color" content="#242526" media="(prefers-color-scheme: dark)"/>
           <link rel="icon" href="img/logo.png"/>
