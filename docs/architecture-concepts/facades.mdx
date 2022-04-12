@@ -57,7 +57,7 @@ Route.get('/welcome', function ({ response }) {
     Log.channel('simple').success('New request received 😝')
 
     return response.status(200).send({ hello: 'world' })
-});
+})
 ```
 
 Throughout the Athenna documentation, many of the examples will use facades to demonstrate various features of the framework.
@@ -220,5 +220,5 @@ import { String } from 'providers/Facades/String' // String Facade
 
 Route.get('/welcome', function ({ response }) {
     return response.status(200).send({ hello: String.toPascalCase('world') })
-});
+})
 ```
