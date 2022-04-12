@@ -147,7 +147,7 @@ const config = {
           {
             tagName: 'meta',
             name: 'msapplication-TileImage',
-            content: '/img/logo.png',
+            content: 'img/logo.png',
           },
           {
             tagName: 'meta',
