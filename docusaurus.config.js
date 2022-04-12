@@ -108,6 +108,18 @@ const config = {
             href: '/img/logo.png',
           },
           {
+            tagName: 'meta',
+            name: 'theme-color',
+            content: '#FFFFFF',
+            media: '(prefers-color-scheme: light)'
+          },
+          {
+            tagName: 'meta',
+            name: 'theme-color',
+            content: '#242526',
+            media: '(prefers-color-scheme: dark)'
+          },
+          {
             tagName: 'link',
             rel: 'manifest',
             href: '/manifest.json',
