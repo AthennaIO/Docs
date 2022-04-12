@@ -115,7 +115,14 @@ const config = {
           {
             tagName: 'meta',
             name: 'theme-color',
-            content: 'rgb(80,27,134)',
+            content: '#ffffff',
+            media: '(prefers-color-scheme: light)',
+          },
+          {
+            tagName: 'meta',
+            name: 'theme-color',
+            content: '#242526',
+            media: '(prefers-color-scheme: dark)',
           },
           {
             tagName: 'meta',
