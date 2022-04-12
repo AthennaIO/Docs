@@ -105,7 +105,7 @@ const config = {
           {
             tagName: 'link',
             rel: 'icon',
-            href: '/img/logo.png',
+            href: 'img/logo.png',
           },
           {
             tagName: 'meta',
@@ -122,7 +122,7 @@ const config = {
           {
             tagName: 'link',
             rel: 'manifest',
-            href: '/manifest.json',
+            href: 'manifest.json',
           },
           {
             tagName: 'meta',
@@ -137,12 +137,12 @@ const config = {
           {
             tagName: 'link',
             rel: 'apple-touch-icon',
-            href: '/img/logo.png',
+            href: 'img/logo.png',
           },
           {
             tagName: 'link',
             rel: 'mask-icon',
-            href: '/img/logo.svg',
+            href: 'img/logo.svg',
           },
           {
             tagName: 'meta',
