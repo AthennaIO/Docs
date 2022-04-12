@@ -42,3 +42,64 @@ import TabItem from '@theme/TabItem';
 - #### [Using a different formatter](#id-using-a-different-formatter)
 - #### [Implementing your own driver](#id-implementing-your-own-driver)
 - #### [Implementing your own formatter](#id-implementing-your-own-formatter)
+
+## Introduction {#id-introduction}
+
+To help you learn more about what's happening within your application, Athenna provides robust logging services that
+allow you to log messages to files, console, buckets and even to Slack to notify your entire team.
+
+Athenna logging is based on "channels". Each channel represents a specific way of writing log information. For example,
+the `application` channel writes log of your application when bootstrapping, while the `requests` channel writes log of
+the http requests that your application receives.
+
+Under the hood, Athenna utilizes the [`Pino`](https://github.com/pinojs/pino) library, which provides support for a
+variety of powerful log handlers. Athenna makes it a cinch to configure these handlers, allowing you to mix and match
+them to customize your application's log handling.
+
+## Configuration {#id-configuration}
+
+All the configuration options for your application's logging behavior is housed in the `config/logging` configuration file.
+This file allows you to configure your application's log channels, so be sure to review each of the available channels
+and their options. We'll review a few common options below.
+
+### Available channel drivers
+
+Each log channel is powered by a "driver". The driver determines how and where the log message is actually transported.
+The following log channel drivers are available in every Athenna application. An entry for most of these drivers is
+already present in your application's `config/logging` configuration file, so be sure to review this file to become
+familiar with its contents:
+
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><code>console</code></td>
+        <td>A driver that transports the log to the stdout/stderr using process.stdout.write</td>
+    </tr>
+    <tr>
+        <td><code>debug</code></td>
+        <td>A driver that transports the log using the debug library</td>
+    </tr>
+    <tr>
+        <td><code>file</code></td>
+        <td>A driver that transports the log to a file</td>
+    </tr>
+    <tr>
+        <td><code>null</code></td>
+        <td>A driver that discards all log messages</td>
+    </tr>
+    <tr>
+        <td><code>pino</code></td>
+        <td>A driver that transports the log using the pino library</td>
+    </tr>
+    <tr>
+        <td><code>slack</code></td>
+        <td>A driver that transports the log message to a slack channel</td>
+    </tr>
+    </tbody>
+</table>
