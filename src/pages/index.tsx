@@ -35,14 +35,14 @@ export default function Home(): JSX.Element {
       <Head>
           <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)"/>
           <meta name="theme-color" content="#242526" media="(prefers-color-scheme: dark)"/>
-          <link rel="icon" href="img/logo.png"/>
-          <link rel="manifest" href="manifest.json"/>
-          <link rel="apple-touch-icon" href="img/logo.png"/>
-          <link rel="mask-icon" href="img/logo.svg"/>
-          <meta name="apple-mobile-web-app-capable" content="yes"/>
-          <meta name="msapplication-TileImage" content="img/logo.png"/>
-          <meta name="msapplication-TileColor" content="#000"/>
-          <meta name="apple-mobile-web-app-status-bar-style" content="#000"/>
+          {/*<link rel="icon" href="img/logo.png"/>*/}
+          {/*<link rel="manifest" href="manifest.json"/>*/}
+          {/*<link rel="apple-touch-icon" href="img/logo.png"/>*/}
+          {/*<link rel="mask-icon" href="img/logo.svg"/>*/}
+          {/*<meta name="apple-mobile-web-app-capable" content="yes"/>*/}
+          {/*<meta name="msapplication-TileImage" content="img/logo.png"/>*/}
+          {/*<meta name="msapplication-TileColor" content="#000"/>*/}
+          {/*<meta name="apple-mobile-web-app-status-bar-style" content="#000"/>*/}
       </Head>
       <HomepageHeader />
       <main>
