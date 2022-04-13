@@ -46,15 +46,11 @@ import TabItem from '@theme/TabItem';
 ## Introduction {#id-introduction}
 
 To help you learn more about what's happening within your application, Athenna provides robust logging services that
-allow you to log messages to files, console, buckets and even to Slack to notify your entire team.
+allow you to log messages to file, console, buckets and even to Slack to notify your entire team.
 
 Athenna logging is based on "channels". Each channel represents a specific way of writing log information. For example,
 the `application` channel writes log of your application when bootstrapping, while the `requests` channel writes log of
 the http requests that your application receives.
-
-Under the hood, Athenna utilizes the [`Pino`](https://github.com/pinojs/pino) library, which provides support for a
-variety of powerful log handlers. Athenna makes it a cinch to configure these handlers, allowing you to mix and match
-them to customize your application's log handling.
 
 ## Configuration {#id-configuration}
 
@@ -100,6 +96,14 @@ familiar with its contents:
     <tr>
         <td><code>slack</code></td>
         <td>A driver that transports the log message to a slack channel</td>
+    </tr>
+    <tr>
+        <td><code>discord</code></td>
+        <td>A driver that transports the log message to a discord channel</td>
+    </tr>
+    <tr>
+        <td><code>telegram</code></td>
+        <td>A driver that transports the log message to a telegram chat</td>
     </tr>
     </tbody>
 </table>
