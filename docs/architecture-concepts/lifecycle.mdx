@@ -95,7 +95,7 @@ be run before the `routes/http` file is preloaded. These bootstraps configure er
 the application environment, and perform other tasks that need to be done before the request is actually handled. Typically,
 these classes handle internal Athenna configuration that you do not need to worry about.
 
-The Kernel of `Http` folder also defines a list of global middlewares that all requests must pass through before being
+The Kernel of `Http` folder also defines a list of global [`middlewares`](/docs/the-basics/http/middlewares) that all requests must pass through before being
 handled by the application. It also defines your named middlewares to use inside `routes/http` file. See the example:
 
 ```typescript
