@@ -110,9 +110,25 @@ For more information about the `.env` file and environment configuration, check 
 
 ### Directory/Language configuration {#id-directory-language-configuration}
 
-By default, Athenna use TypeScript for development. But when you run the development and the production application,
-the @athenna/cli first compiles all the application and create the `build` folder to run your code using JavaScript.
+By default, Athenna use TypeScript for development. When you run the `npm run start` command, the `@athenna/cli` first will
+compile all the application and create the `dist` folder to run your code using JavaScript.
 
-You can run Athenna using `ts-node` to run the application without the build process. Briefly, running the application
-with TypeScript code instead of JavaScript. To get this working you need to set the environment variable `NODE_TS=true`
-in the startup of your application. You can check the script `"test"` in your `package.json` file to get an example
+You can run your application using `npm run start:dev`. This command will not have the build process. Briefly, running the
+application with TypeScript code instead of JavaScript. The `npm run test` command also runs your application with TypeScript code
+and will not have the build process.
+
+:::info
+
+The `npm run start:dev` command runs with [`nodemon`](https://github.com/remy/nodemon) to hot reload your application.
+
+:::
+
+:::tip
+
+You can check if your application is running with TypeScript or JavaScript code in runtime using the `Env` global function.
+
+```typescript
+console.log(Env<boolean>('NODE_TS')) // true
+```
+
+:::
