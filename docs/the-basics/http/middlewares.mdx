@@ -64,7 +64,11 @@ unauthorized exception:
 
 ```typescript
 import { Container } from 'providers/Container'
-import { HandleContextContract, MiddlewareContract } from '@athenna/http'
+import {
+    HandleContextContract,
+    MiddlewareContract,
+    UnauthorizedException,
+} from '@athenna/http'
 
 export class EnsureApiKeyIsValid implements MiddlewareContract {
   /**
@@ -142,8 +146,12 @@ Sometimes a middleware may need to do some work before the HTTP response has bee
 the client:
 
 ```typescript
+import {
+    HandleContextContract,
+    InterceptContextContract,
+    MiddlewareContract
+} from '@athenna/http'
 import { Container } from 'providers/Container'
-import { HandleContextContract, InterceptContextContract, MiddlewareContract } from '@athenna/http'
 
 export class InterceptMiddleware implements MiddlewareContract {
   /**
@@ -188,8 +196,12 @@ Sometimes a middleware may need to do some work after the HTTP response has been
 the client:
 
 ```typescript
+import {
+    HandleContextContract,
+    TerminateContextContract,
+    MiddlewareContract
+} from '@athenna/http'
 import { Container } from 'providers/Container'
-import { HandleContextContract, TerminateContextContract, MiddlewareContract } from '@athenna/http'
 
 export class TerminateMiddleware implements MiddlewareContract {
   /**
