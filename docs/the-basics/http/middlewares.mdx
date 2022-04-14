@@ -63,12 +63,12 @@ we will only allow access to the route if the supplied api key input matches a s
 unauthorized exception:
 
 ```typescript
-import { Container } from 'providers/Container'
 import {
     HandleContextContract,
     MiddlewareContract,
     UnauthorizedException,
 } from '@athenna/http'
+import { Container } from 'providers/Container'
 
 export class EnsureApiKeyIsValid implements MiddlewareContract {
   /**
