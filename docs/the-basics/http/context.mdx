@@ -1,0 +1,151 @@
+---
+sidebar_position: 4
+
+id: context
+title: Request Context
+hide_title: true
+hide_table_of_contents: true
+tags:
+- Getting Started
+- Architecture Concepts
+- The Basics
+---
+
+<nav aria-label="breadcrumbs">
+    <ul class="breadcrumbs">
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/">🏠</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link">The Basics</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link">Http</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/docs/the-basics/http/context">Request Context</a>
+        </li>
+    </ul>
+</nav>
+
+<span class="badge badge--secondary margin-top-bot">version 1.0.0</span>
+
+# Request Context
+
+- #### [Introduction](#id-introduction)
+- #### [The context object](#id-the-context-object)
+  - #### [The request object](#id-the-request-object)
+  - #### [The response object](#id-the-response-object)
+  - #### [The params object](#id-the-params-object)
+  - #### [The queries object](#id-the-queries-object)
+  - #### [The data object](#id-the-data-object)
+- #### [The context object in middlewares](#id-the-context-object-in-middlewares)
+  - #### [Handle middleware context](#id-handle-middleware-context)
+  - #### [Intercept middleware context](#id-intercept-middleware-context)
+  - #### [Terminate middleware context](#id-terminate-middleware-context)
+
+## Introduction {#id-introduction}
+
+Athenna provides an object inside all Http handlers called `ctx`. This property is implemented by the `ContextContract`
+interface.
+
+## The context object {#id-the-context-object}
+
+In Athenna as you can see in the previous documentation page of [`Middlewares`](/docs/the-basics/http/middlewares) and
+[`Controllers`](/docs/the-basics/http/controllers) we are always destructuring the `ctx` property and using like this:
+
+```typescript
+Route.get('/welcome', ({ response }) => {
+    response.status(200).send({ hello: 'world' })
+})
+```
+
+But is the same of doing this:
+
+```typescript
+Route.get('/welcome', (ctx) => {
+    ctx.response.status(200).send({ hello: 'world' })
+})
+```
+
+The `ctx` object is little different for each type of handlers, and we will see all the differences previous in this
+documentation page.
+
+### The request object {#id-the-request-object}
+
+Athenna `Request` class provides an object-oriented way to interact with the current HTTP request being handled by your
+application as well as retrieve the ip, headers, body, and files that were submitted with the request.
+
+### The response object {#id-the-response-object}
+
+Athenna `Response` class provides an object-oriented way to interact with the current HTTP response being handled by your
+application as well set a status code and return the response to the client.
+
+### The params object {#id-the-params-object}
+
+Athenna `params` is just a simple object that contains the actual HTTP params of the request that is being handled by
+your application.
+
+### The queries object {#id-the-queries-object}
+
+Athenna `queries` is just a simple object that contains the actual HTTP queries of the request that is being handled by
+your application.
+
+### The data object {#id-the-data-object}
+
+Athenna `data` is just a simple object that you can use to set data inside to transfer between middlewares. This is really
+useful for some cases. Let's see an example setting default pagination values if client has not sent page and limit:
+
+```typescript
+import { HandleContextContract, MiddlewareContract } from '@athenna/http'
+
+export class PaginationMiddleware implements MiddlewareContract {
+  /**
+   * Handle method is executed before the request gets in your controller.
+   *
+   * @param ctx
+   * @return any
+   */
+  handle({ request, data, next }: HandleContextContract) {
+    const page = request.queries.page ? parseInt(request.queries.page) : 0
+    const limit = request.queries.limit ? parseInt(request.queries.limit) : 10
+    const resourceUrl = `${Config.get('http.domain')}${request.baseUrl}`
+
+    data.pagination = {
+      page,
+      limit,
+      resourceUrl,
+    }
+
+    next()
+  }
+}
+```
+
+And now is very simple to get this `pagination` object inside your handler:
+
+```typescript
+Route.get('/products', ({ response, data }) => {
+    return response.send({ paginationObj: data.pagination })
+}).middleware('PaginationMiddleware')
+```
+
+## The context object in middlewares {#id-the-context-object-in-middlewares}
+
+### Handle middleware context {#id-handle-middleware-context}
+
+In `handle` method of middlewares Athenna set the `HandleContextContract`. This `ctx` is quite the same of `ContextContract`
+but it has an additional property that is the `next` function used to finish middlewares and calling the next of the queue.
+
+### Intercept middleware context {#id-intercept-middleware-context}
+
+In `intercept` method of middlewares Athenna set the `InterceptContextContract`. This `ctx` is quite the same of `ContextContract`
+but it has an additional properties `body` and `status`. This object does not have the `next` function because `intercept`
+middlewares should always return the response body.
+
+### Terminate middleware context {#id-terminate-middleware-context}
+
+In `terminate` method of middlewares Athenna set the `TerminateContextContract`. This `ctx` is quite the same of `ContextContract`
+but it has an additional properties `body`, `status` and `responseTime`.
+
+
