@@ -34,15 +34,15 @@ tags:
 
 - #### [Introduction](#id-introduction)
 - #### [The context object](#id-the-context-object)
-  - #### [The request object](#id-the-request-object)
-  - #### [The response object](#id-the-response-object)
-  - #### [The params object](#id-the-params-object)
-  - #### [The queries object](#id-the-queries-object)
-  - #### [The data object](#id-the-data-object)
+  - #### [The request](#id-the-request)
+  - #### [The response](#id-the-response)
+  - #### [The params](#id-the-params)
+  - #### [The queries](#id-the-queries)
+  - #### [The data](#id-the-data)
 - #### [The context object in middlewares](#id-the-context-object-in-middlewares)
-  - #### [Handle middleware context](#id-handle-middleware-context)
-  - #### [Intercept middleware context](#id-intercept-middleware-context)
-  - #### [Terminate middleware context](#id-terminate-middleware-context)
+  - #### [Handle middleware](#id-handle-middleware)
+  - #### [Intercept middleware](#id-intercept-middleware)
+  - #### [Terminate middleware](#id-terminate-middleware)
 
 ## Introduction {#id-introduction}
 
@@ -71,27 +71,27 @@ Route.get('/welcome', (ctx) => {
 The `ctx` object is little different for each type of handlers, and we will see all the differences previous in this
 documentation page.
 
-### The request object {#id-the-request-object}
+### The request object {#id-the-request}
 
 Athenna `Request` class provides an object-oriented way to interact with the current HTTP request being handled by your
 application as well as retrieve the ip, headers, body, and files that were submitted with the request.
 
-### The response object {#id-the-response-object}
+### The response object {#id-the-response}
 
 Athenna `Response` class provides an object-oriented way to interact with the current HTTP response being handled by your
 application as well set a status code and return the response to the client.
 
-### The params object {#id-the-params-object}
+### The params object {#id-the-params}
 
 Athenna `params` is just a simple object that contains the actual HTTP params of the request that is being handled by
 your application.
 
-### The queries object {#id-the-queries-object}
+### The queries object {#id-the-queries}
 
 Athenna `queries` is just a simple object that contains the actual HTTP queries of the request that is being handled by
 your application.
 
-### The data object {#id-the-data-object}
+### The data object {#id-the-data}
 
 Athenna `data` is just a simple object that you can use to set data inside to transfer between middlewares. This is really
 useful for some cases. Let's see an example setting default pagination values if client has not sent page and limit:
@@ -132,20 +132,20 @@ Route.get('/products', ({ response, data }) => {
 
 ## The context object in middlewares {#id-the-context-object-in-middlewares}
 
-### Handle middleware context {#id-handle-middleware-context}
+### Handle middleware context {#id-handle-middleware}
 
-In `handle` method of middlewares Athenna set the `HandleContextContract`. This `ctx` is quite the same of `ContextContract`
+In `handle` method of middlewares Athenna set the `HandleContextContract`. This ctx is quite the same of ContextContract
 but it has an additional property that is the `next` function used to finish middlewares and calling the next of the queue.
 
-### Intercept middleware context {#id-intercept-middleware-context}
+### Intercept middleware context {#id-intercept-middleware}
 
-In `intercept` method of middlewares Athenna set the `InterceptContextContract`. This `ctx` is quite the same of `ContextContract`
-but it has an additional properties `body` and `status`. This object does not have the `next` function because `intercept`
+In `intercept` method of middlewares Athenna set the `InterceptContextContract`. This ctx is quite the same of ContextContract,
+but it has an additional properties `body` and `status`. This object does not have the next function because intercept
 middlewares should always return the response body.
 
-### Terminate middleware context {#id-terminate-middleware-context}
+### Terminate middleware context {#id-terminate-middleware}
 
-In `terminate` method of middlewares Athenna set the `TerminateContextContract`. This `ctx` is quite the same of `ContextContract`
+In `terminate` method of middlewares Athenna set the `TerminateContextContract`. This ctx is quite the same of ContextContract,
 but it has an additional properties `body`, `status` and `responseTime`.
 
 

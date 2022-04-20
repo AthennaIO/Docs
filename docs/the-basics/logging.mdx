@@ -1,5 +1,5 @@
 ---
-sidebar_position: 2
+sidebar_position: 3
 
 id: logging
 title: Logging
@@ -148,9 +148,9 @@ You may call any of these methods to log a message for the corresponding level. 
 to the default log channel as configured by your `logging` configuration file:
 
 ```typescript
-import { Container } from 'providers/Container'
+import { Container } from 'Providers/Container'
 import { ContextContract } from '@athenna/http'
-import { WelcomeServiceContract } from 'app/Contracts/WelcomeServiceContract'
+import { WelcomeServiceContract } from 'App/Contracts/WelcomeServiceContract'
 
 export class WelcomeController {
   private welcomeService: WelcomeServiceContract

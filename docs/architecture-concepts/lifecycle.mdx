@@ -64,7 +64,7 @@ itself is to create an instance of the application and then boot it.
 Athenna has the class called `Ignite`. This class is responsible for resolving your environment, your language type (ts, js),
 resolving your environment files and configuration files of `config` folder and booting/registering your providers. In the
 end of all, `fire` method returns a new `Application` instance, and it's with this instance that we are going to choose
-what type of application we want to run (http, worker, console, etc...).
+what type of application we want to run (http, worker, cli, etc...).
 
 :::
 
@@ -125,6 +125,35 @@ Route.get('/', 'WelcomeController.show').middleware('response')
 ```
 
 </TabItem>
+<TabItem value="Console Kernel" label="Console Kernel">
+
+The Kernel of `Console` folder extends the `ConsoleKernel` class from `@athenna/artisan`, which defines some bootstraps that will
+be run before the `routes/console` file is preloaded. These bootstraps configure error handling, configure logging, detect
+the application environment, and perform other tasks that need to be done before the request is actually handled. Typically,
+these classes handle internal Athenna configuration that you do not need to worry about.
+
+The Kernel of `Console` folder also defines a list of [`commands`](/docs/the-basics/cli/commands) that will be registered
+before the application bootstrap and before preloading `routes/console`. See the example:
+
+```typescript
+/**
+* The application's global HTTP middlewares.
+*
+* This middlewares are run during every request to your http server.
+*/
+protected commands = [
+  import('@athenna/artisan/src/Commands/Eslint/Fix'),
+  import('@athenna/artisan/src/Commands/Make/Facade'),
+  import('@athenna/artisan/src/Commands/Make/Command'),
+  import('@athenna/artisan/src/Commands/Make/Service'),
+  import('@athenna/artisan/src/Commands/Make/Provider'),
+  import('@athenna/artisan/src/Commands/Make/Controller'),
+  import('@athenna/artisan/src/Commands/Make/Middleware'),
+  import('App/Console/Commands/MyNewCommand'),
+]
+```
+
+</TabItem>
 </Tabs>
 
 ### Routes {#id-routes}
@@ -138,8 +167,7 @@ This file is responsible to create a contract between your client and your appli
 in here that we define all of ours routes and the controllers who will handle the client request.
 
 One of the most important service providers in your application is the `HttpRouteProvider`. This service provider adds in
-the container the `Route` class instance used inside `http` file. This service provider also adds `routes/http` as a `preload`
-file of the application.
+the container the `Route` class instance used inside `http` file.
 
 When the client request arrives, the server first execute all `handle` method of your global middlewares. Than it will execute
 the `handle` method of all your route middlewares. Once it finish, it goes for your controller or handler function. See the example:
@@ -149,6 +177,26 @@ the `handle` method of all your route middlewares. Once it finish, it goes for y
     sources={{
         light: useBaseUrl('/img/handle-request-1-light.png'),
         dark: useBaseUrl('/img/handle-request-1-dark.png'),
+    }}
+/>
+
+</TabItem>
+<TabItem value="console" label="console">
+
+This file is responsible to create a contract between your client and your application. Is in here that we define some
+of ours commands and their handlers.
+
+One of the most important service providers in your application is the `ArtisanProvider`. This service provider adds in
+the container the `Artisan` class instance used inside `console` file.
+
+When console commands arrive, the Artisan will take all the arguments sent by the client and send to [`commander`](https://www.npmjs.com/package/commander)
+to resolve the command. Then commander will execute the `handler` defined by your command. See the example:
+
+<ThemedImage
+    alt="Handle console image"
+    sources={{
+        light: useBaseUrl('/img/handle-console-1-light.png'),
+        dark: useBaseUrl('/img/handle-console-1-dark.png'),
     }}
 />
 
@@ -187,6 +235,22 @@ useful for sending data to external services, for example, create metrics of the
 
 Finally, once the `terminate` method is executed in all middlewares the request finish in the server. We've finished
 our journey through the entire Athenna request lifecycle!
+
+</TabItem>
+<TabItem value="cli" label="cli">
+
+That's all the flow of calling a command inside Athenna using Artisan. It's very simple, the application starts, runs and
+goes down.
+
+<ThemedImage
+    alt="Handle console image"
+    sources={{
+        light: useBaseUrl('/img/handle-console-1-light.png'),
+        dark: useBaseUrl('/img/handle-console-1-dark.png'),
+    }}
+/>
+
+We've finished our journey through the entire Athenna console command lifecycle!
 
 </TabItem>
 </Tabs>

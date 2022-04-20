@@ -55,11 +55,11 @@ middleware might log all incoming requests to your application.
 To create a new middleware, use the `make:middleware` command:
 
 ```shell
-athenna make:middleware EnsureApiKeyIsValid
+node artisan make:middleware EnsureApiKeyIsValid
 ```
 
 This command will place a new `EnsureApiKeyIsValid` class within your `app/Http/Middleware` directory. In this middleware,
-we will only allow access to the route if the supplied api key input matches a specified value. Otherwise, we will throw a
+we will only allow access to the route if the supplied api key input matches a specified value. Otherwise, we will throw an
 unauthorized exception:
 
 ```typescript
@@ -68,7 +68,7 @@ import {
     MiddlewareContract,
     UnauthorizedException,
 } from '@athenna/http'
-import { Container } from 'providers/Container'
+import { Container } from 'Providers/Container'
 
 export class EnsureApiKeyIsValid implements MiddlewareContract {
   /**
@@ -127,7 +127,7 @@ and assign it a key of your choosing:
 // Within app\Http\Kernel class...
 
 protected namedMiddlewares = {
-    myMiddleware: import('app/Http/Middlewares/MyMiddleware')
+    myMiddleware: import('App/Http/Middlewares/MyMiddleware')
 }
 ```
 
@@ -151,7 +151,7 @@ import {
     InterceptContextContract,
     MiddlewareContract
 } from '@athenna/http'
-import { Container } from 'providers/Container'
+import { Container } from 'Providers/Container'
 
 export class InterceptMiddleware implements MiddlewareContract {
   /**
@@ -201,7 +201,7 @@ import {
     TerminateContextContract,
     MiddlewareContract
 } from '@athenna/http'
-import { Container } from 'providers/Container'
+import { Container } from 'Providers/Container'
 
 export class TerminateMiddleware implements MiddlewareContract {
   /**

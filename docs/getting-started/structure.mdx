@@ -51,8 +51,8 @@ tags:
 
 :::info
 
-We highly recommend using the Athenna `athenna make` command to generate the files of your application. If using the CLI,
-it will automatically generate the file and add the type to the `providers/Container` file. We are going to see how this
+We highly recommend using the `node artisan make` command to generate the files of your application. If using the Artisan,
+it will automatically generate the file and add the type to the `Providers/Container` file. We are going to see how this
 guy work forward in the [providers' folder section](#id-the-providers-directory).
 
 :::
@@ -92,11 +92,11 @@ application by binding services in the service container, registering events, or
 prepare your application to run.
 
 Inside this directory we also have the `Container` file. This file is just a type that defines the type that exists
-inside the container. Very useful to use inside other providers constructor such as `Services`. See the example above:
+inside the container. Very useful to use inside other providers' constructor such as `Services`. See the example above:
 
 ```typescript
 import { Container } from 'providers/Container'
-import { MyAppService } from 'app/Utils/MyAppService'
+import { MyAppService } from 'App/Utils/MyAppService'
 
 export class UserService {
   private myAppService: MyAppService
@@ -126,10 +126,13 @@ export class UserService {
 ### The routes directory {#id-the-routes-directory}
 
 The `routes` directory contains all the route definitions for your application. By default, several route files are
-included with Athenna: `http`.
+included with Athenna: `http`, `console`.
 
-The `http` file is where you will define the entrypoint of your api using the `Route` class that is provided by the
+The `http` file is where you will define the entrypoint of your api using the `Route` facade that is provided by the
 `HttpRouteProvider`.
+
+The `console` file is where you will define the entrypoint of your commands using the `Artisan` facade that is provided
+by the `ArtisanProvider`.
 
 ### The storage directory {#id-the-storage-directory}
 
@@ -153,14 +156,14 @@ an API into the core of your application. The HTTP protocol is a mechanism to in
 not actually contain application logic. In other words, it's a way of issuing commands to your application. The `Http`
 directory contains your controllers, middleware, and requests.
 
-A variety of other directories will be generated inside the `app` directory as you use the `athenna make` commands to
-generate classes. So, for example, you can generate a new model inside `app/Models` directory executing the
-`athenna make:model` command to generate a model class.
+A variety of other directories will be generated inside the `app` directory as you use the `node artisan make` commands
+to generate classes. So, for example, you can generate a new model inside `App/Models` directory executing the
+`node artisan make:model` command to generate a model class.
 
 :::tip
 
-Many of the classes in the `app` directory can be generated via `athenna` commands. To review the available commands,
-run the `athenna list make` command in your terminal.
+Many of the classes in the `app` directory can be generated via `artisan make` commands. To review the available commands,
+run the `node artisan list:make` command in your terminal.
 
 :::
 
@@ -174,25 +177,25 @@ middlewares. Almost all the logic to handle http requests entering your applicat
 
 :::caution
 
-The `Models` directory will not come installed with the framework and the `athenna make:model` will not work until you
+The `Models` directory will not come installed with the framework and the `node artisan make:model` will not work until you
 run `athenna install database` command to set up `@athenna/orm` and `@athenna/database` packages in your project
 
 :::
 
-This directory does not exist by default, but will be created for you if you execute the `athenna make:model` command.
+This directory does not exist by default, but will be created for you if you execute the `node artisan make:model` command.
 The `Models` directory contains all of your ORM model classes. The ORM included with Athenna provides beautiful and
 simple methods for working with your database. Each database table has a corresponding "Model" which is used to interact
 with that table. Models allow you to query for data in your tables, as well as insert new records into the table.
 
 ### The Repositories directory {#id-the-Repositories-directory}
 
-This directory does not exist by default, but will be created for you if you execute the `athenna make:repository` command.
+This directory does not exist by default, but will be created for you if you execute the `node artisan make:repository` command.
 The `Repositories` directory contains all the classes that retrieve data from somewhere. It can be a SQL, NoSQL Database
 or an ElasticSearch. Usually you are going to use the ORM with these classes to get your data and treat it before returning
 
 ### The Resources directory {#id-the-Resources-directory}
 
-This directory does not exist by default, but will be created for you if you execute the `athenna make:resource` command.
+This directory does not exist by default, but will be created for you if you execute the `node artisan make:resource` command.
 The `Resources` directory contains all the classes that will be responsible to transform your ORM models to a simples Object.
 For example, you may wish to display certain attributes for a subset of users and not for others.
 
@@ -207,13 +210,13 @@ but in the `constructor` you call the `userService`. You can explore the contain
 
 :::tip
 
-Remember, we highly recommend using the Athenna `athenna make:service` command to generate your services. If using the CLI,
+Remember, we highly recommend using the Athenna `node artisan make:service` command to generate your services. If using the CLI,
 it will automatically generate the file and add the type to the `providers/Container` file.
 
 :::
 
 ### The Validators directory {#id-the-Validators-directory}
 
-This directory does not exist by default, but will be created for you if you execute the `athenna make:validator` command.
+This directory does not exist by default, but will be created for you if you execute the `node artisan make:validator` command.
 The Validators directory contains the custom validation objects for your application. Validators are used to encapsulate
 complicated validation logic in a simple object.

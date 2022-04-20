@@ -79,7 +79,7 @@ gains access to your source control repository, since any sensitive credentials 
 ### Determining the current environment {#id-determining-the-current-environment}
 
 Before loading your application's environment variables, Athenna determines if either the `NODE_ENV` environment variable
-has been externally provided or if the `--env` CLI argument has been specified. If so, Athenna will attempt to load an
+has been externally provided or if the `--env` Artisan argument has been specified. If so, Athenna will attempt to load an
 `.env.${NODE_ENV}` file if it exists. If it does not exist, the default .env file will be loaded.
 
 ### Get an environment variable value {#id-get-an-environment-variable-value}

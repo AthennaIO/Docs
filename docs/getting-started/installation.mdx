@@ -49,24 +49,11 @@ We recommend using [`nvm`](https://github.com/nvm-sh/nvm#installing-and-updating
 ### Installing via package manager {#id-installing-via-package-manager}
 
 We want it to be as easy as possible to get started with Athenna. With that in mind, we developed a CLI to assist in
-the creation of a new project, as well as the creation and installation of new components.
-
-<Tabs>
-<TabItem value="npm" label="npm" default>
+the creation of a new project, as well as the installation of new components.
 
 ```shell
 npm install -g @athenna/cli
 ```
-
-</TabItem>
-<TabItem value="yarn" label="yarn" default>
-
-```shell
-yarn global add @athenna/cli
-```
-
-</TabItem>
-</Tabs>
 
 Then you can run one of these commands to generate your project:
 
@@ -78,6 +65,13 @@ athenna new my-project-name
 ```
 ```shell
 athenna new my-project-name --type http
+```
+
+</TabItem>
+<TabItem value="cli" label="cli">
+
+```shell
+athenna new my-project-name --type cli
 ```
 
 </TabItem>
@@ -110,7 +104,7 @@ For more information about the `.env` file and environment configuration, check 
 
 ### Directory/Language configuration {#id-directory-language-configuration}
 
-By default, Athenna use TypeScript for development. When you run the `npm run start` command, the `@athenna/cli` first will
+By default, Athenna use TypeScript for development. When you run the `npm run start` command, the `artisan` first will
 compile all the application and create the `dist` folder to run your code using JavaScript.
 
 You can run your application using `npm run start:dev`. This command will not have the build process. Briefly, running the

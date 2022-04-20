@@ -59,10 +59,10 @@ All service providers extend the `ServiceProvider` class. Most service providers
 Within the `register` method, you should only bind things into the service container. You should never attempt to register
 any event listeners, routes, or any other piece of functionality within the register method.
 
-The Athenna CLI can generate a new provider via the `make:provider` command:
+The Artisan can generate a new provider via the `make:provider` command:
 
 ```shell
-athenna make:provider MyAppProvider
+node artisan make:provider MyAppProvider
 ```
 
 ### The register method {#id-the-register-method}
@@ -76,7 +76,7 @@ the `this.container` property which provides access to the service container:
 
 ```typescript
 import { ServiceProvider } from '@athenna/ioc'
-import { MyAppService } from 'app/Utils/MyAppService'
+import { MyAppService } from 'App/Utils/MyAppService'
 
 export class MyAppProvider extends ServiceProvider {
 
@@ -102,9 +102,9 @@ check for these properties and register their bindings:
 
 ```typescript
 import { ServiceProvider } from '@athenna/ioc'
-import { MyAppService } from 'app/Utils/MyAppService'
-import { MyAppResource } from 'app/Utils/MyAppResource'
-import { MyAppRepository } from 'app/Utils/MyAppRepository'
+import { MyAppService } from 'App/Utils/MyAppService'
+import { MyAppResource } from 'App/Utils/MyAppResource'
+import { MyAppRepository } from 'App/Utils/MyAppRepository'
 
 export class MyAppProvider extends ServiceProvider {
 
@@ -139,8 +139,8 @@ have access to all other services that have been registered by the framework:
 
 ```typescript
 import { ServiceProvider } from '@athenna/ioc'
-import { MyAppService } from 'app/Utils/MyAppService'
-import { MyAppRepository } from 'app/Utils/MyAppRepository'
+import { MyAppService } from 'App/Utils/MyAppService'
+import { MyAppRepository } from 'App/Utils/MyAppRepository'
 
 export class MyAppProvider extends ServiceProvider {
 
@@ -169,6 +169,6 @@ To register your provider, add it to the array:
 providers: [
   // Other service providers
 
-  import('providers/MyAppProvider'),
+  import('Providers/MyAppProvider'),
 ],
 ```

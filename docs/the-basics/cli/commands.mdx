@@ -1,0 +1,233 @@
+---
+sidebar_position: 2
+
+id: commands
+title: Commands
+hide_title: true
+hide_table_of_contents: true
+tags:
+- Getting Started
+- Architecture Concepts
+- The Basics
+---
+
+<nav aria-label="breadcrumbs">
+    <ul class="breadcrumbs">
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/">🏠</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link">The Basics</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link">co</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/docs/the-basics/cli/commands">Commands</a>
+        </li>
+    </ul>
+</nav>
+
+<span class="badge badge--secondary margin-top-bot">version 1.0.0</span>
+
+# Commands
+
+- #### [Introduction](#id-introduction)
+- #### [Writing commands](#id-writing-commands)
+  - #### [Generating commands](#id-generating-commands)
+  - #### [Commands structure](#id-commands-structure)
+  - #### [Defining input expectation](#id-defining-input-expectations)
+- #### [Registering commands](#id-registering-commands)
+
+## Introduction {#id-introduction}
+
+In Athenna there is a more advanced way to create commands than just a closure command inside `routes/console` file. You
+just need to extend the abstract class `Command` and implement her methods.
+
+## Writing commands {#id-writing-commands}
+
+In addition to the commands provided with Artisan, you may build your own custom commands. Commands are typically stored
+in the `app/Console/Commands` directory; however, you are free to choose your own storage location as long as your commands
+can be imported.
+
+### Generating commands {#id-generating-commands}
+
+To create a new command, you may use the `make:command` Artisan command. This command will create a new command class in
+the `app/Console/Commands` directory and register it inside `commands` method of `app/Console/Kernel` file. Don't worry
+if this directory does not exist in your application - it will be created the first time you run the `make:command` Artisan command:
+
+```shell
+node artisan make:command SendEmails
+```
+
+### Commands structure {#id-commands-structure}
+
+After generating your command, you should define appropriate values for the `signature` and `description` properties of the
+class. These properties will be used when displaying your command on the list screen. The `signature` property also
+allows you to define your command's arguments expectations. The `handle` method will be called when your command is executed.
+You may place your command logic in this method.
+
+Let's take a look at an example command. Note that we are able to request any dependencies we need via the command's constructor
+method. The Athenna service container will automatically inject all dependencies inside the container property of constructor:
+
+```typescript
+import { Command } from '@athenna/artisan'
+import { Container } from 'Providers/Container'
+import { MailgunService } from 'App/Services/MailgunService'
+
+export class SendEmails extends Command {
+  /**
+   * The name and signature of the console command.
+   */
+  protected signature = 'mail:send <email>'
+  /**
+   * The console command description.
+   */
+  protected description = 'Display welcome object.'
+
+  /**
+   * The welcome service dependency.
+   *
+   * @private
+   */
+  private mailgunService: MailgunService
+
+  /**
+   * Use the constructor to resolve any dependency of the Ioc container
+   *
+   * @param container
+   * @return WelcomeCommand
+   */
+  public constructor(container: Container) {
+    super()
+
+    this.mailgunService = container.mailgunService
+  }
+
+  /**
+   * Execute the console command.
+   *
+   * @return {Promise<void>}
+   */
+  async handle(email: string): Promise<void> {
+    const message = 'Hello from Athenna!'
+
+    await this.mailgunService.send(email, message)
+  }
+}
+```
+
+:::tip
+For greater code reuse, it is good practice keeping your console commands light and let them defer to application services
+to accomplish their tasks. In the example above, note that we inject a service class to do the "heavy lifting" of sending the e-mails.
+:::
+
+### Defining input expectations {#id-defining-input-expectations}
+
+When writing console commands, it is common to gather input from the user through arguments or options. Athenna makes it
+very convenient to define the input you expect from the user using the `addFlags` method on your commands. The `addFlags`
+method allows you to define any additional flag from [`commander`](https://www.npmjs.com/package/commander). Check out their
+documentation to see all the flags available for your. See the example:
+
+```typescript
+import { Command } from '@athenna/artisan'
+import { Container } from 'Providers/Container'
+import { Command as Commander } from 'commander'
+import { MailgunService } from 'App/Services/MailgunService'
+
+export class SendEmails extends Command {
+  /**
+   * The name and signature of the console command.
+   */
+  protected signature = 'mail:send <email>'
+  /**
+   * The console command description.
+   */
+  protected description = 'Display welcome object.'
+
+  /**
+   * The welcome service dependency.
+   *
+   * @private
+   */
+  private mailgunService: MailgunService
+
+  /**
+   * Use the constructor to resolve any dependency of the Ioc container
+   *
+   * @param container
+   * @return WelcomeCommand
+   */
+  public constructor(container: Container) {
+    super()
+
+    this.mailgunService = container.mailgunService
+  }
+
+  /**
+   * Set additional flags in the commander instance.
+   * This method is executed when registering your command.
+   *
+   * @return {void}
+   */
+  public addFlags(commander: Commander) {
+    const signature = '-s, --subject <subject>'
+    const description = 'Set the subject of the email.'
+    const defaultValue = 'Athenna'
+
+    return commander.option(signature, description, defaultValue)
+  }
+
+  /**
+   * Execute the console command.
+   *
+   * @return {Promise<void>}
+   */
+  async handle(email: string, options: any): Promise<void> {
+    const message = 'Hello from Athenna!'
+
+    await this.mailgunService.send(email, message, options.subject)
+  }
+}
+```
+
+### Registering commands {#id-defining-input-expectations}
+
+All of your console commands are registered within your application's `app/Console/Kernel` class, which is your application's
+"console kernel". The `CommandsProvider` will scan the `app/Console/Commands` directory and automatically register each
+command it contains with Artisan. By default, Athenna will come with some default Artisan commands registered inside `commands` property:
+
+```typescript
+/**
+* Register the commands for the application.
+*
+* @return void
+*/
+protected commands = [
+  import('@athenna/artisan/src/Commands/Eslint/Fix'),
+  import('@athenna/artisan/src/Commands/Make/Facade'),
+  import('@athenna/artisan/src/Commands/Make/Command'),
+  import('@athenna/artisan/src/Commands/Make/Service'),
+  import('@athenna/artisan/src/Commands/Make/Provider'),
+]
+```
+
+By default, the `make:command` command will always create your command file and then register it inside `app/Console/Kernel`.
+But if necessary, you may manually register commands by importing it inside `commands` property within your `app/Console/Kernel`
+class. When Artisan boots, all the commands listed in this property will be resolved by the service container and registered with Artisan:
+
+```typescript
+/**
+* Register the commands for the application.
+*
+* @return void
+*/
+protected commands = [
+  import('@athenna/artisan/src/Commands/Eslint/Fix'),
+  import('@athenna/artisan/src/Commands/Make/Facade'),
+  import('@athenna/artisan/src/Commands/Make/Command'),
+  import('@athenna/artisan/src/Commands/Make/Service'),
+  import('@athenna/artisan/src/Commands/Make/Provider'),
+  import('App/Console/Commands/SendEmails'), // Define your command
+]
+```

@@ -157,17 +157,22 @@ documentation for a given facade root. The service container binding key is also
         <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Router/Router.ts">Router</a></td>
         <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Providers/HttpRouteProvider.ts">Athenna/Core/HttpRoute</a></td>
     </tr>
+    <tr>
+        <td><a href="https://github.com/AthennaIO/Artisan/blob/develop/src/Facades/Artisan.ts">Artisan</a></td>
+        <td><a href="https://github.com/AthennaIO/Artisan/blob/develop/src/Artisan.ts">Artisan</a></td>
+        <td><a href="https://github.com/AthennaIO/Artisan/blob/develop/src/Providers/HttpServerProvider.ts">Athenna/Core/Artisan</a></td>
+    </tr>
     </tbody>
 </table>
 
 ## Writing facades {#id-writing-facades}
 
 First you need to create a new [`service provider`](/docs/architecture-concepts/providers#id-writing-service-providers)
-to resolve your dependency inside the [`service container`](/docs/architecture-concepts/container). Just run `athenna make:provider HelperProvider`
-and `providers/HelperProvider` and register your binding:
+to resolve your dependency inside the [`service container`](/docs/architecture-concepts/container). Just run
+`node artisan make:provider HelperProvider` and register your binding:
 
 ```typescript
-import { String } from 'app/Helpers/String'
+import { String } from 'App/Helpers/String'
 import { ServiceProvider } from '@athenna/ioc'
 
 export class HelperProvider extends ServiceProvider {
@@ -191,15 +196,15 @@ export class HelperProvider extends ServiceProvider {
 
 :::caution
 
-If you have not used `athenna make:provider` command, you will need to register your `HelperProvider` inside `config/app`
+If you have not used `node artisan make:provider` command, you will need to register your `HelperProvider` inside `config/app`
 file inside the `providers` array.
 
 :::
 
-The Athenna CLI can generate a new Facade via the `make:facade` command:
+The Artisan can generate a new Facade via the `make:facade` command:
 
 ```shell
-athenna make:facade String
+node artisan make:facade String
 ```
 
 The Facade file will be generated inside `providers/Facades` folder. Open this file and change the alias to your
@@ -207,7 +212,7 @@ provider alias:
 
 ```typescript
 import { Facade } from '@athenna/ioc'
-import { String } from 'app/Helpers/String'
+import { String } from 'App/Helpers/String'
 
 export const String = Facade.createFor<String>('App/Helpers/String')
 ```
@@ -216,7 +221,7 @@ Now we can start using our brand new `String` facade:
 
 ```typescript
 import { Route } from '@athenna/http' // Route Facade
-import { String } from 'providers/Facades/String' // String Facade
+import { String } from 'Providers/Facades/String' // String Facade
 
 Route.get('/welcome', function ({ response }) {
     return response.status(200).send({ hello: String.toPascalCase('world') })

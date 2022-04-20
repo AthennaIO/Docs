@@ -104,21 +104,21 @@ Route.redirect('/here', '/there', 301)
 The `route:list` command can easily provide an overview of all the routes that are defined by your application:
 
 ```shell
-athenna route:list
+node artisan route:list
 ```
 
 By default, the route middleware that are assigned to each route will not be displayed in the `route:list` output;
 however, you can instruct Athenna to display the route middleware by adding the `-v` option to the command:
 
 ```shell
-athenna route:list -v
+node artisan route:list -v
 ```
 
 In addition, you may instruct Athenna to hide any routes that are defined by third-party packages by providing the
 `--except-packages` option when executing the `route:list` command:
 
 ```shell
-athenna route:list --except-packages
+node artisan route:list --except-packages
 ```
 
 ## Route parameters {#id-route-parameters}
