@@ -34,7 +34,8 @@ tags:
 
 - #### [Introduction](#id-introduction)
 - #### [Registering your CLI command](#id-registering-your-cli-command)
-  - #### [Linking the command](#id-linking-the-command)
+  - #### [Entrypoint file](#id-entrypoint-file)
+  - #### [Linking the package.json](#id-linking-the-packageJson)
 
 ## Introduction {#id-introduction}
 
@@ -57,7 +58,14 @@ As you can see your command is pointing to the `dist/bootstrap/main.js` file. So
 build your code when you want to "test in production".
 :::
 
-## Linking the command {#id-linking-the-command}
+## Entrypoint file {#id-entrypoint-file}
+
+In our example we defined the `dist/bootstrap/main.js` file as the entrypoint file of our CLI. By default, this file
+comes with the `#!/usr/bin/env node` in the top of the file. Without this line the `npm link` command will not work.
+So just in case you want to define a different entrypoint file, remember that `#!/usr/bin/env node` should be on the top
+of this file.
+
+## Linking the package.json {#id-linking-the-packageJson}
 
 Now you just need to run the following command in your project root:
 
