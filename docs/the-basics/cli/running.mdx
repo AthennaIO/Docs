@@ -33,3 +33,40 @@ tags:
 # Running
 
 - #### [Introduction](#id-introduction)
+- #### [Registering your CLI command](#id-registering-your-cli-command)
+  - #### [Linking the command](#id-linking-the-command)
+
+## Introduction {#id-introduction}
+
+The CLI application of Athenna can run in three ways. Using the `node artisan`, the npm scripts inside package.json file
+or linking the package.json using `npm link`, this way you can execute your CLI anywhere from your terminal. As node artisan
+and npm scripts comes by default in your application, we are going to focus in `npm link` in this documentation.
+
+## Registering your CLI command {#id-registering-your-cli-command}
+
+To register your CLI command name you can simply add the `bin` object inside your package.json file:
+
+```json
+"bin": {
+  "yourCliCommand": "dist/bootstrap/main.js"
+}
+```
+
+:::tip
+As you can see your command is pointing to the `dist/bootstrap/main.js` file. So remember running `npm run build`  to
+build your code when you want to "test in production".
+:::
+
+## Linking the command {#id-linking-the-command}
+
+Now you just need to run the following command in your project root:
+
+```shell
+npm link
+```
+
+And now the `yourCliCommand` will exist in your actual Node.js version:
+
+```shell
+yourCliCommand --help
+```
