@@ -38,6 +38,7 @@ tags:
   - #### [Commands structure](#id-commands-structure)
   - #### [Defining input expectation](#id-defining-input-expectations)
 - #### [Registering commands](#id-registering-commands)
+- #### [Calling commands in runtime](#id-calling-commands-in-runtime)
 
 ## Introduction {#id-introduction}
 
@@ -230,4 +231,19 @@ protected commands = [
   import('@athenna/artisan/src/Commands/Make/Provider'),
   import('App/Console/Commands/SendEmails'), // Define your command
 ]
+```
+
+### Calling commands in runtime {#id-calling-commands-in-runtime}
+
+Sometimes you may wish to call other commands from an existing Artisan command or from any other part of your application.
+You may do so using the `call` method from Artisan. This `call` method accepts the command string with it arguments and options:
+
+```typescript
+import { Artisan } from '@athenna/artisan'
+
+Artisan.command('hello', async function () {
+  await Artisan.call('make:controller TestController')
+
+  this.success('Hello from Athenna!')
+}).description('Athenna just says hello.')
 ```
