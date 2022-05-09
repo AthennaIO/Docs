@@ -126,7 +126,7 @@ demonstrate using the container in that context.
 Within a service provider, you always have access to the container via the `ioc` global property. We can register a binding
 using the `bind` method, passing the alias name that we wish to register along with our dependency:
 
-```typescript
+```javascript
 import { StringNormalizer } from '#app/Utils/StringNormalizer'
 
 ioc.bind('App/Utils/StringNormalizer', StringNormalizer)
@@ -137,7 +137,7 @@ ioc.bind('App/Utils/StringNormalizer', StringNormalizer)
 The `singleton` method binds a class or interface into the container that should only be resolved one time. Once a `singleton`
 binding is resolved, the same object instance will be returned on subsequent calls into the container:
 
-```typescript
+```javascript
 import { StringNormalizer } from '#app/Utils/StringNormalizer'
 
 ioc.singleton('App/Utils/StringNormalizer', StringNormalizer)

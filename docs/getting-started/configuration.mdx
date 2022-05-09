@@ -87,7 +87,7 @@ has been externally provided or if the `--env` Artisan argument has been specifi
 You can get environment variables using the `Env()` function. If `APP_NAME` cannot be found, the constant `appName` will
 have the value `Athenna`:
 
-```typescript
+```javascript
 const defaultValue = 'Athenna'
 
 const appName = Env('APP_NAME', defaultValue)
@@ -149,7 +149,7 @@ Maybe you want to force that your environment variable have the parentheses char
 the `Env` function has the third parameter called `autoCast` that by default is always `true`, if you set as `false` it
 will not cast the value for you.
 
-```typescript
+```javascript
 process.env.APP_DEBUG = '(true)'
 
 const defaultValue = false
@@ -170,8 +170,9 @@ PORT=1335
 APP_DOMAIN=http://${HOST}:${PORT}
 ```
 
-```typescript
-console.log(Env<string>('APP_DOMAIN')) // "http://localhost:1335"
+```javascript
+/** @type {string} */
+console.log(Env('APP_DOMAIN')) // "http://localhost:1335"
 ```
 
 ### Get a configuration value {#id-get-a-configuration-value}
@@ -180,7 +181,7 @@ You may easily access your configuration values using the global `Config` helper
 The configuration values may be accessed using `"dot (.)"` syntax, which includes the name of the file and option you
 wish to access. A default value may also be specified and will be returned if the configuration option does not exist:
 
-```typescript
+```javascript
 /** @type {string} */
 const name = Config.get('app.name', 'Athenna')
 
