@@ -181,20 +181,15 @@ The configuration values may be accessed using `"dot (.)"` syntax, which include
 wish to access. A default value may also be specified and will be returned if the configuration option does not exist:
 
 ```typescript
-console.log(Config.get<string>('app.name', 'Athenna')) // MyAppName
+/** @type {string} */
+const name = Config.get('app.name', 'Athenna')
+
+console.log(name) // MyAppName
 ```
-
-:::tip
-
-You can notice that `Config` helper class has a method called `load`. This method loads all the config values in memory.
-So if you try to use `process.env.APP_NAME = 'NEW APP NAME'` and call `Config.get('app.name')`, it's still going to return
-the old `APP_NAME` value. To solve this you can use `load` method to reload your configuration files in your application ecosystem.
-
-:::
 
 ## Debug mode {#id-debug-mode}
 
-The debug option in your config/app configuration file determines how much information about your application is actually
+The debug option in your `config/app` configuration file determines how much information about your application is actually
 displayed to you and for who is going to consume your application. By default, this option is set to respect the value of
 the `APP_DEBUG` environment variable, which is stored in your `.env` file.
 

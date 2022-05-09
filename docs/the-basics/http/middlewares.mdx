@@ -58,34 +58,26 @@ To create a new middleware, use the `make:middleware` command:
 node artisan make:middleware EnsureApiKeyIsValid
 ```
 
-This command will place a new `EnsureApiKeyIsValid` class within your `app/Http/Middleware` directory. In this middleware,
+This command will place a new `EnsureApiKeyIsValid` class within your `app/Http/Middlewares` directory. In this middleware,
 we will only allow access to the route if the supplied api key input matches a specified value. Otherwise, we will throw an
 unauthorized exception:
 
-```typescript
-import {
-    HandleContextContract,
-    MiddlewareContract,
-    UnauthorizedException,
-} from '@athenna/http'
-import { Container } from 'Providers/Container'
+```javascript
+import { UnauthorizedException } from '@athenna/http'
 
-export class EnsureApiKeyIsValid implements MiddlewareContract {
+export class EnsureApiKeyIsValid {
   /**
-   * Use the constructor to resolve any dependency of the Ioc container
-   *
-   * @param _container
-   * @return EnsureApiKeyIsValid
+   * Use the constructor to resolve any dependency of the Ioc container.
    */
-  constructor(_container: Container) {}
+  constructor() {}
 
   /**
     * Handle method is executed before the request gets in your controller.
     *
-    * @param ctx
-    * @return any
+    * @param {import('@athenna/http').HandleContextContract} ctx
+    * @return {any}
     */
-  handle({ queries, next }: HandleContextContract): any {
+  handle({ queries, next }: HandleContextContract) {
     if (queries.apiKey !== 'my-api-key') {
         throw new UnauthorizedException('Your api key does not match with application api key.')
     }
@@ -123,17 +115,17 @@ If you would like to assign middleware to specific routes, you should first assi
 `app/Http/Kernel` file. You can do that inside `namedMiddlewares` property, you may add your own middleware to this list
 and assign it a key of your choosing:
 
-```typescript
+```javascript
 // Within app\Http\Kernel class...
 
-protected namedMiddlewares = {
-    myMiddleware: import('App/Http/Middlewares/MyMiddleware')
+namedMiddlewares = {
+  myMiddleware: import('App/Http/Middlewares/MyMiddleware')
 }
 ```
 
 Once the middleware has been defined in the HTTP kernel, you may use the `middleware` method to assign middleware to a route:
 
-```typescript
+```javascript
 Route.get('/welcome', () => {
     //
 }).middleware('myMiddleware')
@@ -145,40 +137,28 @@ Sometimes a middleware may need to do some work before the HTTP response has bee
 `intercept` method on your middleware, the `intercept` method will automatically be called before the response is sent to
 the client:
 
-```typescript
-import {
-    HandleContextContract,
-    InterceptContextContract,
-    MiddlewareContract
-} from '@athenna/http'
-import { Container } from 'Providers/Container'
-
-export class InterceptMiddleware implements MiddlewareContract {
+```javascript
+export class InterceptMiddleware {
   /**
-   * Use the constructor to resolve any dependency of the Ioc container
-   *
-   * @param _container
-   * @return EnsureApiKeyIsValid
+   * Use the constructor to resolve any dependency of the Ioc container.
    */
-  constructor(_container: Container) {}
+  constructor() {}
 
   /**
     * Handle method is executed before the request gets in your controller.
     *
-    * @param ctx
-    * @return any
+    * @param {import('@athenna/http').HandleContextContract} ctx
     */
-  handle({ next }: HandleContextContract): any {
+  handle({ next }) {
     return next()
   }
 
   /**
     * Intercept method is executed before the response has been sent.
     *
-    * @param ctx
-    * @return any
+    * @param {import('@athenna/http').InterceptContextContract} ctx
     */
-  intercept({ body }: InterceptContextContract): any {
+  intercept({ body }) {
     body.intercepted = true
 
     // intercept should always return the new body of the response
@@ -195,40 +175,28 @@ Sometimes a middleware may need to do some work after the HTTP response has been
 `terminate` method on your middleware, the `terminate` method will automatically be called after the response is sent to
 the client:
 
-```typescript
-import {
-    HandleContextContract,
-    TerminateContextContract,
-    MiddlewareContract
-} from '@athenna/http'
-import { Container } from 'Providers/Container'
-
-export class TerminateMiddleware implements MiddlewareContract {
+```javascript
+export class TerminateMiddleware {
   /**
-   * Use the constructor to resolve any dependency of the Ioc container
-   *
-   * @param _container
-   * @return EnsureApiKeyIsValid
+   * Use the constructor to resolve any dependency of the Ioc container.
    */
-  constructor(_container: Container) {}
+  constructor() {}
 
   /**
     * Handle method is executed before the request gets in your controller.
     *
-    * @param ctx
-    * @return any
+    * @param {import('@athenna/http').HandleContextContract} ctx
     */
-  handle({ next }: HandleContextContract): any {
+  handle({ next }) {
     return next()
   }
 
   /**
     * Terminate method is executed after the response has been sent.
     *
-    * @param ctx
-    * @return any
+    * @param {import('@athenna/http').TerminateContextContract} ctx
     */
-  terminate({ next }: TerminateContextContract): any {
+  terminate({ next }) {
     // create and save metrics of the request
     return next()
   }
@@ -240,6 +208,6 @@ Once you have defined a terminable middleware, you should add it to the list of 
 :::info
 
 The requests log created by Athenna when the `logRequests` property is true in your `config/http` file are handled by a
-terminable middleware! You can see the code [here](https://github.com/AthennaIO/Http/blob/develop/src/Kernels/HttpKernel.ts).
+terminable middleware! You can see the code [here](https://github.com/AthennaIO/Http/blob/develop/src/Kernels/HttpKernel.js).
 
 :::

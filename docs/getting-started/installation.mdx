@@ -104,25 +104,15 @@ For more information about the `.env` file and environment configuration, check 
 
 ### Directory/Language configuration {#id-directory-language-configuration}
 
-By default, Athenna use TypeScript for development. When you run the `npm run start` command, the `artisan` first will
-compile all the application and create the `dist` folder to run your code using JavaScript.
+By default, Athenna uses the modern EcmaScript modules. When you run the `npm start` command, the `artisan` will always
+read your `bootstrap/main` file to start your application.
 
-You can run your application using `npm run start:dev`. This command will not have the build process. Briefly, running the
-application with TypeScript code instead of JavaScript. The `npm run test` command also runs your application with TypeScript code
-and will not have the build process.
+You can run your application using `npm run start:dev` to run in watch mode. The `npm test` command will always look
+for your `tests/main` file to run your tests.
 
 :::info
 
-The `npm run start:dev` command runs with [`nodemon`](https://github.com/remy/nodemon) to hot reload your application.
-
-:::
-
-:::tip
-
-You can check if your application is running with TypeScript or JavaScript code in runtime using the `Env` global function.
-
-```typescript
-console.log(Env<boolean>('NODE_TS')) // true
-```
+The `npm run start:dev` command runs with [`nodemon`](https://github.com/remy/nodemon) to hot reload your application. And
+the `npm test` commands uses [`japa.dev`](https://japa.dev/) test runner to run your tests.
 
 :::

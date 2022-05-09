@@ -54,7 +54,7 @@ interface.
 In Athenna as you can see in the previous documentation page of [`Middlewares`](/docs/the-basics/http/middlewares) and
 [`Controllers`](/docs/the-basics/http/controllers) we are always destructuring the `ctx` property and using like this:
 
-```typescript
+```javascript
 Route.get('/welcome', ({ response }) => {
     response.status(200).send({ hello: 'world' })
 })
@@ -62,7 +62,7 @@ Route.get('/welcome', ({ response }) => {
 
 But is the same of doing this:
 
-```typescript
+```javascript
 Route.get('/welcome', (ctx) => {
     ctx.response.status(200).send({ hello: 'world' })
 })
@@ -96,17 +96,14 @@ your application.
 Athenna `data` is just a simple object that you can use to set data inside to transfer between middlewares. This is really
 useful for some cases. Let's see an example setting default pagination values if client has not sent page and limit:
 
-```typescript
-import { HandleContextContract, MiddlewareContract } from '@athenna/http'
-
-export class PaginationMiddleware implements MiddlewareContract {
+```javascript
+export class PaginationMiddleware {
   /**
    * Handle method is executed before the request gets in your controller.
    *
-   * @param ctx
-   * @return any
+   * @param {import('@athenna/http').HandleContextContract}
    */
-  handle({ request, data, next }: HandleContextContract) {
+  handle({ request, data, next }) {
     const page = request.queries.page ? parseInt(request.queries.page) : 0
     const limit = request.queries.limit ? parseInt(request.queries.limit) : 10
     const resourceUrl = `${Config.get('http.domain')}${request.baseUrl}`
@@ -124,7 +121,7 @@ export class PaginationMiddleware implements MiddlewareContract {
 
 And now is very simple to get this `pagination` object inside your handler:
 
-```typescript
+```javascript
 Route.get('/products', ({ response, data }) => {
     return response.send({ paginationObj: data.pagination })
 }).middleware('PaginationMiddleware')

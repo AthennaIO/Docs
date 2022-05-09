@@ -44,32 +44,27 @@ via the constructor or, in some cases, "setter" methods.
 
 Let's look at a simple example:
 
-```typescript
-import { Container } from 'Providers/Container'
-import { ContextContract } from '@athenna/http'
-import { WelcomeServiceContract } from 'App/Contracts/WelcomeServiceContract'
-
+```javascript
 export class WelcomeController {
-  private welcomeService: WelcomeServiceContract
+  /** @type {import('#app/Services/WelcomeService').WelcomeService} */
+  #welcomeService
 
   /**
    * Create a new controller instance.
    *
-   * @param container
-   * @return WelcomeController
+   * @param {any} welcomeService
    */
-  constructor(container: Container) {
-    this.welcomeService = container.welcomeService
+  constructor(welcomeService) {
+    this.#welcomeService = welcomeService
   }
 
   /**
    * Show the welcome payload.
    *
-   * @param ctx
-   * @return any
+   * @param {import('@athenna/http').ContextContract} ctx
    */
-  async show({ response }: ContextContract) {
-    const data = await this.welcomeService.findOne()
+  async show({ response }) {
+    const data = await this.#welcomeService.findOne()
 
     return response.status(200).send(data)
   }
@@ -87,17 +82,17 @@ as for contributing to the Athenna core itself.
 ### Zero configuration resolution {#id-zero-configuration-resolution}
 
 If the class that you are working is in the `app/Services` directory, the container autoload this service because of the
-`ServicesProvider` class. For example, you may place the following code in your `routes/http` file:
+`ServiceProvider` class. For example, you may place the following code in your `routes/http` file:
 
 If a class has no dependencies or only depends on other concrete classes (not interfaces), the container does not need
 to be instructed on how to resolve that class. For example, you may place the following code in your `routes/http` file:
 
-```typescript
+```javascript
 import { Route } from '@athenna/http'
-import { WelcomeServiceContract } from 'App/Contracts/WelcomeServiceContract'
 
 Route.get('/welcome', async (ctx) => {
-    const welcomeService = ioc.use<WelcomeServiceContract>('App/Services/WelcomeService')
+    /** @type {import('#app/Services/WelcomeService').WelcomeService} */
+    const welcomeService = ioc.use('App/Services/WelcomeService')
 
     return ctx.response.status(200).send(await welcomeService.findOne())
 })
@@ -132,7 +127,7 @@ Within a service provider, you always have access to the container via the `ioc`
 using the `bind` method, passing the alias name that we wish to register along with our dependency:
 
 ```typescript
-import { StringNormalizer } from 'App/Utils/StringNormalizer'
+import { StringNormalizer } from '#app/Utils/StringNormalizer'
 
 ioc.bind('App/Utils/StringNormalizer', StringNormalizer)
 ```
@@ -143,7 +138,7 @@ The `singleton` method binds a class or interface into the container that should
 binding is resolved, the same object instance will be returned on subsequent calls into the container:
 
 ```typescript
-import { StringNormalizer } from 'App/Utils/StringNormalizer'
+import { StringNormalizer } from '#app/Utils/StringNormalizer'
 
 ioc.singleton('App/Utils/StringNormalizer', StringNormalizer)
 ```
@@ -153,8 +148,8 @@ ioc.singleton('App/Utils/StringNormalizer', StringNormalizer)
 You may also bind an existing object instance into the container using the `instance` method. The given instance will
 always be returned on subsequent calls into the container:
 
-```typescript
-import { StringNormalizer } from 'App/Utils/StringNormalizer'
+```javascript
+import { StringNormalizer } from '#app/Utils/StringNormalizer'
 
 ioc.instance('App/Utils/StringNormalizer', new StringNormalizer())
 ```
@@ -166,10 +161,9 @@ ioc.instance('App/Utils/StringNormalizer', new StringNormalizer())
 You may use the `use` or `safeUse` method to resolve a class instance from the container. The `use` method accepts the alias of the
 dependency you wish to resolve:
 
-```typescript
-import { StringNormalizer } from 'App/Utils/StringNormalizer'
-
-const stringNormalized = ioc.use<StringNormalizer>('App/Utils/StringNormalizer')
+```javascript
+/** @type {import('#app/Utils/StringNormalizer').StringNormalizer} */
+const stringNormalized = ioc.use('App/Utils/StringNormalizer')
 ```
 
 If the dependency cannot be found, `stringNormalized` will be `undefined`. To throw errors when the dependency does not
@@ -180,38 +174,30 @@ exist, use the `safeUse` method.
 Alternatively, and importantly, you can use the constructor of a class that is resolved by the container, including controllers,
 services, middleware, and more. In practice, this is how most of your objects should be resolved by the container.
 
-You can use the type `ContainerContract` and `Container` to set all the types that your container can resolve. Check the
-`providers/Container` file.
-
-For example, you may add the container value in the controller's constructor. The service will automatically be resolved
+For example, you may add your provider name in camelCase in the controller's constructor. The service will automatically be resolved
 and injected into the class:
 
-```typescript
-import { Container } from 'Providers/Container'
-import { ContextContract } from '@athenna/http'
-import { WelcomeServiceContract } from 'App/Contracts/WelcomeServiceContract'
-
+```javascript
 export class WelcomeController {
-  private welcomeService: WelcomeServiceContract
+  /** @type {import('#app/Services/WelcomeService').WelcomeService} */
+  #welcomeService
 
   /**
    * Create a new controller instance.
    *
-   * @param container
-   * @return WelcomeController
+   * @param {any} welcomeService
    */
-  constructor(container: Container) {
-    this.welcomeService = container.welcomeService
+  constructor(welcomeService) {
+    this.#welcomeService = welcomeService
   }
 
   /**
    * Show the welcome payload.
    *
-   * @param ctx
-   * @return any
+   * @param {import('@athenna/http').ContextContract} ctx
    */
-  async show({ response }: ContextContract) {
-    const data = await this.welcomeService.findOne()
+  async show({ response }) {
+    const data = await this.#welcomeService.findOne()
 
     return response.status(200).send(data)
   }

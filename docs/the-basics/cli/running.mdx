@@ -49,20 +49,15 @@ To register your CLI command name you can simply add the `bin` object inside you
 
 ```json
 "bin": {
-  "yourCliCommand": "dist/bootstrap/main.js"
+  "yourCliCommand": "./bootstrap/main.js"
 }
 ```
 
-:::tip
-As you can see your command is pointing to the `dist/bootstrap/main.js` file. So remember running `npm run build`  to
-build your code when you want to "test in production".
-:::
-
 ## Entrypoint file {#id-entrypoint-file}
 
-In our example we defined the `dist/bootstrap/main.js` file as the entrypoint file of our CLI. By default, this file
-comes with the `#!/usr/bin/env node` in the top of the file. Without this line the `npm link` command will not work.
-So just in case you want to define a different entrypoint file, remember that `#!/usr/bin/env node` should be on the top
+In our example we defined the `./bootstrap/main.js` file as the entrypoint file of our CLI. By default, this file
+comes with the `#!/usr/bin/env node --input-type module` in the top of the file. Without this line the `npm link` command will not work.
+So just in case you want to define a different entrypoint file, remember that `#!/usr/bin/env node --input-type module` should be on the top
 of this file.
 
 ## Linking the package.json {#id-linking-the-packageJson}

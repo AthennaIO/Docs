@@ -147,32 +147,27 @@ Log.success(message)
 You may call any of these methods to log a message for the corresponding level. By default, the message will be written
 to the default log channel as configured by your `logging` configuration file:
 
-```typescript
-import { Container } from 'Providers/Container'
-import { ContextContract } from '@athenna/http'
-import { WelcomeServiceContract } from 'App/Contracts/WelcomeServiceContract'
-
+```javascript
 export class WelcomeController {
-  private welcomeService: WelcomeServiceContract
+  /** @type {import('#app/Services/WelcomeService').WelcomeService} */
+  #welcomeService
 
   /**
    * Create a new controller instance.
    *
-   * @param container
-   * @return WelcomeController
+   * @param {any} welcomeService
    */
-  constructor(container: Container) {
-    this.welcomeService = container.welcomeService
+  constructor(welcomeService) {
+    this.#welcomeService = welcomeService
   }
 
   /**
    * Show the welcome payload.
    *
-   * @param ctx
-   * @return any
+   * @param {import('@athenna/http').ContextContract} ctx
    */
-  async show({ request, response }: ContextContract) {
-    const data = await this.welcomeService.findOne()
+  async show({ request, response }) {
+    const data = await this.#welcomeService.findOne()
 
     Log.info(`Showing the welcome message for ip: ${request.ip}`)
 
@@ -186,7 +181,7 @@ export class WelcomeController {
 Sometimes you may wish to log a message to a channel other than your application's default channel. You may use the
 `channel` method on the `Log` facade to retrieve and log to any channel defined in your configuration file:
 
-```typescript
+```javascript
 Log.channel('slack').info('Hello from Athenna!')
 ```
 
@@ -195,7 +190,7 @@ Log.channel('slack').info('Hello from Athenna!')
 It is also possible to set runtime configurations when using the `Log` facade. This way you will never be total dependent
 from `config/logging` configuration file. To accomplish this, you may pass a configuration object as second parameter of your `Log` method:
 
-```typescript
+```javascript
 const options = { url: 'other-slack-webhook-url' }
 
 Log.channel('slack').info('Hello from Athenna!', options)
@@ -252,7 +247,7 @@ familiar with its contents:
 It is also possible to set `formatter` and `formatterConfig` in runtime configurations when using the `Log` facade. To
 accomplish this, you may pass a configuration object as second parameter of your `Log` method:
 
-```typescript
+```javascript
 import chalk from 'chalk'
 
 const options = {
@@ -267,30 +262,35 @@ Log.channel('slack', options).info('Hello from Athenna!')
 
 ## Implementing your own driver {#id-implementing-your-own-driver}
 
-You can implement your own `Log` driver using the `DriverFactory` class, but your class needs to implement `DriverContract` interface:
+You can implement your own `Log` driver using the `DriverFactory` class, but your class needs to implement the `transport` method:
 
-```typescript
-import {
-    groupConfigs,
-    DriverContract,
-    FormatterFactory,
-} from '@athenna/logger'
+```javascript
+import { FactoryHelper, FormatterFactory } from '@athenna/logger'
 
-export interface ConsoleLogDriverOpts {
-    addFoo: boolean
-}
+export class ConsoleLogDriver {
+    /** @type {{ addFoo: boolean }} */
+    #configs
 
-export class ConsoleLogDriver implements DriverContract {
-    public configs: Required<ConsoleLogDriver>
-
-    public constructor(channel: string, configs: any = {}) {
+    /**
+    * Creates an instance of ConsoleLogDriver.
+    *
+    * @param {string} channel
+    * @param {any} configs
+    */
+    constructor(channel, configs = {}) {
       const channelConfig = Config.get(`logging.channels.${channel}`)
 
-      this.configs = groupConfigs(configs, channelConfig)
+      this.#configs = FactoryHelper.groupConfigs(configs, channelConfig)
     }
 
-    public transport(message: string, options: ConsoleLogDriverOpts = {}): void {
-      const configs = groupConfigs<ConsoleLogDriverOpts>(options, this.configs)
+    /**
+    * Transport the log.
+    *
+    * @param {string} message
+    * @param {{ addFoo: boolean }} options
+    */
+    transport(message, options = {}) {
+      const configs = FactoryHelper.groupConfigs(options, this.#configs)
 
       // Fetch and execute formatters
       message = FormatterFactory.fabricate(configs.formatter).format(
@@ -309,7 +309,7 @@ export class ConsoleLogDriver implements DriverContract {
 
 Now we just need to use the `DriverFactory` to register our new driver and set a name for him:
 
-```typescript
+```javascript
 import { DriverFactory } from '@athenna/logger'
 
 DriverFactory.createDriver('consoleLog', ConsoleLogDriver)
@@ -317,7 +317,7 @@ DriverFactory.createDriver('consoleLog', ConsoleLogDriver)
 
 Finally, we can start using our new driver in channels of `config/logging`:
 
-```typescript
+```javascript
 channels: {
     consoleLogChannel: {
         driver: 'consoleLog',
@@ -329,17 +329,17 @@ channels: {
 
 ## Implementing your own formatter {#id-implementing-your-own-formatter}
 
-You can implement your own `Log` formatter using the `FormatterFactory` class, but your class needs to implement `FormatterFactory` interface:
+You can implement your own `Log` formatter using the `FormatterFactory` class, but your class needs to implement the `format` method:
 
-```typescript
-import { FormatterContract } from '@athenna/logger'
-
-export interface ConsoleLogFormatterOpts {
-    addFoo: boolean
-}
-
-export class ConsoleLogFormatter implements FormatterContract {
-    public format(message: string, options: ConsoleLogFormatterOpts): string {
+```javascript
+export class ConsoleLogFormatter {
+    /**
+     * Format the log.
+     *
+     * @param {string} message
+     * @param {{ addFoo: boolean }} options
+     */
+    format(message, options) {
       if (options.addFoo) {
         message = message.concat(' - Foo')
       }
@@ -351,7 +351,7 @@ export class ConsoleLogFormatter implements FormatterContract {
 
 Now we just need to use the `FormatterFactory` to register our new formatter and set a name for him:
 
-```typescript
+```javascript
 import { FormatterFactory } from '@athenna/logger'
 
 FormatterFactory.createFormatter('consoleLog', ConsoleLogFormatter)
@@ -359,16 +359,15 @@ FormatterFactory.createFormatter('consoleLog', ConsoleLogFormatter)
 
 Finally, we can start using our new formatter in channels of `config/logging`:
 
-```typescript
+```javascript
 channels: {
     consoleLogChannel: {
         driver: 'consoleLog',
         formatter: 'consoleLog',
+        addFoo: true,
         formatterConfig: {
             addFoo: true,
         }
-
-        addFoo: true,
     }
 }
 ```

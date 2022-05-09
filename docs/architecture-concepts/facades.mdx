@@ -49,7 +49,7 @@ if you don't totally understand how facades work under the hood - just go with t
 
 All of Athenna facades are defined in their own packages. So, we can easily access a facade like so:
 
-```typescript
+```javascript
 import { Log } from '@athenna/logger' // Log Facade
 import { Route } from '@athenna/http' // Route Facade
 
@@ -83,7 +83,7 @@ smaller classes.
 
 ## How facades work {#id-how-facades-work}
 
-In a Athenna application, a facade is a class that provides access to an object from the container. The machinery that
+In an Athenna application, a facade is a class that provides access to an object from the container. The machinery that
 makes this work is in the `Facade` class. Athenna facades, and any custom facades you create, will extend the base
 `Facade` class.
 
@@ -91,18 +91,17 @@ The `Facade` base class makes use of the `Proxy API` to defer calls from your fa
 container. In the example below, a call is made to the Athenna log system. By glancing at this code, one might assume
 that the static `success` method is being called on the `Log` class:
 
-```typescript
+```javascript
 import { Log } from '@athenna/logger'
-import { ContextContract } from '@athenna/http'
 
 export class WelcomeController {
   /**
    * Show the welcome payload.
    *
-   * @param ctx
+   * @param {import('@athenna/http').ContextContract} ctx
    * @return any
    */
-  async show({ response }: ContextContract) {
+  async show({ response }) {
     Log.success('Welcome to Athenna 😝')
 
     return response.status(200).send({ hello: 'world' })
@@ -117,11 +116,11 @@ be passed to the underlying instance of Athenna logger class.
 If we look at that `Log`, you'll see that `Log` is just a constant that points to the alias `Athenna/Core/Logger` that is
 registered inside the service container:
 
-```typescript
-import { Logger } from 'src/Logger'
+```javascript
 import { Facade } from '@athenna/ioc'
 
-export const Log = Facade.createFor<Logger>('Athenna/Core/Logger')
+/** @type {Facade & import('#src/index').Logger} **/
+export const Log = Facade.createFor('Athenna/Core/Logger')
 ```
 
 This method's job is to return the name of a service container binding. When a user references any static method on the
@@ -143,24 +142,24 @@ documentation for a given facade root. The service container binding key is also
     </thead>
     <tbody>
     <tr>
-        <td><a href="https://github.com/AthennaIO/Logger/blob/develop/src/Facades/Log.ts">Log</a></td>
-        <td><a href="https://github.com/AthennaIO/Logger/blob/develop/src/Logger.ts">Logger</a></td>
-        <td><a href="https://github.com/AthennaIO/Logger/blob/develop/src/Providers/LoggerProvider.ts">Athenna/Core/Logger</a></td>
+        <td><a href="https://github.com/AthennaIO/Logger/blob/develop/src/Facades/Log.js">Log</a></td>
+        <td><a href="https://github.com/AthennaIO/Logger/blob/develop/src/index.js">Logger</a></td>
+        <td><a href="https://github.com/AthennaIO/Logger/blob/develop/src/Providers/LoggerProvider.js">Athenna/Core/Logger</a></td>
     </tr>
     <tr>
-        <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Facades/Server.ts">Server</a></td>
-        <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Http.ts">Http</a></td>
-        <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Providers/HttpServerProvider.ts">Athenna/Core/HttpServer</a></td>
+        <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Facades/Server.js">Server</a></td>
+        <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/index.js">Http</a></td>
+        <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Providers/HttpServerProvider.js">Athenna/Core/HttpServer</a></td>
     </tr>
     <tr>
-        <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Facades/Route.ts">Route</a></td>
-        <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Router/Router.ts">Router</a></td>
-        <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Providers/HttpRouteProvider.ts">Athenna/Core/HttpRoute</a></td>
+        <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Facades/Route.js">Route</a></td>
+        <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Router/Router.js">Router</a></td>
+        <td><a href="https://github.com/AthennaIO/Http/blob/develop/src/Providers/HttpRouteProvider.js">Athenna/Core/HttpRoute</a></td>
     </tr>
     <tr>
-        <td><a href="https://github.com/AthennaIO/Artisan/blob/develop/src/Facades/Artisan.ts">Artisan</a></td>
-        <td><a href="https://github.com/AthennaIO/Artisan/blob/develop/src/Artisan.ts">Artisan</a></td>
-        <td><a href="https://github.com/AthennaIO/Artisan/blob/develop/src/Providers/HttpServerProvider.ts">Athenna/Core/Artisan</a></td>
+        <td><a href="https://github.com/AthennaIO/Artisan/blob/develop/src/Facades/Artisan.js">Artisan</a></td>
+        <td><a href="https://github.com/AthennaIO/Artisan/blob/develop/src/index.js">Artisan</a></td>
+        <td><a href="https://github.com/AthennaIO/Artisan/blob/develop/src/Providers/HttpServerProvider.js">Athenna/Core/Artisan</a></td>
     </tr>
     </tbody>
 </table>
@@ -171,22 +170,22 @@ First you need to create a new [`service provider`](/docs/architecture-concepts/
 to resolve your dependency inside the [`service container`](/docs/architecture-concepts/container). Just run
 `node artisan make:provider HelperProvider` and register your binding:
 
-```typescript
-import { String } from 'App/Helpers/String'
+```javascript
+import { String } from '#app/Helpers/String'
 import { ServiceProvider } from '@athenna/ioc'
 
 export class HelperProvider extends ServiceProvider {
   /**
    * Register any application services.
    *
-   * @return void
+   * @return {void}
    */
   register() {}
 
   /**
    * Bootstrap any application services.
    *
-   * @return void
+   * @return {void}
    */
   boot() {
     this.container.bind('App/Helpers/String', String)
@@ -210,18 +209,18 @@ node artisan make:facade String
 The Facade file will be generated inside `providers/Facades` folder. Open this file and change the alias to your
 provider alias:
 
-```typescript
+```javascript
 import { Facade } from '@athenna/ioc'
-import { String } from 'App/Helpers/String'
 
-export const String = Facade.createFor<String>('App/Helpers/String')
+/** @type {Facade & import('#app/Helpers/String').String} */
+export const String = Facade.createFor('App/Helpers/String')
 ```
 
 Now we can start using our brand new `String` facade:
 
-```typescript
+```javascript
 import { Route } from '@athenna/http' // Route Facade
-import { String } from 'Providers/Facades/String' // String Facade
+import { String } from '#providers/Facades/String' // String Facade
 
 Route.get('/welcome', function ({ response }) {
     return response.status(200).send({ hello: String.toPascalCase('world') })

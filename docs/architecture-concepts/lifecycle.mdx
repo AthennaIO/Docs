@@ -98,29 +98,29 @@ these classes handle internal Athenna configuration that you do not need to worr
 The Kernel of `Http` folder also defines a list of global [`middlewares`](/docs/the-basics/http/middlewares) that all requests must pass through before being
 handled by the application. It also defines your named middlewares to use inside `routes/http` file. See the example:
 
-```typescript
+```javascript
 /**
 * The application's global HTTP middlewares.
 *
 * This middlewares are run during every request to your http server.
 */
-protected globalMiddlewares = [import('../Http/Middlewares/ResponseMiddleware')]
+globalMiddlewares = [import('#app/Http/Middlewares/ResponseMiddleware')]
 ```
 
 Or you can define as a named middleware and choose what routes are going to use it inside `routes/http`:
 
-```typescript
+```javascript
 /**
 * The application's named HTTP middlewares.
 *
 * Here you define all your named middlewares to use inside routes/http file.
 */
-protected namedMiddlewares = {
-    response: import('../Http/Middlewares/ResponseMiddleware')
+namedMiddlewares = {
+    response: import('#app/Http/Middlewares/ResponseMiddleware')
 }
 ```
 
-```typescript
+```javascript
 Route.get('/', 'WelcomeController.show').middleware('response')
 ```
 
@@ -263,6 +263,6 @@ service providers are registered, and the request is handed to the bootstrapped 
 Having a firm grasp of how an Athenna application is built and bootstrapped via service providers is very valuable.
 Your application's default service providers are stored in the `providers` directory.
 
-By default, the `CustomProvider` is fairly empty. This provider is a great place to add your application's own
+By default, the `AppServiceProvider` is fairly empty. This provider is a great place to add your application's own
 bootstrapping and service container bindings. For large applications, you may wish to create several service providers,
 each with more granular bootstrapping for specific services used by your application.

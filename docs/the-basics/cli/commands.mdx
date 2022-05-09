@@ -71,49 +71,46 @@ You may place your command logic in this method.
 Let's take a look at an example command. Note that we are able to request any dependencies we need via the command's constructor
 method. The Athenna service container will automatically inject all dependencies inside the container property of constructor:
 
-```typescript
+```javascript
 import { Command } from '@athenna/artisan'
-import { Container } from 'Providers/Container'
-import { MailgunService } from 'App/Services/MailgunService'
 
 export class SendEmails extends Command {
   /**
    * The name and signature of the console command.
    */
-  protected signature = 'mail:send <email>'
+  signature = 'mail:send <email>'
   /**
    * The console command description.
    */
-  protected description = 'Display welcome object.'
+  description = 'Display welcome object.'
 
   /**
    * The welcome service dependency.
    *
-   * @private
+   * @type {import('#app/Services/MailgunService').MailgunService}
    */
-  private mailgunService: MailgunService
+   #mailgunService
 
   /**
-   * Use the constructor to resolve any dependency of the Ioc container
+   * Use the constructor to resolve any dependency of the Ioc container.
    *
-   * @param container
-   * @return WelcomeCommand
+   * @param {any} mailgunService
    */
-  public constructor(container: Container) {
+  constructor(mailgunService) {
     super()
 
-    this.mailgunService = container.mailgunService
+    this.#mailgunService = mailgunService
   }
 
   /**
    * Execute the console command.
    *
-   * @return {Promise<void>}
+   * @param {string} email
    */
-  async handle(email: string): Promise<void> {
+  async handle(email) {
     const message = 'Hello from Athenna!'
 
-    await this.mailgunService.send(email, message)
+    await this.#mailgunService.send(email, message)
   }
 }
 ```
@@ -130,48 +127,45 @@ very convenient to define the input you expect from the user using the `addFlags
 method allows you to define any additional flag from [`commander`](https://www.npmjs.com/package/commander). Check out their
 documentation to see all the flags available for your. See the example:
 
-```typescript
+```javascript
 import { Command } from '@athenna/artisan'
-import { Container } from 'Providers/Container'
-import { Command as Commander } from 'commander'
-import { MailgunService } from 'App/Services/MailgunService'
 
 export class SendEmails extends Command {
   /**
    * The name and signature of the console command.
    */
-  protected signature = 'mail:send <email>'
+  signature = 'mail:send <email>'
   /**
    * The console command description.
    */
-  protected description = 'Display welcome object.'
+  description = 'Display welcome object.'
 
   /**
    * The welcome service dependency.
    *
-   * @private
+   * @type {import('#app/Services/MailgunService').MailgunService}
    */
-  private mailgunService: MailgunService
+   #mailgunService
 
   /**
-   * Use the constructor to resolve any dependency of the Ioc container
+   * Use the constructor to resolve any dependency of the Ioc container.
    *
-   * @param container
-   * @return WelcomeCommand
+   * @param {any} mailgunService
    */
-  public constructor(container: Container) {
+  constructor(mailgunService) {
     super()
 
-    this.mailgunService = container.mailgunService
+    this.#mailgunService = mailgunService
   }
 
   /**
    * Set additional flags in the commander instance.
    * This method is executed when registering your command.
    *
-   * @return {void}
+   * @param {import('commander').Command} commander
+   * @return {import('commander').Command}
    */
-  public addFlags(commander: Commander) {
+  public addFlags(commander) {
     const signature = '-s, --subject <subject>'
     const description = 'Set the subject of the email.'
     const defaultValue = 'Athenna'
@@ -182,12 +176,13 @@ export class SendEmails extends Command {
   /**
    * Execute the console command.
    *
-   * @return {Promise<void>}
+   * @param {string} email
+   * @param {any} options
    */
-  async handle(email: string, options: any): Promise<void> {
+  async handle(email, options) {
     const message = 'Hello from Athenna!'
 
-    await this.mailgunService.send(email, message, options.subject)
+    await this.#mailgunService.send(email, message, options.subject)
   }
 }
 ```
@@ -195,21 +190,16 @@ export class SendEmails extends Command {
 ### Registering commands {#id-defining-input-expectations}
 
 All of your console commands are registered within your application's `app/Console/Kernel` class, which is your application's
-"console kernel". The `CommandsProvider` will scan the `app/Console/Commands` directory and automatically register each
-command it contains with Artisan. By default, Athenna will come with some default Artisan commands registered inside `commands` property:
+"console kernel". The `ArtisanLoader` will register all the default commands from Athenna inside `commands` property:
 
-```typescript
+```javascript
 /**
 * Register the commands for the application.
 *
 * @return void
 */
-protected commands = [
-  import('@athenna/artisan/src/Commands/Eslint/Fix'),
-  import('@athenna/artisan/src/Commands/Make/Facade'),
-  import('@athenna/artisan/src/Commands/Make/Command'),
-  import('@athenna/artisan/src/Commands/Make/Service'),
-  import('@athenna/artisan/src/Commands/Make/Provider'),
+commands = [
+  ...ArtisanLoader.loadHttp(),
 ]
 ```
 
@@ -217,18 +207,14 @@ By default, the `make:command` command will always create your command file and 
 But if necessary, you may manually register commands by importing it inside `commands` property within your `app/Console/Kernel`
 class. When Artisan boots, all the commands listed in this property will be resolved by the service container and registered with Artisan:
 
-```typescript
+```javascript
 /**
 * Register the commands for the application.
 *
 * @return void
 */
-protected commands = [
-  import('@athenna/artisan/src/Commands/Eslint/Fix'),
-  import('@athenna/artisan/src/Commands/Make/Facade'),
-  import('@athenna/artisan/src/Commands/Make/Command'),
-  import('@athenna/artisan/src/Commands/Make/Service'),
-  import('@athenna/artisan/src/Commands/Make/Provider'),
+commands = [
+  ...ArtisanLoader.loadHttp(),
   import('App/Console/Commands/SendEmails'), // Define your command
 ]
 ```
@@ -238,7 +224,7 @@ protected commands = [
 Sometimes you may wish to call other commands from an existing Artisan command or from any other part of your application.
 You may do so using the `call` method from Artisan. This `call` method accepts the command string with it arguments and options:
 
-```typescript
+```javascript
 import { Artisan } from '@athenna/artisan'
 
 Artisan.command('hello', async function () {

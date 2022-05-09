@@ -74,9 +74,9 @@ Otherwise, you may accidentally use a service that is provided by a service prov
 Let's take a look at a basic service provider. Within any of your service provider methods, you always have access to
 the `this.container` property which provides access to the service container:
 
-```typescript
+```javascript
 import { ServiceProvider } from '@athenna/ioc'
-import { MyAppService } from 'App/Utils/MyAppService'
+import { MyAppService } from '#app/Utils/MyAppService'
 
 export class MyAppProvider extends ServiceProvider {
 
@@ -100,32 +100,31 @@ If your service provider registers many simple bindings, you may wish to use the
 of manually registering each container binding. When the service provider is loaded by the framework, it will automatically
 check for these properties and register their bindings:
 
-```typescript
+```javascript
 import { ServiceProvider } from '@athenna/ioc'
-import { MyAppService } from 'App/Utils/MyAppService'
-import { MyAppResource } from 'App/Utils/MyAppResource'
-import { MyAppRepository } from 'App/Utils/MyAppRepository'
+import { MyAppService } from '#app/Utils/MyAppService'
+import { MyAppResource } from '#app/Utils/MyAppResource'
+import { MyAppRepository } from '#app/Utils/MyAppRepository'
 
 export class MyAppProvider extends ServiceProvider {
-
   /**
    * All the container bindings that should be registered.
    */
-  public bindings = {
+  bindings = {
       'MyApp/Service': MyAppService
   }
 
   /**
    * All the container instances that should be registered.
    */
-  public instances = {
+  instances = {
       'MyApp/Resource': new MyAppResource()
   }
 
   /**
    * All the container singletons that should be registered.
    */
-  public singletons = {
+  singletons = {
       'MyApp/Repository': MyAppRepository
   }
 }
@@ -137,10 +136,9 @@ So, what if we need to register a dependency that needs another dependency withi
 done within the `boot` method. This method is called after all other service providers have been registered, meaning you
 have access to all other services that have been registered by the framework:
 
-```typescript
+```javascript
 import { ServiceProvider } from '@athenna/ioc'
-import { MyAppService } from 'App/Utils/MyAppService'
-import { MyAppRepository } from 'App/Utils/MyAppRepository'
+import { MyAppService } from '#app/Utils/MyAppService'
 
 export class MyAppProvider extends ServiceProvider {
 
@@ -149,8 +147,9 @@ export class MyAppProvider extends ServiceProvider {
    *
    * @return void
    */
-  public boot(): void {
-    const myAppRepository = this.container.safeUse<MyAppRepository>('MyApp/Repository')
+  boot(): void {
+      /** @type {import('#app/Utils/MyAppRepository').MyAppRepository} */
+    const myAppRepository = this.container.safeUse('MyApp/Repository')
 
     this.container.instance('MyApp/Service', new MyAppService(myAppRepository))
   }
@@ -165,10 +164,10 @@ in this array. These providers bootstrap the core Athenna components, such as th
 
 To register your provider, add it to the array:
 
-```typescript
+```javascript
 providers: [
   // Other service providers
 
-  import('Providers/MyAppProvider'),
+  import('#providers/MyAppProvider'),
 ],
 ```

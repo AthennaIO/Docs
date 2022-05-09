@@ -50,24 +50,19 @@ updating, and deleting users. By default, controllers are stored in the `app/Htt
 
 Let's take a look at an example:
 
-```typescript
-import { Container } from 'Providers/Container'
-
+```javascript
 export class UserController {
   /**
-   * Use the constructor to resolve any dependency of the Ioc container
-   *
-   * @param container
-   * @return WelcomeController
+   * Use the constructor to resolve any dependency of the Ioc container.
    */
-  public constructor(_container: Container) {}
+  constructor() {}
 
   /**
    * Show the user.
    *
-   * @return {string}
+   * @params {import('@athenna/http').ContextContract} ctx
    */
-  public show({ response, params }) {
+  show({ response, params }) {
     return response.send(`User_${params.id}`)
   }
 }
@@ -75,7 +70,7 @@ export class UserController {
 
 You can define a route to this controller method like so:
 
-```typescript
+```javascript
 Route.controller('UserController').get('/user/:id', 'show');
 
 // or
@@ -103,7 +98,7 @@ node artisan make:controller PhotoController --resource
 This command will generate a controller at `app/Http/Controllers/PhotoController`. The controller will contain a method
 for each of the available resource operations. Next, you may register a resource route that points to the controller:
 
-```typescript
+```javascript
 Route.resource('photos', 'PhotoController')
 ```
 
@@ -120,7 +115,7 @@ node artisan route:list
 When declaring a resource route, you may specify a subset of actions the controller should handle instead of the full
 set of default actions:
 
-```typescript
+```javascript
 Route.resource('photos', 'PhotoController').only(['index', 'show'])
 
 Route.resource('photos', 'PhotoController').except(['store', 'update', 'destroy'])
@@ -131,7 +126,7 @@ Route.resource('photos', 'PhotoController').except(['store', 'update', 'destroy'
 Sometimes you may need to define routes to a nested resource. For example, a photo resource may have multiple comments
 that may be attached to the photo. To nest the resource controllers, you may use "dot" notation in your route declaration:
 
-```typescript
+```javascript
 Route.resource('photos.comments', 'PhotoCommentController')
 ```
 
@@ -147,30 +142,25 @@ The Athenna [`service container`](/docs/architecture-concepts/container) is used
 As a result, you are able to use any dependencies your controller may need in its constructor. The declared dependencies
 will automatically be resolved and injected into the controller instance:
 
-```typescript
-import { Container } from 'Providers/Container'
-import { UserService } from 'App/Services/UserService'
-
+```javascript
 export class UserController {
-  private userService: UserService
+  /** @type {import('#app/Services/UserService').UserService} */
+  #userService
 
   /**
-   * Use the constructor to resolve any dependency of the Ioc container
-   *
-   * @param container
-   * @return WelcomeController
+   * Use the constructor to resolve any dependency of the Ioc container.
    */
-  public constructor(container: Container) {
-    this.userService = container.userService
+  constructor(userService) {
+    this.#userService = userService
   }
 
   /**
    * Show the user.
    *
-   * @return {string}
+   * @params {import('@athenna/http').ContextContract} ctx
    */
-  public async show({ response, params }) {
-    const body = await this.userService.findOne(params.id)
+  async show({ response, params }) {
+    const body = await this.#userService.findOne(params.id)
 
     return response.send(body)
   }
