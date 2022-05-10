@@ -155,8 +155,8 @@ process.env.APP_DEBUG = '(true)'
 const defaultValue = false
 const autoCast = false
 
-console.log(Env<boolean>('APP_DEBUG', defaultValue)) // true
-console.log(Env<string>('APP_DEBUG', defaultValue, autoCast)) // '(true)'
+console.log(Env('APP_DEBUG', defaultValue)) // true
+console.log(Env('APP_DEBUG', defaultValue, autoCast)) // '(true)'
 ```
 
 :::
