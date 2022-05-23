@@ -6,26 +6,30 @@ title: Commands
 hide_title: true
 hide_table_of_contents: true
 tags:
-- Getting Started
-- Architecture Concepts
-- The Basics
+  - Getting Started
+  - Architecture Concepts
+  - The Basics
 ---
 
 <nav aria-label="breadcrumbs">
-    <ul class="breadcrumbs">
-        <li class="breadcrumbs__item">
-            <a class="breadcrumbs__link" href="/">🏠</a>
-        </li>
-        <li class="breadcrumbs__item">
-            <a class="breadcrumbs__link">The Basics</a>
-        </li>
-        <li class="breadcrumbs__item">
-            <a class="breadcrumbs__link">co</a>
-        </li>
-        <li class="breadcrumbs__item">
-            <a class="breadcrumbs__link" href="/docs/the-basics/cli/commands">Commands</a>
-        </li>
-    </ul>
+  <ul class="breadcrumbs">
+    <li class="breadcrumbs__item">
+      <a class="breadcrumbs__link" href="/">
+        🏠
+      </a>
+    </li>
+    <li class="breadcrumbs__item">
+      <a class="breadcrumbs__link">The Basics</a>
+    </li>
+    <li class="breadcrumbs__item">
+      <a class="breadcrumbs__link">Cli</a>
+    </li>
+    <li class="breadcrumbs__item">
+      <a class="breadcrumbs__link" href="/docs/the-basics/cli/commands">
+        Commands
+      </a>
+    </li>
+  </ul>
 </nav>
 
 <span class="badge badge--secondary margin-top-bot">version 1.0.0</span>
@@ -89,7 +93,7 @@ export class SendEmails extends Command {
    *
    * @type {import('#app/Services/MailgunService').MailgunService}
    */
-   #mailgunService
+  #mailgunService
 
   /**
    * Use the constructor to resolve any dependency of the Ioc container.
@@ -194,13 +198,11 @@ All of your console commands are registered within your application's `app/Conso
 
 ```javascript
 /**
-* Register the commands for the application.
-*
-* @return void
-*/
-commands = [
-  ...ArtisanLoader.loadHttp(),
-]
+ * Register the commands for the application.
+ *
+ * @return void
+ */
+commands = [...ArtisanLoader.loadHttp()]
 ```
 
 By default, the `make:command` command will always create your command file and then register it inside `app/Console/Kernel`.
@@ -209,14 +211,14 @@ class. When Artisan boots, all the commands listed in this property will be reso
 
 ```javascript
 /**
-* Register the commands for the application.
-*
-* @return void
-*/
+ * Register the commands for the application.
+ *
+ * @return void
+ */
 commands = [
   ...ArtisanLoader.loadHttp(),
   import('App/Console/Commands/SendEmails'), // Define your command
-]
+];
 ```
 
 ### Calling commands in runtime {#id-calling-commands-in-runtime}

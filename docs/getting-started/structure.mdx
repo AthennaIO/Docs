@@ -40,6 +40,7 @@ tags:
     - #### [The storage directory](#id-the-storage-directory)
     - #### [The tests directory](#id-the-tests-directory)
 - #### [The app directory](#id-the-main-app-directory)
+    - #### [The Console directory](#id-the-Console-directory)
     - #### [The Http directory](#id-the-Http-directory)
     - #### [The Models directory](#id-the-Models-directory)
     - #### [The Repositories directory](#id-the-Repositories-directory)
@@ -165,6 +166,12 @@ Many of the classes in the `app` directory can be generated via `artisan make` c
 run the `node artisan list make` command in your terminal.
 
 :::
+
+### The Console directory {#id-the-Console-directory}
+
+The `Console` directory contains all of the custom Artisan commands for your application. These commands may be generated 
+using the `make:command` command. This directory also houses your console kernel, which is where your custom Artisan 
+commands are registered.
 
 ### The Http directory {#id-the-Http-directory}
 
