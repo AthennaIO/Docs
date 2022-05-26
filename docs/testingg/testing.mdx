@@ -91,13 +91,13 @@ In addition to the `npm test` command, you may use the `test` Artisan command to
 verbose test reports in order to ease development and debugging:
 
 ```shell
-php artisan test
+node artisan test
 ```
 
 Any arguments that can be passed to the [`Japa`](https://japa.dev/) command may also be passed to the Artisan test command:
 
 ```shell
-php artisan test Unit
+node artisan test Unit
 ```
 
 ### Reporting tests coverage {#id-reporting-tests-coverage}
@@ -113,7 +113,7 @@ code and how much application code is used when running your tests. To accomplis
 option when invoking the test command:
 
 ```shell
-php artisan test --coverage
+node artisan test --coverage
 ```
 
 To define a minimum test coverage threshold for your application you can use the `"c8"` property inside `package.json` file.
