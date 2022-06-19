@@ -100,6 +100,12 @@ Any arguments that can be passed to the [`Japa`](https://japa.dev/) command may 
 node artisan test Unit
 ```
 
+But you can use the artisan options instead:
+
+```shell
+node artisan test --e2e --unit
+```
+
 ### Reporting tests coverage {#id-reporting-tests-coverage}
 
 :::caution
@@ -109,11 +115,11 @@ This feature requires the [`c8`](https://www.npmjs.com/package/c8) library.
 :::
 
 When running your application tests, you may want to determine whether your test cases are actually covering the application
-code and how much application code is used when running your tests. To accomplish this, you may provide the `--coverage`
-option when invoking the test command:
+code and how much application code is used when running your tests. To accomplish this, you may provide the `c8` cli when invoking
+the test command:
 
 ```shell
-node artisan test --coverage
+c8 node artisan test
 ```
 
 To define a minimum test coverage threshold for your application you can use the `"c8"` property inside `package.json` file.
