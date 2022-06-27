@@ -1,0 +1,103 @@
+---
+sidebar_position: 2
+
+id: http-tests
+title: HTTP Tests
+hide_title: true
+hide_table_of_contents: true
+tags:
+- Testing
+---
+
+<nav aria-label="breadcrumbs">
+    <ul class="breadcrumbs">
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/">🏠</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link">Testing</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/docs/testingg/http-testing">HTTP Tests</a>
+        </li>
+    </ul>
+</nav>
+
+<span class="badge badge--secondary margin-top-bot">version 1.0.0</span>
+
+
+# HTTP Testing
+
+- #### [Introduction](#id-introduction)
+- #### [Making requests](#id-making-requests)
+  - #### [Customizing requests](#id-cutomizing-requests)
+- #### [Available assertions](#id-available-assertions)
+  - #### [Response assertions](#id-response-assertions)
+
+## Introduction {#id-introduction}
+
+Athenna provides a very fluent API for making HTTP requests to your application and examining the responses. For example,
+take a look at the e2e test defined below:
+
+```javascript
+import { test } from '@japa/runner'
+
+test('should make get request', async ({ request }) => {
+  const response = await request.get('/api/welcome')
+
+  response.assertStatusCode(200)
+})
+```
+
+The `get` method of `request` object makes a GET request into the application, while the `assertStatusCode` method asserts
+that the returned response should have the given HTTP status code. In addition to this simple assertion, Athenna also
+contains a variety of assertions for inspecting the response headers, content, JSON structure, and more.
+
+## Making requests {#id-making-requests}
+
+To make a request to your application, you may invoke the get, post, put, patch, or delete methods within your test. These
+methods do not actually issue a "real" HTTP request to your application. Instead, the entire network request is simulated
+internally.
+
+Test request methods return an instance of `@athenna/core/TestResponse`, which provides a variety of helpful assertions
+that allow you to inspect your application's responses:
+
+```javascript
+import { test } from '@japa/runner'
+
+test('should make get request', async ({ request }) => {
+  const response = await request.get('/api/welcome')
+
+  response.assertStatusCode(200)
+})
+```
+
+In general, each of your tests should only make one request to your application. Unexpected behavior may occur if multiple
+requests are executed within a single test method.
+
+### Customizing request {#id-customizing-request}
+
+You may set any options your might need as second parameter on `request` object to customize the request's headers, params,
+queries, cookies and other stuff you might need before it is sent to the application:
+
+```javascript
+import { test } from '@japa/runner'
+
+test('should make get request', async ({ request }) => {
+  const response = await request.get('/api/welcome', { headers: {
+      'X-Header': '10'
+  }})
+
+  response.assertStatusCode(200)
+})
+```
+
+## Available assertions {#id-available-assertions}
+
+### Response assertions {#id-response-assertions}
+
+Athenna `@athenna/core/TestResponse` class provides a variety of custom assertion methods that you may utilize when testing
+your application. These assertions may be accessed on the response that is returned by the json, get, post, put, and delete
+test methods, and you can find than [`checking the repository file here`](https://github.com/AthennaIO/Core/blob/develop/src/Helpers/Tests/TestResponse.js).
+
+
