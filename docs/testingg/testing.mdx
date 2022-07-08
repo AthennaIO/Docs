@@ -72,6 +72,18 @@ If you would like to create a test within the `tests/Unit` directory, you may us
 node artisan make:test UserTest --unit
 ```
 
+The Athenna tests are defined as classes by default, if you want to use the normal definition of Japa you can set the `--no-class` flag:
+
+```shell
+node artisan make:test UserFnTest --no-class
+```
+
+:::info
+
+In Athenna you can define tests as classes and as functions in the normal way of Japa, all tests will run perfectly!
+
+:::
+
 Once the test has been generated, you may define your tests as you normally would using [`Japa`](https://japa.dev/). To run your tests,
 execute the `npm start` or `node artisan test` command from your terminal:
 
