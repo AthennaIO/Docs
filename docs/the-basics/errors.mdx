@@ -105,14 +105,18 @@ class.
  *
  * @type {string[]}
  */
-ignoreCodes = ['E_RUNTIME']
+get ignoreCodes() {
+    return ['E_RUNTIME']
+}
 
 /**
  * Error statuses that should be ignored by Log.
  *
  * @type {number[]}
  */
-ignoreStatuses = [400, 401, 403]
+get ignoreStatuses() {
+    return [400, 401, 403]
+}
 ```
 
 ## Custom exceptions {#id-custom-exceptions}

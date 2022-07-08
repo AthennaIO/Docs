@@ -76,14 +76,82 @@ Once the test has been generated, you may define your tests as you normally woul
 execute the `npm start` or `node artisan test` command from your terminal:
 
 ```javascript
-import { test } from '@japa/runner'
+import { Test } from '@athenna/test'
 
-test.group('ExampleTest', () => {
-  test('should be able to run tests', async ({ assert }) => {
-    assert.equal(2 + 2, 4)
-  })
-})
+export class ExampleTest extends Test {
+    /**
+     * Before all event. This method is executed
+     * before all tests.
+     *
+     * @return {void | Promise<void>}
+     */
+    async beforeAll() {}
+
+    /**
+     * Before each event. This method is executed
+     * before each test.
+     *
+     * @return {void | Promise<void>}
+     */
+    async beforeEach() {}
+
+    /**
+     * After all event. This method is executed
+     * after all tests.
+     *
+     * @return {void | Promise<void>}
+     */
+    async afterAll() {}
+
+    /**
+     * After each event. This method is executed
+     * after each test.
+     *
+     * @return {void | Promise<void>}
+     */
+    async afterEach() {}
+
+    /**
+     * Set the test timeout for all tests inside the group.
+     *
+     * @example
+     *  Default is 2000
+     *
+     * @return {number}
+     */
+    get timeout() {
+        return 2000
+    }
+
+    /**
+     * Set the test names that can run.
+     *
+     * @example
+     *  Default is ['*']
+     *
+     * @return {string[]}
+     */
+    get runOnly() {
+        return ['shouldBeAbleToRunTests']
+    }
+
+    /**
+     * Run your test.
+     *
+     * @param {import('#src/index').HttpTestContext} ctx
+     */
+    async shouldBeAbleToRunTests({ assert }) {
+        assert.equal(2 + 2, 4)
+    }
+}
 ```
+
+:::caution
+
+Any method/attribute defined in your test class will be considered a test. To get around this you just need to define
+your method/attribute with an `_` in front of it. Example: `_getMyProductId()`
+
+:::
 
 ## Running tests {#id-running-tests}
 

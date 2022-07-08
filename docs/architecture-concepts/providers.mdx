@@ -32,6 +32,7 @@ tags:
   - #### [The register method](#id-the-register-method)
   - #### [The boot method](#id-the-boot-method)
 - #### [Registering providers](#id-registering-providers)
+- #### [Choosing applications](#id-choosing-applications)
 
 ## Introduction {#id-introduction}
 
@@ -110,22 +111,28 @@ export class MyAppProvider extends ServiceProvider {
   /**
    * All the container bindings that should be registered.
    */
-  bindings = {
-      'MyApp/Service': MyAppService
+  get bindings() {
+      return {
+        'MyApp/Service': MyAppService
+      }
   }
 
   /**
    * All the container instances that should be registered.
    */
-  instances = {
-      'MyApp/Resource': new MyAppResource()
+  get instances() {
+      return {
+        'MyApp/Resource': new MyAppResource()
+      }
   }
 
   /**
    * All the container singletons that should be registered.
    */
-  singletons = {
-      'MyApp/Repository': MyAppRepository
+  get singletons() {
+      return {
+        'MyApp/Repository': MyAppRepository
+      }
   }
 }
 ```
@@ -171,3 +178,45 @@ providers: [
   import('#providers/MyAppProvider'),
 ],
 ```
+
+## Choosing applications {#id-choosing-applications}
+
+In some cases you want that your provider only run for determined type of Athenna applications. For example, I have a `TestingDatabaseProvider`
+that connect with some database, if I don't have an [`Artisan command`](/docs/the-basics/cli/commands) that do some work inside
+this database, why I would need to run this `TestingDatabaseProvider` on application bootstrap?
+
+To solve this problem you can use the `bootstrapIn` getter to choose the applications that could run this provider:
+
+```javascript
+/**
+ * Set where the type of application where this provider can
+ * be registered or not.
+ *
+ * @return {string[]}
+ */
+get bootstrapIn() {
+    return ['http', 'worker']
+}
+```
+
+Now in `bootstrap/main` file we need to define the `ATHENNA_APPLICATIONS` environment variable before the application ignite:
+
+```javascript
+import { Ignite } from '@athenna/core'
+import { install } from 'source-map-support'
+
+async function main() {
+  install()
+
+  process.env.ATHENNA_APPLICATIONS = 'http,worker'
+
+  const application = await new Ignite().fire()
+
+  await application.bootWorker()
+  await application.bootHttpServer()
+}
+
+main().catch()
+```
+
+Now when running `node artisan` commands the `TestingDatabaseProvider` will not be ignited!

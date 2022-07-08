@@ -118,8 +118,10 @@ and assign it a key of your choosing:
 ```javascript
 // Within app\Http\Kernel class...
 
-namedMiddlewares = {
-  myMiddleware: import('App/Http/Middlewares/MyMiddleware')
+get namedMiddlewares() {
+    return {
+        myMiddleware: import('App/Http/Middlewares/MyMiddleware')
+    }
 }
 ```
 

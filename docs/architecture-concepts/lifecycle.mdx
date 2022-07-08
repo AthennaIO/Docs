@@ -104,7 +104,9 @@ handled by the application. It also defines your named middlewares to use inside
 *
 * This middlewares are run during every request to your http server.
 */
-globalMiddlewares = [import('#app/Http/Middlewares/ResponseMiddleware')]
+get globalMiddlewares() {
+    return [import('#app/Http/Middlewares/ResponseMiddleware')]
+}
 ```
 
 Or you can define as a named middleware and choose what routes are going to use it inside `routes/http`:
@@ -115,8 +117,10 @@ Or you can define as a named middleware and choose what routes are going to use 
 *
 * Here you define all your named middlewares to use inside routes/http file.
 */
-namedMiddlewares = {
-    response: import('#app/Http/Middlewares/ResponseMiddleware')
+get namedMiddlewares() {
+    return {
+        response: import('#app/Http/Middlewares/ResponseMiddleware')
+    }
 }
 ```
 
@@ -128,29 +132,46 @@ Route.get('/', 'WelcomeController.show').middleware('response')
 <TabItem value="Console Kernel" label="Console Kernel">
 
 The Kernel of `Console` folder extends the `ConsoleKernel` class from `@athenna/artisan`, which defines some bootstraps that will
-be run before the `routes/console` file is preloaded. These bootstraps configure error handling, configure logging, detect
-the application environment, and perform other tasks that need to be done before the request is actually handled. Typically,
-these classes handle internal Athenna configuration that you do not need to worry about.
+be run before the `routes/console` file is preloaded. These bootstraps configure error handling, configure logging, register custom
+templates, detect the application environment, and perform other tasks that need to be done before the request is actually handled.
+Typically, these classes handle internal Athenna configuration that you do not need to worry about.
 
 The Kernel of `Console` folder also defines a list of [`commands`](/docs/the-basics/cli/commands) that will be registered
 before the application bootstrap and before preloading `routes/console`. See the example:
 
 ```javascript
 /**
-* The application's global HTTP middlewares.
-*
-* This middlewares are run during every request to your http server.
-*/
-protected commands = [
-  import('@athenna/artisan/src/Commands/Eslint/Fix'),
-  import('@athenna/artisan/src/Commands/Make/Facade'),
-  import('@athenna/artisan/src/Commands/Make/Command'),
-  import('@athenna/artisan/src/Commands/Make/Service'),
-  import('@athenna/artisan/src/Commands/Make/Provider'),
-  import('@athenna/artisan/src/Commands/Make/Controller'),
-  import('@athenna/artisan/src/Commands/Make/Middleware'),
-  import('App/Console/Commands/MyNewCommand'),
-]
+ * Register the commands for the application.
+ *
+ * @return {any[]}
+ */
+get commands() {
+    return [
+        ...ArtisanLoader.loadCommands(),
+        ...HttpCommandsLoader.loadCommands(),
+        ...TestCommandsLoader.loadCommands(),
+    ]
+}
+```
+
+In Athenna you can use the loaders helpers such as `HttpCommandsLoader` to load all commands and custom templates from
+each package.
+
+The Kernel of `Console` folder also defines a list of [`templates`](/docs/the-basics/cli/commands#id-registering-custom-templates) that you can set to use inside your commands using the
+`TemplateHelper` class from `@athenna/artisan`. See the example:
+
+```javascript
+/**
+ * Register custom templates files.
+ *
+ * @return {import('@secjs/utils').File[] | Promise<any[]>}
+ */
+get templates() {
+    return [
+        ...HttpCommandsLoader.loadTemplates(),
+        ...TestCommandsLoader.loadTemplates(),
+    ]
+}
 ```
 
 </TabItem>

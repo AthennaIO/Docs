@@ -40,13 +40,20 @@ Athenna provides a very fluent API for making HTTP requests to your application 
 take a look at the e2e test defined below:
 
 ```javascript
-import { test } from '@japa/runner'
+import { Test } from '@athenna/test'
 
-test('should make get request', async ({ request }) => {
-  const response = await request.get('/api/welcome')
+export class WelcomeTest extends Test {
+    /**
+     * Run your test.
+     *
+     * @param {import('#src/index').HttpTestContext} ctx
+     */
+    async shouldMakeGetRequest({ request }) {
+        const response = await request.get('/api/welcome')
 
-  response.assertStatusCode(200)
-})
+        response.assertStatusCode(200)
+    }
+}
 ```
 
 The `get` method of `request` object makes a GET request into the application, while the `assertStatusCode` method asserts
@@ -63,13 +70,20 @@ Test request methods return an instance of `@athenna/core/TestResponse`, which p
 that allow you to inspect your application's responses:
 
 ```javascript
-import { test } from '@japa/runner'
+import { Test } from '@athenna/test'
 
-test('should make get request', async ({ request }) => {
-  const response = await request.get('/api/welcome')
+export class WelcomeTest extends Test {
+    /**
+     * Run your test.
+     *
+     * @param {import('#src/index').HttpTestContext} ctx
+     */
+    async shouldMakeGetRequest({ request }) {
+        const response = await request.get('/api/welcome')
 
-  response.assertStatusCode(200)
-})
+        response.assertStatusCode(200)
+    }
+}
 ```
 
 In general, each of your tests should only make one request to your application. Unexpected behavior may occur if multiple
@@ -81,15 +95,22 @@ You may set any options your might need as second parameter on `request` object 
 queries, cookies and other stuff you might need before it is sent to the application:
 
 ```javascript
-import { test } from '@japa/runner'
+import { Test } from '@athenna/test'
 
-test('should make get request', async ({ request }) => {
-  const response = await request.get('/api/welcome', { headers: {
-      'X-Header': '10'
-  }})
+export class WelcomeTest extends Test {
+    /**
+     * Run your test.
+     *
+     * @param {import('#src/index').HttpTestContext} ctx
+     */
+    async shouldMakeGetRequest({ request }) {
+        const response = await request.get('/api/welcome', { headers: {
+            'X-Header': '10'
+        }})
 
-  response.assertStatusCode(200)
-})
+        response.assertStatusCode(200)
+    }
+}
 ```
 
 ## Available assertions {#id-available-assertions}
