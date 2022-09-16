@@ -90,8 +90,8 @@ All the configuration files for the Athenna framework are stored in the `config`
 so feel free to look through the files and get familiar with the options available to you.
 
 Athenna needs almost no additional configuration out of the box. You are free to get started developing! However, you
-may wish to review the `config/app` file and its documentation. It contains several options such as `timezone` and
-`locale` that you may wish to change according to your application.
+may wish to review the `config/app` file and its documentation. It contains several options such as `debug`, `environment`
+and `locale` that you may wish to change according to your application.
 
 ### Environment configuration {#id-environment-configuration}
 
@@ -111,11 +111,11 @@ For more information about the `.env` file and environment configuration, check 
 
 ### Directory/Language configuration {#id-directory-language-configuration}
 
-By default, Athenna uses the modern EcmaScript modules. When you run the `npm start` command, the `artisan` will always
-read your `bootstrap/main` file to start your application.
+By default, Athenna uses the modern EcmaScript modules. When you run the `npm start` command, the Artisan will always
+read your `bootstrap/main.js` file to start your application.
 
 You can run your application using `npm run start:dev` to run in watch mode. The `npm test` command will always look
-for your `tests/main` file to run your tests.
+for your `tests/main.js` file to run your tests.
 
 :::info
 

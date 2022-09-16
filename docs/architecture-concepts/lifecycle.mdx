@@ -56,7 +56,7 @@ is going on, and your knowledge will grow as you explore other sections of the d
 
 ### First steps {#id-first-steps}
 
-The entry point for all types of an Athenna application is the `bootstrap/main` file. The first action taken by Athenna
+The entry point for all types of an Athenna application is the `bootstrap/main.js` file. The first action taken by Athenna
 itself is to create an instance of the application and then boot it.
 
 :::info
@@ -71,7 +71,7 @@ what type of application we want to run (http, worker, cli, etc...).
 ### Service providers {#id-service-providers}
 
 One of the most important kernel bootstrapping actions is loading the service providers for your application. All the
-service providers for the application are configured in the `config/app` configuration file's providers array.
+service providers for the application are configured in the `config/app.js` configuration file's providers array.
 
 Athenna will iterate through this list of providers and instantiate each of them. After instantiating the providers,
 the `register` method will be called on all the providers. Then, once all the providers have been registered, the
@@ -132,12 +132,12 @@ Route.get('/', 'WelcomeController.show').middleware('response')
 <TabItem value="Console Kernel" label="Console Kernel">
 
 The Kernel of `Console` folder extends the `ConsoleKernel` class from `@athenna/artisan`, which defines some bootstraps that will
-be run before the `routes/console` file is preloaded. These bootstraps configure error handling, configure logging, register custom
+be run before the `routes/console.js` file is preloaded. These bootstraps configure error handling, configure logging, register custom
 templates, detect the application environment, and perform other tasks that need to be done before the request is actually handled.
 Typically, these classes handle internal Athenna configuration that you do not need to worry about.
 
 The Kernel of `Console` folder also defines a list of [`commands`](/docs/the-basics/cli/commands) that will be registered
-before the application bootstrap and before preloading `routes/console`. See the example:
+before the application bootstrap and before preloading `routes/console.js`. See the example:
 
 ```javascript
 /**
@@ -146,30 +146,44 @@ before the application bootstrap and before preloading `routes/console`. See the
  * @return {any[]}
  */
 get commands() {
-    return [
+    const internalCommands = [
         ...ArtisanLoader.loadCommands(),
-        ...HttpCommandsLoader.loadCommands(),
         ...TestCommandsLoader.loadCommands(),
     ]
+
+    const appCommands = new Folder(Path.console('Commands'))
+        .loadSync()
+        .getFilesByPattern('**/*.js', true)
+        .map(command => import(command.href))
+
+    if (Env('NODE_ENV') === 'production') {
+        return appCommands
+    }
+
+    return [...internalCommands, ...appCommands]
 }
 ```
 
-In Athenna you can use the loaders helpers such as `HttpCommandsLoader` to load all commands and custom templates from
+In Athenna you can use the loaders helpers such as `TestCommandsLoader` to load all commands and custom templates from
 each package.
+
+But as you can see we have a little logic here to separate what is an internal command of Artisan of what is a command of
+your application. If we hadn't separated the internal and application commands, when you were going to publish your library,
+the internal Artisan commands like `node artisan make:test` would be there.
 
 The Kernel of `Console` folder also defines a list of [`templates`](/docs/the-basics/cli/commands#id-registering-custom-templates) that you can set to use inside your commands using the
 `TemplateHelper` class from `@athenna/artisan`. See the example:
 
 ```javascript
 /**
- * Register custom templates files.
+ * Register the custom templates for the application.
  *
- * @return {import('@secjs/utils').File[] | Promise<any[]>}
+ * @return {any[]}
  */
 get templates() {
     return [
-        ...HttpCommandsLoader.loadTemplates(),
         ...TestCommandsLoader.loadTemplates(),
+        ...ArtisanLoader.loadTemplates(),
     ]
 }
 ```

@@ -34,7 +34,6 @@ tags:
     - #### [The bootstrap directory](#id-the-bootstrap-directory)
     - #### [The config directory](#id-the-config-directory)
     - #### [The database directory](#id-the-database-directory)
-    - #### [The lang directory](#id-the-lang-directory)
     - #### [The providers directory](#id-the-providers-directory)
     - #### [The routes directory](#id-the-routes-directory)
     - #### [The storage directory](#id-the-storage-directory)
@@ -46,7 +45,6 @@ tags:
     - #### [The Repositories directory](#id-the-Repositories-directory)
     - #### [The Resources directory](#id-the-Resources-directory)
     - #### [The Services directory](#id-the-Services-directory)
-    - #### [The Validators directory](#id-the-Validators-directory)
 
 ## Introduction {#id-introduction}
 
@@ -55,7 +53,7 @@ tags:
 We highly recommend using the `node artisan make` command to generate the files of your application. If using the Artisan,
 it will automatically generate the file and register it wherever is needed. Take as an example the `node artisan make:command`
 command. First it will generate the file and then will register the command inside the `commands` array property of
-`app/Console/Kernel` file.
+`app/Console/Kernel.js` file.
 
 :::
 
@@ -78,14 +76,9 @@ of these files and familiarize yourself with all the options available to you.
 
 ### The database directory {#id-the-resources-directory}
 
-This directory does not exist by default, but will be created for you if you execute the `athenna install database` command.
+This directory does not exist by default, but will be created for you if you execute the `athenna install:database` command.
 The `database` directory contains your database migrations, model factories, and seeds. If you wish, you may also use
 this directory to hold an SQLite database.
-
-### The lang directory {#id-the-lang-directory}
-
-This directory does not exist by default, but will be created for you if you execute the `athenna install intl` command.
-The `lang` directory houses all of your application's language files.
 
 ### The providers directory {#id-the-providers-directory}
 
@@ -143,9 +136,9 @@ generated files and caches and the `logs` directory contains your application's 
 
 ### The tests directory {#id-the-tests-directory}
 
-The `tests` directory contains your unitary and E2E tests. [Japa](https://japa.dev/) unit tests and feature
-tests are provided out of the box. Each test class should be suffixed with the word `Test`. You may run your tests using
-the `npm test` command.
+You can create a test executing the `node artisan make:test` command. The `tests` directory contains your unitary and E2E
+tests. [Japa](https://japa.dev/) unit tests and feature tests are provided out of the box. Each test class should be suffixed
+with the word `Test`. You may run your tests using the `npm test` command.
 
 ## The app directory {#id-the-main-app-directory}
 
@@ -169,22 +162,21 @@ run the `node artisan list make` command in your terminal.
 
 ### The Console directory {#id-the-Console-directory}
 
-The `Console` directory contains all of the custom Artisan commands for your application. These commands may be generated 
+The `Console` directory contains all the custom Artisan commands for your application. These commands may be generated
 using the `make:command` command. This directory also houses your console kernel, which is where your custom Artisan 
 commands are registered.
 
 ### The Http directory {#id-the-Http-directory}
 
-This directory does not exist by default if you have not created your project in CLI using the project type `http`, but
-you can create it if you execute the `athenna install http` command. The `Http` directory contains your controllers and
-middlewares. Almost all the logic to handle http requests entering your application will be placed in this directory.
+The `Http` directory contains your controllers and middlewares. Almost all the logic to handle http requests entering your
+application will be placed in this directory.
 
 ### The Models directory {#id-the-Models-directory}
 
 :::caution
 
 The `Models` directory will not come installed with the framework and the `node artisan make:model` will not work until you
-run `athenna install database` command to set up `@athenna/orm` and `@athenna/database` packages in your project
+run `athenna install:database` command to set up `@athenna/database` package in your project.
 
 :::
 
@@ -201,8 +193,15 @@ or an ElasticSearch. Usually you are going to use the ORM with these classes to 
 
 ### The Resources directory {#id-the-Resources-directory}
 
+:::caution
+
+The `Resources` directory will not come installed with the framework and the `node artisan make:resource` will not work until you
+run `athenna install:database` command to set up `@athenna/database` package in your project.
+
+:::
+
 This directory does not exist by default, but will be created for you if you execute the `node artisan make:resource` command.
-The `Resources` directory contains all the classes that will be responsible to transform your ORM models to a simples Object.
+The `Resources` directory contains all the classes that will be responsible to transform your ORM models to a simple Object.
 For example, you may wish to display certain attributes for a subset of users and not for others.
 
 ### The Services directory {#id-the-Services-directory}
@@ -213,9 +212,3 @@ only the logic responsible to receive the request, delegate to your service and 
 services inside your entrypoint classes like controllers using the `constructor` method in camelCase format, example: the
 class name is `UserService` but in the `constructor` you call the `userService`. You can explore the container in more detail in the
 [container architecture concepts section](/docs/architecture-concepts/container).
-
-### The Validators directory {#id-the-Validators-directory}
-
-This directory does not exist by default, but will be created for you if you execute the `node artisan make:validator` command.
-The Validators directory contains the custom validation objects for your application. Validators are used to encapsulate
-complicated validation logic in a simple object.
