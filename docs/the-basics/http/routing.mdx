@@ -174,10 +174,10 @@ Rate limiters ensure the fair usage of your http server by clients. It regulates
 your application in a given time-frame.
 
 Athenna uses the [`fastify-rate-limit`](https://github.com/fastify/fastify-rate-limit) plugin inside `HttpKernel`. All
-the configurations that `fastify-rate-limit` supports can be set inside `config/http` file in the `rateLimit` object.
+the configurations that `fastify-rate-limit` supports can be set inside `config/http.js` file in the `rateLimit` object.
 
 Rate limit plugin is registered in your http application by default, but you can remove it setting the `noRateLimit` as
-`true` in `config/http` file.
+`true` in `config/http.js` file.
 
 :::tip
 For more information on Rate limit and Rate limit headers, please consult the
@@ -190,10 +190,10 @@ Cross-Origin Resource Sharing (CORS) is an HTTP-header based mechanism that allo
 (domain, scheme, or port) other than its own from which a browser should permit loading resources.
 
 Athenna uses the [`fastify-cors`](https://github.com/fastify/fastify-cors) plugin inside `HttpKernel`. All the configurations
-that `fastify-cors` supports can be set inside `config/http` file in the `cors` object.
+that `fastify-cors` supports can be set inside `config/http.js` file in the `cors` object.
 
 Rate limit plugin is registered in your http application by default, but you can remove it setting the `noCors` as
-`true` in `config/http` file.
+`true` in `config/http.js` file.
 
 :::tip
 For more information on CORS and CORS headers, please consult the

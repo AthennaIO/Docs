@@ -50,7 +50,7 @@ We'll dive deeper into both classes throughout this documentation.
 
 ## Configuration {#id-configuration}
 
-The `debug` option in your `config/app` configuration file determines how much
+The `debug` option in your `config/app.js` configuration file determines how much
 information about an error is actually displayed to the user. By default, this
 option is set to respect the value of the `APP_DEBUG` environment variable, which
 is stored in your `.env` file.
@@ -61,12 +61,12 @@ If the value is set to `true` in production, you risk exposing sensitive
 configuration values to your application's end users.
 
 Every error will be logged by default using the `console` driver from `@athenna/logger`.
-By default, Athenna uses the `exception` channel of your `config/logging` file to log all
+By default, Athenna uses the `exception` channel of your `config/logging.js` file to log all
 exceptions that happens in your application.
 
 :::tip
 
-You can change the driver and formatter of `exception` channel inside `config/logging`
+You can change the driver and formatter of `exception` channel inside `config/logging.js`
 file. This way you can send all your errors to other driver and using a different formatter.
 
 :::
@@ -74,7 +74,7 @@ file. This way you can send all your errors to other driver and using a differen
 ## The http exception handler {#id-the-http-exception-handler}
 
 Athenna will forward all exceptions occurred during an HTTP request command execution
-to the `handle` method of `app/Http/Exceptions/Handler` class. By default,
+to the `handle` method of `app/Http/Exceptions/Handler.js` class. By default,
 Athenna forward the error to the `handle` method of `HttpExceptionHandler` from Http
 using super.
 
@@ -96,7 +96,7 @@ but we recommend using the `handle` method from `HttpExceptionHandler` to valida
 ### Ignoring logs {#id-ignoring-logs}
 
 You can simple ignore the exceptions from being logged in your exception handler
-using the `ignoreCodes` and `ignoreStatuses` properties of your `app/Http/Exceptions/Handler`
+using the `ignoreCodes` and `ignoreStatuses` properties of your `app/Http/Exceptions/Handler.js`
 class.
 
 ```javascript
@@ -144,6 +144,6 @@ throw new NotFoundException(message, status, code, help)
 
 Always try to use a custom exception to throw your errors inside Athenna. If you use
 `Error`, `TypeError` and other classes, it will not be treated by the handlers and will always
-be considered as an not treated exception.
+be considered as a not treated exception.
 
 :::

@@ -107,12 +107,12 @@ dependencies you need within a middlewares constructor.
 ### Global middleware {#id-global-middleware}
 
 If you want a middleware to run during every HTTP request to your application, list the middleware class in the `globalMiddlewares`
-property of your `app/Http/Kernel` class.
+property of your `app/Http/Kernel.js` class.
 
 ### Assigning middleware to routes {#assigning-middleware-to-routes}
 
 If you would like to assign middleware to specific routes, you should first assign the middleware a key in your application's
-`app/Http/Kernel` file. You can do that inside `namedMiddlewares` property, you may add your own middleware to this list
+`app/Http/Kernel.js` file. You can do that inside `namedMiddlewares` property, you may add your own middleware to this list
 and assign it a key of your choosing:
 
 ```javascript
@@ -169,7 +169,7 @@ export class InterceptMiddleware {
 }
 ```
 
-Once you have defined a intercept middleware, you should add it to the list of routes or global middleware in the `app/Http/Kernel` file.
+Once you have defined a intercept middleware, you should add it to the list of routes or global middleware in the `app/Http/Kernel.js` file.
 
 ## Terminate middleware {#id-terminate-middleware}
 
@@ -209,7 +209,7 @@ Once you have defined a terminable middleware, you should add it to the list of 
 
 :::info
 
-The requests log created by Athenna when the `logRequests` property is true in your `config/http` file are handled by a
+The requests log created by Athenna when the `logRequests` property is true in your `config/http.js` file are handled by a
 terminable middleware! You can see the code [here](https://github.com/AthennaIO/Http/blob/develop/src/Kernels/HttpKernel.js).
 
 :::

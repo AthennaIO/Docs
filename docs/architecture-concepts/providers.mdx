@@ -42,7 +42,7 @@ of Athenna core services, are bootstrapped via service providers.
 But, what do we mean by "bootstrapped"? In general, we mean registering things, including registering service container
 bindings, event listeners, middleware, and even routes. Service providers are the central place to configure your application.
 
-If you open the `config/app` file included with Athenna, you will see a providers array. These are all the service provider
+If you open the `config/app.js` file included with Athenna, you will see a providers array. These are all the service provider
 classes that will be loaded for your application. By default, a set of Athenna core service providers are listed in this array.
 These providers bootstrap the core Athenna components, such as the http, route, logger, services and others.
 
@@ -165,7 +165,7 @@ export class MyAppProvider extends ServiceProvider {
 
 ## Registering providers {#id-registering-providers}
 
-All service providers are registered in the `config/app` configuration file. This file contains a providers array where
+All service providers are registered in the `config/app.js` configuration file. This file contains a providers array where
 you can list the class names of your service providers. By default, a set of Athenna core service providers are listed
 in this array. These providers bootstrap the core Athenna components, such as the http, route, services and others.
 
