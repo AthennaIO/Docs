@@ -1,0 +1,101 @@
+---
+sidebar_position: 3
+
+id: mocking
+title: Mocking
+hide_title: true
+hide_table_of_contents: true
+tags:
+- Testing
+---
+
+<nav aria-label="breadcrumbs">
+    <ul class="breadcrumbs">
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/">🏠</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link">Testing</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/docs/testingg/mocking.mdx">Mocking</a>
+        </li>
+    </ul>
+</nav>
+
+<span class="badge badge--secondary margin-top-bot">version 1.0.0</span>
+
+
+# Mocking
+
+- #### [Introduction](#id-introduction)
+- #### [Mocking providers](#id-mocking-providers)
+- #### [Mocking internal providers](#id-mocking-internal-providers)
+
+## Introduction {#id-introduction}
+
+When testing Athenna applications, you may wish to "mock" certain aspects of your application, so they are not actually
+executed during a given test. For example, when testing a controller that dispatches a http request to other service, you
+may wish to mock the request, so they are not actually executed during the test. This allows you to only test the controller's
+HTTP response without worrying about the execution of the http request since the http request can be tested in their own test case.
+
+Athenna still does not provide helpful methods for mocking, but you can easily mock everything that is registered inside
+the service container.
+
+## Mocking providers {#id-mocking-providers}
+
+To mock an object that is going to be injected into Athenna [`service container`](/docs/architecture-concepts/container),
+you can use the global `ioc` property in your `tests/main.js` file:
+
+```javascript
+import { WelcomeServiceMock } from '#tests/Stubs/WelcomeServiceMock'
+
+/*
+|--------------------------------------------------------------------------
+| Service container mocking
+|--------------------------------------------------------------------------
+|
+| Reserve this space to set mocks for the service container using the global
+| 'ioc' instance. It's important for this code to stay before where we
+| ignite the application.
+*/
+
+ioc.mock('App/Services/WelcomeService', WelcomeServiceMock)
+```
+
+As you can see we are mocking the `App/Services/WelcomeService` alias. Now everytime that the application bootstrap by your
+`tests/main.js` file it will register the `WelcomeServiceMock` class as the dependency for the `App/Services/WelcomeService` alias.
+
+:::tip
+
+If you notice we are mocking the alias `App/Services/WelcomeService`. This alias refer to the `app/Services/WelcomeService.js` file
+in your application. You can mock all your services just changing the final name of the alias to your service name. That's the same
+for the `App/Repositories/...` aliases.
+
+:::
+
+## Mocking internal providers {#id-mocking-internal-providers}
+
+Maybe you may want to mock one of the Athenna internal providers such as `Log`. To do that, you can check what is the alias
+of `Log` dependency in [facade class reference](/docs/architecture-concepts/facades#id-facade-class-reference) session.
+Then we can do the same configuration above to `Log`:
+
+```javascript
+import { Log } from '#tests/Stubs/LogMock'
+import { WelcomeServiceMock } from '#tests/Stubs/WelcomeServiceMock'
+
+/*
+|--------------------------------------------------------------------------
+| Service container mocking
+|--------------------------------------------------------------------------
+|
+| Reserve this space to set mocks for the service container using the global
+| 'ioc' instance. It's important for this code to stay before where we
+| ignite the application.
+*/
+
+ioc.mock('Athenna/Core/Logger', Log)
+ioc.mock('App/Services/WelcomeService', WelcomeServiceMock)
+```
+
+
