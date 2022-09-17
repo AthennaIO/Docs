@@ -1,0 +1,69 @@
+---
+sidebar_position: 1
+
+id: repl
+title: REPL
+hide_title: true
+hide_table_of_contents: true
+tags:
+- Artisan
+- Digging Deeper
+---
+
+<nav aria-label="breadcrumbs">
+    <ul class="breadcrumbs">
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/">🏠</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link">Digging Deeper</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/docs/digging-deeper/repl">REPL</a>
+        </li>
+    </ul>
+</nav>
+
+<span class="badge badge--secondary margin-top-bot">version 1.0.0</span>
+
+# REPL
+
+- #### [Introduction](#id-introduction)
+- #### [Booting REPL](#id-booting-repl)
+- #### [Importing modules](#id-importing-modules)
+
+## Introduction {#id-introduction}
+
+From [Digital ocean article](https://www.digitalocean.com/community/tutorials/what-is-repl): A Read-Eval-Print Loop, or REPL,
+is a computer environment where user inputs are read and evaluated, and then the results are returned to the user. REPLs
+provide an interactive environment to explore tools available in specific environments or programming languages. Some
+examples include the Node.js console, IPython, the Bash shell, and the developer console found in most web browsers.
+
+Athenna can easily integrate with [`node:repl`](https://nodejs.org/api/repl.html#repl) package to run your entire infrastructure
+in parallel with the package.
+
+## Booting REPL {#id-booting-repl}
+
+REPL allows you to interact with your entire Athenna application on the command line, including your models,
+jobs, events, and more. To enter the REPL environment, run the Artisan command:
+
+```shell
+node artisan repl
+```
+
+## Importing modules {#id-importing-modules}
+
+To import modules inside REPL you need to use dynamic imports:
+
+```javascript
+{ Log } = await import('@athenna/logger') // Destructuring import
+helpers = await import('#src/Helpers/index') // Default import
+```
+
+:::caution
+If you don't use `var/let/const` in front of your importation, the variable will be set globally in your REPL session.
+:::
+
+:::tip
+You can check the global context of your REPL session running `.ls`. You can type `.help` to check all REPL commands available.
+:::

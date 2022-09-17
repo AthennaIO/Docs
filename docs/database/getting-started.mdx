@@ -1,0 +1,102 @@
+---
+sidebar_position: 1
+
+id: getting-started
+title: Getting Started
+hide_title: true
+hide_table_of_contents: true
+tags:
+- ORM
+- Database
+- Digging Deeper
+---
+
+<nav aria-label="breadcrumbs">
+    <ul class="breadcrumbs">
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/">🏠</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link">Database</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/docs/database/getting-started">Getting Started</a>
+        </li>
+    </ul>
+</nav>
+
+<span class="badge badge--secondary margin-top-bot">version 1.0.0</span>
+
+# Database: Getting Started
+
+- #### [Introduction](#id-introduction)
+- #### [Installation](#id-installation)
+- #### [Configuration](#id-configuration)
+    - #### [Available connection drivers](#id-available-connection-drivers)
+- #### [Running queries](#id-running-queries)
+
+## Introduction {#id-introduction}
+
+Almost every modern application interacts with a database. Athenna makes interacting with databases extremely simple across
+a variety of supported databases using raw SQL, a fluent query builder, and the ORM.
+
+## Installation {#id-installation}
+
+Athenna provides a very simple command inside `@athenna/cli` package to easily install and configure the database package
+in your project. In your project root path run:
+
+```shell
+athenna install:database
+```
+
+This command will do the following operations in your project:
+
+- Install [`pg`](https://www.npmjs.com/package/pg) package
+- Install [`@athenna/database`](https://github.com/AthennaIO/Database) package
+- Create `config/database.js` file
+- Add the database provider to `config/app.js` file in providers property
+- Add the database commands and templates to `app/Commands/Kernel.js`
+- Add environment variables to your `.env` file
+- Create `docker-compose.yaml` file
+- Lint your project
+
+:::tip
+PostgreSQL is the default database of `install:database` command. If you want to configure for MySQL database use the `--db=mysql`
+argument.
+:::
+
+## Configuration {#id-configuration}
+
+All the configuration options for your application's database behavior is housed in the `config/databse.js` configuration file.
+This file allows you to configure your application's database connections, so be sure to review each of the available connections
+and their options. We'll review a few common options below.
+
+### Available connection drivers {#id-available-connection-drivers}
+
+Each database connection is powered by a "driver". The driver determines how and where the data is actually transported.
+The following database connection drivers are available in every Athenna application. An entry for most of these drivers is
+already present in your application's `config/database.js` configuration file, so be sure to review this file to become
+familiar with its contents:
+
+<table>
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Website</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><code>mysql</code></td>
+        <td><a target="_blank" href="https://www.mysql.com/">https://www.mysql.com/</a></td>
+    </tr>
+    <tr>
+        <td><code>postgresql</code></td>
+        <td><a target="_blank" href="https://www.postgresql.org/">https://www.postgresql.org/</a></td>
+    </tr>
+    </tbody>
+</table>
+
+## Running queries {#id-running-queries}
+
+Coming soon...
