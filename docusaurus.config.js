@@ -43,8 +43,13 @@ const config = {
             {
               type: 'doc',
               docId: 'getting-started/installation',
-              position: 'left',
               label: 'Guides',
+              position: 'left',
+            },
+            {
+              href: '/benchmarks',
+              label: 'Benchmarks',
+              position: 'left',
             },
             {
               href: 'https://github.com/athennaio',
