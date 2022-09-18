@@ -35,7 +35,11 @@ tags:
     - #### [Available connection drivers](#id-available-connection-drivers)
     - #### [Overview of some environment variables](#id-overview-of-some-environment-variables)
 - #### [Running queries](#id-running-queries)
-    - #### [Running a select query](#id-running-a-select-query)
+    - #### [Running a count query](#id-running-a-count-query)
+    - #### [Running a find query](#id-running-a-find-query)
+    - #### [Running a findOrFail query](#id-running-a-findOrFail-query)
+    - #### [Running a findMany query](#id-running-a-findMany-query)
+    - #### [Running a paginate query](#id-running-a-paginate-query)
     - #### [Running a create query](#id-running-a-create-query)
 
 ## Introduction {#id-introduction}
@@ -147,34 +151,115 @@ up the database in your machine.
 ## Running queries {#id-running-queries}
 
 Once you have configured your database connection, you may run queries using the `Database` facade. The `Database` facade
-provides methods for each type of query: **find, findMany, update, create,** and **delete**.
+provides **executors** methods for each type of query, here are the more relevant:
 
-### Running a select query {#id-running-a-select-query}
+- count
+- find
+- findOrFail
+- findMany
+- paginate
+- create
+- createMany
+- createOrUpdate
+- update
+- delete
 
-To run a basic select query, you may use first the `buildTable` method to specify what is the table that should be used and
-then `buildSelect` method on the `Database` facade:
+We'll review why and how to use all of these methods later. The methods that start with `build...` means you are building
+a query, and to execute the query you need to call one of the **executors** methods.
+
+To run any of the below queries, you may use first the `buildTable` method to specify what is the table that should be used
+for your operations:
 
 ```javascript
 import { Database } from '@athenna/database'
 
-const user = await Database.buildTable('users').buildSelect('id').find()
-const users = await Database.buildTable('users').buildSelect('id').findMany()
+Database.buildTable('users')
 ```
 
-You can store the instance of database in a variable. This way you don't need to call `buildTable` method everytime:
+Everytime that you use the `Database` facade you are using a different instance of `DatabaseImpl` class. This means that you
+would need to call `buildTable` method everytime for different queries. To get around this, you can save the instance in a local
+variable:
 
 ```javascript
 import { Database } from '@athenna/database'
 
-const database = await Database.buildTable('users')
-
-const { id: idOne } = await database.buildSelect('id').find()
-const [{ id: idMany }] = await database.buildSelect('id').findMany()
-
-const fullUser = await database.find()
-const fullUsers = await database.findMany()
+const userQuery = Database.buildTable('users') // First instance of Database
+const orderQuery = Database.buildTable('orders') // Second instance of Database
+const productsQuery = Database.buildTable('products') // Third instance of Database
 ```
 
-### Running a create query {#id-running-a-create-query}
+#### Running a count query {#id-running-a-count-query}
+
+The `count` method is useful to know how many records of that determined query or column exists in database:
+
+```javascript
+const query = Database.buildTable('users')
+
+const number = await query.buildWhere('name', 'Victor Tesoura').count()
+```
+
+#### Running a find query {#id-running-a-find-query}
+
+The `find` method is useful to retrieve only one record that match the query statements from database:
+
+```javascript
+const query = Database.buildTable('users')
+
+const { id, name } = await query
+    .buildSelect('id', 'name')
+    .buildWhere('id', 10)
+    .find()
+```
+
+#### Running a findOrFail query {#id-running-a-findOrFail-query}
+
+Different from `find` method, the `findOrFail` method will throw an exception if the query statements does not match any
+value in database:
+
+```javascript
+const query = Database.buildTable('users')
+
+// Will throw a NotFoundException.
+await query
+    .buildWhere({ id: 0 })
+    .findOrFail()
+
+const { id, name } = await query
+    .buildSelect('id', 'name')
+    .buildWhere({ id: 10 })
+    .findOrFail()
+```
+
+#### Running a findMany query {#id-running-a-findMany-query}
+
+The `findMany` method is useful to retrieve more than one record that match the query statements from database:
+
+```javascript
+const query = Database.buildTable('users')
+
+const users = await query
+    .buildSelect('id', 'name')
+    .buildWhereLike('name', '%Lenon%')
+    .findMany()
+```
+
+#### Running a paginate query {#id-running-a-paginate-query}
+
+The `paginate` method is useful when you want to paginate your data that match the query statements:
+
+```javascript
+const query = Database.buildTable('users')
+
+const page = 0
+const limit = 10
+const route = '/users' // To create links
+
+const { meta, links, data } = await query
+    .buildWhereNull('deletedAt')
+    .buildOrderBy('name', 'DESC')
+    .paginate(page, limit, route)
+```
+
+#### Running a create query {#id-running-a-create-query}
 
 Coming soon...
