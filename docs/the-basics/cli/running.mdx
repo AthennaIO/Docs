@@ -56,8 +56,8 @@ To register your CLI command name you can simply add the `bin` object inside you
 ## Entrypoint file {#id-entrypoint-file}
 
 In our example we defined the `./bootstrap/main.js` file as the entrypoint file of our CLI. By default, this file
-comes with the `#!/usr/bin/env node --input-type module` in the top of the file. Without this line the `npm link` command will not work.
-So just in case you want to define a different entrypoint file, remember that `#!/usr/bin/env node --input-type module` should be on the top
+comes with the `#!/usr/bin/env node` in the top of the file. Without this line the `npm link` command will not work.
+So just in case you want to define a different entrypoint file, remember that `#!/usr/bin/env node` should be on the top
 of this file.
 
 ## Linking the package.json {#id-linking-the-packageJson}

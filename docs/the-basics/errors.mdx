@@ -9,6 +9,7 @@ tags:
 - Getting Started
 - Architecture Concepts
 - The Basics
+- Errors
 ---
 
 <nav aria-label="breadcrumbs">
@@ -71,9 +72,27 @@ file. This way you can send all your errors to other driver and using a differen
 
 :::
 
+## The cli exception handler {#id-the-cli-exception-handler}
+
+Athenna will forward all exceptions occurred during a command execution
+to the `handle` method of `app/Console/Exceptions/Handler.js` class. By default,
+Athenna forward the error to the `handle` method of `ConsoleExceptionHandler` from Artisan
+using super.
+
+```javascript
+/**
+ * The global exception handler of all Artisan commands.
+ *
+ * @param {any} error
+ */
+async handle(error) {
+  return super.handle(error)
+}
+```
+
 ## The http exception handler {#id-the-http-exception-handler}
 
-Athenna will forward all exceptions occurred during an HTTP request command execution
+Athenna will forward all exceptions occurred during an HTTP request execution
 to the `handle` method of `app/Http/Exceptions/Handler.js` class. By default,
 Athenna forward the error to the `handle` method of `HttpExceptionHandler` from Http
 using super.
@@ -95,7 +114,7 @@ but we recommend using the `handle` method from `HttpExceptionHandler` to valida
 
 ### Ignoring logs {#id-ignoring-logs}
 
-You can simple ignore the exceptions from being logged in your exception handler
+You can simply ignore the exceptions from being logged in your exception handler
 using the `ignoreCodes` and `ignoreStatuses` properties of your `app/Http/Exceptions/Handler.js`
 class.
 
