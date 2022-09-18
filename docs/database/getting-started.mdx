@@ -33,7 +33,10 @@ tags:
 - #### [Installation](#id-installation)
 - #### [Configuration](#id-configuration)
     - #### [Available connection drivers](#id-available-connection-drivers)
+    - #### [Overview of some environment variables](#id-overview-of-some-environment-variables)
 - #### [Running queries](#id-running-queries)
+    - #### [Running a select query](#id-running-a-select-query)
+    - #### [Running a create query](#id-running-a-create-query)
 
 ## Introduction {#id-introduction}
 
@@ -61,8 +64,10 @@ This command will do the following operations in your project:
 - Lint your project
 
 :::tip
+
 PostgreSQL is the default database of `install:database` command. If you want to configure for MySQL database use the `--db=mysql`
 argument.
+
 :::
 
 ## Configuration {#id-configuration}
@@ -97,6 +102,79 @@ familiar with its contents:
     </tbody>
 </table>
 
+### Overview of some environment variables {#id-overview-of-some-environment-variables}
+
+Before installing the database component using the Athenna CLI you can check your `.env` file in your project root path,
+the Athenna CLI have added some environment variables there to help you connect to your database. These variables are:
+
+```dotenv
+DB_CONNECTION=postgres
+DB_HOST=127.0.0.1
+DB_PORT=(5432)
+DB_DATABASE=database
+DB_USERNAME=root
+DB_PASSWORD=root
+DB_SYNCHRONIZE=(true)
+DB_AUTO_CONNECT=(true)
+```
+
+Let's focus in **DB_CONNECTION, DB_SYNCHRONIZE and DB_AUTO_CONNECT** variables:
+
+#### DB_CONNECTION
+
+This variable specify for Athenna what is the default connection name that should be used by `Database` facade when running
+database operations.
+
+#### DB_SYNCHRONIZE
+
+This variable are useful when running your application locally, If `DB_SYNCHRONIZE` is true, than TypeORM will read the
+schema of all your models and auto create the tables for your in your database. This variable **should be used only for
+development purpose**. Do NOT use synchronize in production environment (might have data losses).
+
+#### DB_AUTO_CONNECT
+
+This variable specify for Athenna if the default connection should be auto connected inside `DatabaseProvider`. We set the
+value of this variable as true when bootstrapping the application by `bootstrap/main.js` file, but when running the application
+from `artisan` we set this variable to false.
+
+:::tip
+
+Before going through the documentation, remember to run [`docker-compose up -d`](https://docs.docker.com/compose/) to start
+up the database in your machine.
+
+:::
+
 ## Running queries {#id-running-queries}
+
+Once you have configured your database connection, you may run queries using the `Database` facade. The `Database` facade
+provides methods for each type of query: **find, findMany, update, create,** and **delete**.
+
+### Running a select query {#id-running-a-select-query}
+
+To run a basic select query, you may use first the `buildTable` method to specify what is the table that should be used and
+then `buildSelect` method on the `Database` facade:
+
+```javascript
+import { Database } from '@athenna/database'
+
+const user = await Database.buildTable('users').buildSelect('id').find()
+const users = await Database.buildTable('users').buildSelect('id').findMany()
+```
+
+You can store the instance of database in a variable. This way you don't need to call `buildTable` method everytime:
+
+```javascript
+import { Database } from '@athenna/database'
+
+const database = await Database.buildTable('users')
+
+const { id: idOne } = await database.buildSelect('id').find()
+const [{ id: idMany }] = await database.buildSelect('id').findMany()
+
+const fullUser = await database.find()
+const fullUsers = await database.findMany()
+```
+
+### Running a create query {#id-running-a-create-query}
 
 Coming soon...
