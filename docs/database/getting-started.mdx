@@ -35,12 +35,8 @@ tags:
     - #### [Available connection drivers](#id-available-connection-drivers)
     - #### [Overview of some environment variables](#id-overview-of-some-environment-variables)
 - #### [Running queries](#id-running-queries)
-    - #### [Running a count query](#id-running-a-count-query)
-    - #### [Running a find query](#id-running-a-find-query)
-    - #### [Running a findOrFail query](#id-running-a-findOrFail-query)
-    - #### [Running a findMany query](#id-running-a-findMany-query)
-    - #### [Running a paginate query](#id-running-a-paginate-query)
-    - #### [Running a create query](#id-running-a-create-query)
+    - #### [Using multiple database connections](#id-using-multiple-database-connections)
+- #### [Database transactions](#id-database-transactions)
 
 ## Introduction {#id-introduction}
 
@@ -153,14 +149,10 @@ up the database in your machine.
 Once you have configured your database connection, you may run queries using the `Database` facade. The `Database` facade
 provides **executors** methods for each type of query, here are the more relevant:
 
-- count
 - find
-- findOrFail
 - findMany
-- paginate
 - create
 - createMany
-- createOrUpdate
 - update
 - delete
 
@@ -188,16 +180,6 @@ const orderQuery = Database.buildTable('orders') // Second instance of Database
 const productsQuery = Database.buildTable('products') // Third instance of Database
 ```
 
-#### Running a count query {#id-running-a-count-query}
-
-The `count` method is useful to know how many records of that determined query or column exists in database:
-
-```javascript
-const query = Database.buildTable('users')
-
-const number = await query.buildWhere('name', 'Victor Tesoura').count()
-```
-
 #### Running a find query {#id-running-a-find-query}
 
 The `find` method is useful to retrieve only one record that match the query statements from database:
@@ -207,27 +189,8 @@ const query = Database.buildTable('users')
 
 const { id, name } = await query
     .buildSelect('id', 'name')
-    .buildWhere('id', 10)
-    .find()
-```
-
-#### Running a findOrFail query {#id-running-a-findOrFail-query}
-
-Different from `find` method, the `findOrFail` method will throw an exception if the query statements does not match any
-value in database:
-
-```javascript
-const query = Database.buildTable('users')
-
-// Will throw a NotFoundException.
-await query
-    .buildWhere({ id: 0 })
-    .findOrFail()
-
-const { id, name } = await query
-    .buildSelect('id', 'name')
     .buildWhere({ id: 10 })
-    .findOrFail()
+    .find()
 ```
 
 #### Running a findMany query {#id-running-a-findMany-query}
@@ -239,27 +202,76 @@ const query = Database.buildTable('users')
 
 const users = await query
     .buildSelect('id', 'name')
+    .buildWhereNull('deletedAt')
     .buildWhereLike('name', '%Lenon%')
+    .buildOrderBy('name', 'DESC')
     .findMany()
 ```
 
-#### Running a paginate query {#id-running-a-paginate-query}
+#### Running a create query {#id-running-a-create-query}
 
-The `paginate` method is useful when you want to paginate your data that match the query statements:
+The `create` method is useful to create one record in database:
 
 ```javascript
 const query = Database.buildTable('users')
 
-const page = 0
-const limit = 10
-const route = '/users' // To create links
-
-const { meta, links, data } = await query
-    .buildWhereNull('deletedAt')
-    .buildOrderBy('name', 'DESC')
-    .paginate(page, limit, route)
+const user = await query.create({ name: 'Victor Tesoura' })
 ```
 
-#### Running a create query {#id-running-a-create-query}
+#### Running a createMany query {#id-running-a-createMany-query}
+
+The `createMany` method is useful to create many records in database:
+
+```javascript
+const query = Database.buildTable('users')
+
+const users = await query.createMany([
+    { name: 'Victor Tesoura' },
+    { name: 'João Lenon' }
+])
+```
+
+#### Running an update query {#id-running-an-update-query}
+
+The `update` method is useful to update one or more records based in statements in database:
+
+```javascript
+const query = Database.buildTable('users')
+
+const users = await query
+    .buildSelect('id', 'name')
+    .buildWhereIn('id', [1, 2])
+    .buildOrderBy('name', 'ASC')
+    .update({ name: 'Danrley Morais' })
+```
+
+#### Running a delete query {#id-running-an-update-query}
+
+The `delete` method is useful to delete one or more records based in statements in database:
+
+```javascript
+const query = Database.buildTable('users')
+
+await query.buildWhereBetween('id', [1, 10]).delete()
+```
+
+### Using multiple database connections {#id-using-multiple-database-connections}
+
+If your application defines multiple connections in your `config/database.js` configuration file, you may access each
+connection via the `connection` method provided by the `Database` facade. The connection name passed to the `connection`
+method should correspond to one of the connections listed in your `config/database.js` configuration file:
+
+```javascript
+const query = await Database.connection('mysql').connect()
+
+const users = await query
+    .buildTable('users')
+    .buildSelect('id', 'name')
+    .buildWhereNotIn('id', [1, 2])
+    .buildOrderBy('name', 'ASC')
+    .findMany()
+```
+
+## Database transactions {#id-database-transactions}
 
 Coming soon...
