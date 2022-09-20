@@ -36,6 +36,7 @@ tags:
 - #### [Database operations](#id-database-operations)
 - #### [Running queries](#id-running-queries)
     - #### [Using multiple database connections](#id-using-multiple-database-connections)
+    - #### [Closing database connections](#id-closing-database-connections)
 
 ## Introduction {#id-introduction}
 
@@ -87,16 +88,19 @@ familiar with its contents:
     <tr>
         <th>Name</th>
         <th>Website</th>
+        <th>Built with</th>
     </tr>
     </thead>
     <tbody>
     <tr>
         <td><code>mysql</code></td>
         <td><a target="_blank" href="https://www.mysql.com/">https://www.mysql.com/</a></td>
+        <td><a target="_blank" href="https://typeorm.io/">TypeORM</a></td>
     </tr>
     <tr>
         <td><code>postgresql</code></td>
         <td><a target="_blank" href="https://www.postgresql.org/">https://www.postgresql.org/</a></td>
+        <td><a target="_blank" href="https://typeorm.io/">TypeORM</a></td>
     </tr>
     </tbody>
 </table>
@@ -126,9 +130,9 @@ database operations.
 
 #### DB_SYNCHRONIZE
 
-This variable are useful when running your application locally, If `DB_SYNCHRONIZE` is true, than TypeORM will read the
-schema of all your models and auto create the tables for your in your database. This variable **should be used only for
-development purpose**. Do NOT use synchronize in production environment (might have data losses).
+This variable are useful when running your application locally, If `DB_SYNCHRONIZE` is true, than [`TypeORM`](https://typeorm.io/)
+will read the schema of all your models and auto create the tables for your in your database. This variable **should be used
+only for development purpose**. Do NOT use synchronize in production environment (might have data losses).
 
 #### DB_AUTO_CONNECT
 
@@ -148,8 +152,8 @@ up the database in your machine.
 
 Once you have configured your database connection, you may communicate with it using the `Database` facade. The `Database`
 facade provides a lot of methods to perform database operations such as **creating, dropping and listing databases/tables,
-running and reverting [migrations](/docs/database/migrations), [transactions](/docs/database/transactions), queries, connecting
-to new databases and also closing these connections.**
+running and reverting** [**migrations**](/docs/database/migrations)**,** [**transactions**](/docs/database/transactions)**,
+queries, connecting to new databases and also closing these connections.**
 
 #### Creating and dropping a database {#id-creating-and-dropping-a-database}
 
@@ -199,7 +203,7 @@ await Database.runMigrations()
 await Database.revertMigrations()
 ```
 
-#### Running and reverting migrations {#id-running-and-reverting-migrations}
+#### Transactions {#id-transactions}
 
 If you don't know what is a transaction you can check [clicking here](/docs/database/transactions)
 
@@ -328,7 +332,8 @@ await query.buildWhereBetween('id', [1, 10]).delete()
 
 If your application defines multiple connections in your `config/database.js` configuration file, you may access each
 connection via the `connection` method provided by the `Database` facade. The connection name passed to the `connection`
-method should correspond to one of the connections listed in your `config/database.js` configuration file:
+method should correspond to one of the connections listed in your `config/database.js` configuration file. You also need
+to explicit call the `connect` method when working with other connection that is not the default:
 
 ```javascript
 const database = await Database.connection('mysql').connect()
@@ -339,4 +344,71 @@ const users = await query
     .buildWhereNotIn('id', [1, 2])
     .buildOrderBy('name', 'ASC')
     .findMany()
+```
+
+The connection created by the `connect` method will be stored inside the [`DriverFactory`](https://github.com/AthennaIO/Database/blob/develop/src/Factories/DriverFactory.js)
+class. This means that if you call the `connection` method of `Database` facade again, you don't need to call the `connect` method again:
+
+```javascript
+await Datatabase.connection('mysql')
+    .buildTable('users')
+    .buildSelect('id', 'name')
+    .buildWhereNotIn('id', [1, 2])
+    .buildOrderBy('name', 'ASC')
+    .findMany()
+```
+
+You can force `connect` method to not save the connection instance in [`DriverFactory`](https://github.com/AthennaIO/Database/blob/develop/src/Factories/DriverFactory.js)
+passing some properties to it:
+
+```javascript
+const force = false // Force the connection to be established
+const saveOnDriver = false // Set if connection should be saved in Database driver or not
+
+const database = await Datatabase.connection('mysql').connect(force, saveOnDriver)
+
+await database
+    .buildTable('users')
+    .buildSelect('id', 'name')
+    .buildWhereNotIn('id', [1, 2])
+    .buildOrderBy('name', 'ASC')
+    .findMany()
+```
+
+:::caution
+If you specify to `connect` method that you don't want to save the connection in driver, you will need to close the connection
+using **your** database instance. We will see next how to close a database connection.
+:::
+
+### Closing database connections {#id-closing-database-connections}
+
+You can simply close a connection using the `close` method of `Database` facade:
+
+```javascript
+await Database.close()
+await Database.connection('mysql').close()
+```
+
+Remember that when creating a connection that will not be saved in driver, you will need to close the connection
+using **your** database instance:
+
+```javascript
+const force = false
+const saveOnDriver = false
+
+const database = await Datatabase.connection('mysql').connect(force, saveOnDriver)
+
+await database
+    .buildTable('users')
+    .buildSelect('id', 'name')
+    .buildWhereNotIn('id', [1, 2])
+    .buildOrderBy('name', 'ASC')
+    .findMany()
+
+await database.close()
+
+// The code below will not close the connection
+// created above since DriverFactory doesn't
+// know what is your connection.
+await Database.connection('mysql').close()
 ```
