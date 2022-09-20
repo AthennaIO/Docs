@@ -43,7 +43,7 @@ const config = {
             {
               type: 'doc',
               docId: 'getting-started/installation',
-              label: 'Guides',
+              label: 'Documentation',
               position: 'left',
             },
             {

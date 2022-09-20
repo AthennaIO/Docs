@@ -8,7 +8,6 @@ hide_table_of_contents: true
 tags:
 - ORM
 - Database
-- Digging Deeper
 ---
 
 <nav aria-label="breadcrumbs">
@@ -34,14 +33,14 @@ tags:
 - #### [Configuration](#id-configuration)
     - #### [Available connection drivers](#id-available-connection-drivers)
     - #### [Overview of some environment variables](#id-overview-of-some-environment-variables)
+- #### [Database operations](#id-database-operations)
 - #### [Running queries](#id-running-queries)
     - #### [Using multiple database connections](#id-using-multiple-database-connections)
-- #### [Database transactions](#id-database-transactions)
 
 ## Introduction {#id-introduction}
 
 Almost every modern application interacts with a database. Athenna makes interacting with databases extremely simple across
-a variety of supported databases using raw SQL, a fluent query builder, and the ORM.
+a variety of supported databases using a fluent query builder and the ORM.
 
 ## Installation {#id-installation}
 
@@ -135,7 +134,8 @@ development purpose**. Do NOT use synchronize in production environment (might h
 
 This variable specify for Athenna if the default connection should be auto connected inside `DatabaseProvider`. We set the
 value of this variable as true when bootstrapping the application by `bootstrap/main.js` file, but when running the application
-from `artisan` we set this variable to false.
+from `artisan` we set this variable to false. If this variable is set to `false` you will need to call the `connect` method from
+`Database` facade, we will check how to use it further in the documentation.
 
 :::tip
 
@@ -144,10 +144,91 @@ up the database in your machine.
 
 :::
 
+## Database operations {#id-database-operations}
+
+Once you have configured your database connection, you may communicate with it using the `Database` facade. The `Database`
+facade provides a lot of methods to perform database operations such as **creating, dropping and listing databases/tables,
+running and reverting [migrations](/docs/database/migrations), [transactions](/docs/database/transactions), queries, connecting
+to new databases and also closing these connections.**
+
+#### Creating and dropping a database {#id-creating-and-dropping-a-database}
+
+```javascript
+import { Database } from '@athenna/database'
+
+await Database.createDatabase('hello')
+await Database.dropDatabase('hello')
+```
+
+You can also get all databases names as string and check if some database name exists:
+
+```javascript
+const databases = await Database.getDatabases() // ['postgres']
+const current = await Database.getCurrentDatabase() // 'postgres'
+
+await Database.hasDatabase('postgres') // true
+await Database.hasDatabase('not-found') // false
+```
+
+#### Creating and dropping a table {#id-creating-and-dropping-a-table}
+
+```javascript
+import { Database } from '@athenna/database'
+
+const columns = [{ name: 'id', type: 'int', isGenerated: true, isPrimary: true }]
+
+await Database.createTable('products', { columns })
+await Database.dropTable('products')
+```
+
+You can also get all tables names as string and check if some table name exists:
+
+```javascript
+const tables = await Database.getTables() // ['users']
+
+await Database.hasTable('users') // true
+await Database.hasTable('not-found') // false
+```
+
+#### Running and reverting migrations {#id-running-and-reverting-migrations}
+
+If you don't know what is a migration you can check [clicking here](/docs/database/migrations)
+
+```javascript
+await Database.runMigrations()
+await Database.revertMigrations()
+```
+
+#### Running and reverting migrations {#id-running-and-reverting-migrations}
+
+If you don't know what is a transaction you can check [clicking here](/docs/database/transactions)
+
+```javascript
+import { Log } from '@athenna/logger'
+
+const trx = await Database.startTransaction()
+const query = trx.buildTable('users')
+
+const users = [] // Imagine a lot of users to be inserted here...
+
+try {
+    await query.createMany(users)
+
+    await trx.commitTransaction()
+} catch (error) {
+    // If some user in the "users" array has been created,
+    // it will be removed if one fails to insert.
+    await trx.rollbackTransaction()
+
+    Log.error('Failed to create one of the users. Original error: %s', JSON.stringify(error))
+}
+```
+
 ## Running queries {#id-running-queries}
 
-Once you have configured your database connection, you may run queries using the `Database` facade. The `Database` facade
-provides **executors** methods for each type of query, here are the more relevant:
+You may use the `buildTable` method provided by the `Database` facade to begin a query. The `buildTable` method returns a
+fluent query builder instance for the given table, allowing you to chain more constraints onto the query and then finally
+retrieve the results of the query using one of the **executors** methods. These are the most relevant methods:
 
 - find
 - findMany
@@ -156,18 +237,6 @@ provides **executors** methods for each type of query, here are the more relevan
 - update
 - delete
 
-We'll review why and how to use all of these methods later. The methods that start with `build...` means you are building
-a query, and to execute the query you need to call one of the **executors** methods.
-
-To run any of the below queries, you may use first the `buildTable` method to specify what is the table that should be used
-for your operations:
-
-```javascript
-import { Database } from '@athenna/database'
-
-Database.buildTable('users')
-```
-
 Everytime that you use the `Database` facade you are using a different instance of `DatabaseImpl` class. This means that you
 would need to call `buildTable` method everytime for different queries. To get around this, you can save the instance in a local
 variable:
@@ -175,9 +244,9 @@ variable:
 ```javascript
 import { Database } from '@athenna/database'
 
-const userQuery = Database.buildTable('users') // First instance of Database
-const orderQuery = Database.buildTable('orders') // Second instance of Database
-const productsQuery = Database.buildTable('products') // Third instance of Database
+const userQuery = Database.buildTable('users') // First instance of QueryBuilder
+const orderQuery = Database.buildTable('orders') // Second instance of QueryBuilder
+const productsQuery = Database.buildTable('products') // Third instance of QueryBuilder
 ```
 
 #### Running a find query {#id-running-a-find-query}
@@ -262,16 +331,12 @@ connection via the `connection` method provided by the `Database` facade. The co
 method should correspond to one of the connections listed in your `config/database.js` configuration file:
 
 ```javascript
-const query = await Database.connection('mysql').connect()
+const database = await Database.connection('mysql').connect()
+const query = database.buildTable('users')
 
 const users = await query
-    .buildTable('users')
     .buildSelect('id', 'name')
     .buildWhereNotIn('id', [1, 2])
     .buildOrderBy('name', 'ASC')
     .findMany()
 ```
-
-## Database transactions {#id-database-transactions}
-
-Coming soon...

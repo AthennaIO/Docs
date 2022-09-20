@@ -1,0 +1,78 @@
+---
+sidebar_position: 2
+
+id: query-builder
+title: Query Builder
+hide_title: true
+hide_table_of_contents: true
+tags:
+- ORM
+- Database
+- Query builder
+---
+
+<nav aria-label="breadcrumbs">
+    <ul class="breadcrumbs">
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/">🏠</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link">Database</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/docs/database/query-builder">Query Builder</a>
+        </li>
+    </ul>
+</nav>
+
+<span class="badge badge--secondary margin-top-bot">version 1.0.0</span>
+
+# Database: Query Builder
+
+- #### [Introduction](#id-introduction)
+- #### [Running database queries](#id-running-database-queries)
+    - #### [Aggregates](#id-aggregates)
+
+## Introduction {#id-introduction}
+
+Athenna database query builder provides a convenient, fluent interface to creating and running database queries. It can
+be used to perform most database operations in your application and works perfectly with all of Athenna supported database
+drivers.
+
+## Running database queries {#id-running-database-queries}
+
+#### Retrieve all rows from a table {#id-retrieve-all-rows-from-a-table}
+
+You may use the `buildTable` method provided by the `Database` facade to begin a query. The `buildTable` method returns a fluent
+query builder instance for the given table, allowing you to chain more constraints onto the query and then finally retrieve
+the results of the query using the `findMany` method:
+
+```javascript
+import { Database } from '@athenna/database'
+
+const users = await Database
+    .buildTable('users')
+    .buildSelect('id', 'name')
+    .buildWhereILike({ name: '%Valmir Barbosa%' })
+    .buildOrderBy('name', 'ASC')
+    .findMany()
+```
+
+#### Retrieve a single row {#id-retrieve-a-single-row}
+
+If you just need to retrieve a single row from a database table, you may use the `Database` facade's `find` method. This
+method will return a single object:
+
+```javascript
+import { Database } from '@athenna/database'
+
+const user = await Database
+    .buildTable('users')
+    .buildSelect('id', 'name')
+    .buildWhere({ name: 'Rodrigo Kamada' })
+    .find()
+```
+
+#### Aggregates {#id-aggregates}
+
+Coming soon...
