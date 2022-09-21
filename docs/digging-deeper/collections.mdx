@@ -160,7 +160,7 @@ new Collection({
 
 #### `average()` {#id-average}
 
-Alias for the [`avg()`](#avg) method
+Alias for the [`avg()`](#id-avg) method
 
 #### `avg()` {#id-avg}
 
@@ -1704,6 +1704,30 @@ new Collection([1, 2, 3, 4])
 
 > For the inverse of `only`, see the `except` method.
 
+#### `order()` {#id-order}
+
+Alias for the [sort](#id-sort) method.
+
+#### `orderDesc()` {#id-orderDesc}
+
+Alias for the [sortDesc](#id-sortDesc) method.
+
+#### `orderBy()` {#id-orderBy}
+
+Alias for the [sortBy](#id-sortBy) method.
+
+#### `orderByDesc()` {#id-orderByDesc}
+
+Alias for the [sortByDesc](#id-sortByDesc) method.
+
+#### `orderKeys()` {#id-orderKeys}
+
+Alias for the [sortKeys](#id-sortKeys) method.
+
+#### `orderKeysDesc()` {#id-orderKeysDesc}
+
+Alias for the [sortKeysDesc](#id-sortKeysDesc) method.
+
 #### `pad()` {#id-pad}
 
 The pad method will fill the array with the given value until the array reaches the specified size. This method
@@ -2020,6 +2044,18 @@ const filtered = collection.reject(value => value > 2)
 
 > For the inverse of the `reject` method, see the `filter` method.
 
+#### `removeDuplicated()` {#id-removeDuplicated}
+
+The removeDuplicated method remove all duplicated values inside the collection:
+
+```js
+const collection = new Collection([1, 1, 2, 2, 3, 4])
+
+const set = collection.removeDuplicated()
+
+// [1, 2, 3, 4]
+```
+
 #### `replace()` {#id-replace}
 
 The replace method behaves similarly to merge however, in addition to overwriting matching items with string keys, the replace method will also overwrite items in the collection that have matching numeric keys:
@@ -2303,7 +2339,7 @@ collection.sole('product', '=', 'Desk')
 
 #### `some()` {#id-some}
 
-Alias for the [contains](#contains) method.
+Alias for the [contains](#id-contains) method.
 
 #### `sort()` {#id-sort}
 
@@ -2474,7 +2510,7 @@ sorted.all()
 
 #### `sortKeysDesc()` {#id-sortKeysDesc}
 
-This method has the same signature as the [sortKeys](#sortkeys) method, but will sort the collection in the opposite order.
+This method has the same signature as the [sortKeys](#id-sortkeys) method, but will sort the collection in the opposite order.
 
 #### `splice()` {#id-splice}
 
@@ -2703,6 +2739,20 @@ const json = collection.toJson()
 // {"id": 384, "name": "Rayquaza", "gender": "NA"}
 ```
 
+#### `toResource()` {#id-toResource}
+
+The toResource method enter all collection objects and execute the `toResource` method of each object:
+
+```js
+const collection = new Collection([
+    { toResource: criterias => ({ id: 1, ...criterias }) }
+])
+
+const resources = collection.toResource({ name: 'string' })
+
+// [{ id: 1, name: 'string' }]
+```
+
 #### `transform()` {#id-transform}
 
 The transform method iterates over the collection and calls the given callback with each item in the collection. The items in the collection will be replaced by the values returned by the callback:
@@ -2852,11 +2902,11 @@ collection.all()
 
 #### `unlessEmpty()` {#id-unlessEmpty}
 
-Alias for the [`whenNotEmpty()`](#whenNotEmpty) method
+Alias for the [`whenNotEmpty()`](#id-whenNotEmpty) method
 
 #### `unlessNotEmpty()` {#id-unlessNotEmpty}
 
-Alias for the [`whenEmpty()`](#whenEmpty) method
+Alias for the [`whenEmpty()`](#id-whenEmpty) method
 
 #### `unwrap()` {#id-unwrap}
 
