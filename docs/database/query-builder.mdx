@@ -58,6 +58,27 @@ const users = await Database
     .findMany()
 ```
 
+Athenna also provides the `collection` method that returns an `Collection` instance containing the results of the query.
+You may access each column's value using the `all` method:
+
+```javascript
+import { Database } from '@athenna/database'
+
+const collection = await Database
+    .buildTable('users')
+    .buildSelect('id', 'name')
+    .buildWhereILike({ name: '%Valmir Barbosa%' })
+    .buildOrderBy('name', 'ASC')
+    .collection()
+
+const users = collection.all()
+```
+
+:::tip
+Athenna collections provide a variety of extremely powerful methods for mapping and reducing data. For more information
+on Athenna collections, check out the [collection documentation](/docs/digging-deeper/collections).
+:::
+
 #### Retrieve a single row {#id-retrieve-a-single-row}
 
 If you just need to retrieve a single row from a database table, you may use the `Database` facade's `find` method. This
