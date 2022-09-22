@@ -31,10 +31,10 @@ tags:
 
 - #### [Introduction](#id-introduction)
 - #### [Running database queries](#id-running-database-queries)
-    - #### [Aggregates](#id-aggregates)
     - #### [Raw expressions](#id-raw-expressions)
+    - #### [Get the client of driver](#id-get-the-client-of-driver)
+- #### [Aggregates](#id-aggregates)
 - #### [Select statements](#id-select-statements)
-- #### [Get the client of driver](#id-get-the-client-of-driver)
 
 ## Introduction {#id-introduction}
 
@@ -65,8 +65,6 @@ Athenna also provides the `collection` method that returns an `Collection` insta
 You may access each column's value using the `all` method:
 
 ```javascript
-import { Database } from '@athenna/database'
-
 const collection = await Database
     .buildTable('users')
     .buildSelect('id', 'name')
@@ -88,36 +86,11 @@ If you just need to retrieve a single row from a database table, you may use the
 method will return a single object:
 
 ```javascript
-import { Database } from '@athenna/database'
-
 const user = await Database
     .buildTable('users')
     .buildSelect('id', 'name')
     .buildWhere({ name: 'Rodrigo Kamada' })
     .find()
-```
-
-### Aggregates {#id-aggregates}
-
-The query builder also provides a variety of methods for retrieving aggregate values like **count, max, min, avg,** and **sum**.
-You may call any of these methods after constructing your query:
-
-```javascript
-import { Database } from '@athenna/database'
-
-const numberOfUsers = await Database.buildTable('users').count()
-const maxPriceOrder = await Database.buildTable('orders').max('price')
-```
-
-Of course, you may combine these methods with other clauses to fine-tune how your aggregate value is calculated:
-
-```javascript
-import { Database } from '@athenna/database'
-
-const priceAverage = await Database
-                .buildTable('orders')
-                .buildWhere('finalized', true)
-                .avg('price')
 ```
 
 ### Raw expressions {#id-raw-expressions}
@@ -133,10 +106,41 @@ const users = await Database.raw('SELECT * FROM users')
 You should be extremely careful to avoid creating SQL injection vulnerabilities using the `raw` method.
 :::
 
+### Get the client of driver {#id-get-the-client-of-driver}
+
+To get the vanilla client of your connection driver you can use the `getClient` method:
+
+```javascript
+const client = Database.getClient()
+
+const result = await client
+    .createQueryBuilder('user')
+    .where('user.id = :id', { id: 1 })
+    .andWhere('user.status = :status', { status: 'ACTIVE' })
+    .getMany()
+```
+
+## Aggregates {#id-aggregates}
+
+The query builder also provides a variety of methods for retrieving aggregate values like **count, max, min, avg,** and **sum**.
+You may call any of these methods after constructing your query:
+
+```javascript
+const numberOfUsers = await Database.buildTable('users').count()
+const maxPriceOrder = await Database.buildTable('orders').max('price')
+```
+
+Of course, you may combine these methods with other clauses to fine-tune how your aggregate value is calculated:
+
+```javascript
+import { Database } from '@athenna/database'
+
+const priceAverage = await Database
+                .buildTable('orders')
+                .buildWhere('finalized', true)
+                .avg('price')
+```
+
 ## Select statements {#id-select-statements}
-
-Coming soon...
-
-## Get the client of driver {#id-get-the-client-of-driver}
 
 Coming soon...
