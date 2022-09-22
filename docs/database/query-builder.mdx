@@ -32,6 +32,8 @@ tags:
 - #### [Introduction](#id-introduction)
 - #### [Running database queries](#id-running-database-queries)
     - #### [Aggregates](#id-aggregates)
+    - #### [Raw expressions](#id-raw-expressions)
+- #### [Select statements](#id-select-statements)
 
 ## Introduction {#id-introduction}
 
@@ -94,6 +96,42 @@ const user = await Database
     .find()
 ```
 
-#### Aggregates {#id-aggregates}
+### Aggregates {#id-aggregates}
+
+The query builder also provides a variety of methods for retrieving aggregate values like **count, max, min, avg,** and **sum**.
+You may call any of these methods after constructing your query:
+
+```javascript
+import { Database } from '@athenna/database'
+
+const numberOfUsers = await Database.buildTable('users').count()
+const maxPriceOrder = await Database.buildTable('orders').max('price')
+```
+
+Of course, you may combine these methods with other clauses to fine-tune how your aggregate value is calculated:
+
+```javascript
+import { Database } from '@athenna/database'
+
+const priceAverage = await Database
+                .buildTable('orders')
+                .buildWhere('finalized', true)
+                .avg('price')
+```
+
+### Raw expressions {#id-raw-expressions}
+
+Sometimes you may need to create your query using pure SQL. To create a raw query, you may use the `raw` method provided
+by the `Database` facade:
+
+```javascript
+const users = await Database.raw('SELECT * FROM users')
+```
+
+:::caution
+You should be extremely careful to avoid creating SQL injection vulnerabilities using the `raw` method.
+:::
+
+## Select statements {#id-select-statements}
 
 Coming soon...
