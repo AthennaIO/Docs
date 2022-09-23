@@ -36,7 +36,6 @@ tags:
 - #### [Aggregates](#id-aggregates)
 - #### [Select statements](#id-select-statements)
 - #### [Where clauses](#id-where-clauses)
-    - #### [Or where clauses](#id-or-where-clauses)
     - #### [Where not clauses](#id-where-not-clauses)
     - #### [Additional where clauses](#id-additional-where-clauses)
 - #### [Ordering, limit & skip](#id-ordering-limit-skip)
@@ -124,6 +123,7 @@ const result = await client
         .createQueryBuilder('user')
         .where('user.id = :id', { id: 1 })
         .andWhere('user.status = :status', { status: 'ACTIVE' })
+        .orWhere('user.status = :otherStatus', { otherStatus: 'PENDING' })
         .getMany()
 ```
 
@@ -225,20 +225,6 @@ You may also pass an object of conditions, but remember that when using objects 
 const users = await Database
         .buildTable('users')
         .buildWhere({ name: 'João Lenon', deletedAt: null })
-        .findMany()
-```
-
-### Or where clauses {#id-or-where-clauses}
-
-When chaining together calls to the query builder's `buildWhere` method, the "where" clauses will be joined together using
-the `AND` operator. However, you may use the `buildOrWhere` method to join a clause to the query using the `OR` operator.
-The `buildOrWhere` method accepts the same arguments as the `buildWhere` method:
-
-```javascript
-const users = await Database
-        .buildTable('users')
-        .buildWhere('votes', '>', 100)
-        .buildOrWhere('name', 'João')
         .findMany()
 ```
 
