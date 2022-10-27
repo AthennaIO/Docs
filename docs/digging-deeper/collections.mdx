@@ -29,13 +29,13 @@ tags:
 # Collections
 
 - #### [Introduction](#id-introduction)
-    - #### [Creating collections](#id-creating-collections)
-    - #### [Extends collections](#id-extending-collections)
+- #### [Creating collections](#id-creating-collections)
+- #### [Extends collections](#id-extending-collections)
 - #### [Available methods](#id-available-methods)
 
 ## Introduction {#id-introduction}
 
-The `Collection` class from `@secjs/utils` provides a fluent, convenient wrapper for working with arrays of data. For example,
+The `Collection` class from `@athenna/common` provides a fluent, convenient wrapper for working with arrays of data. For example,
 check out the following code. We'll create a new instance of `Collection` using an array of users, remove all empty elements
 get all elements where the id is **1, 2 or 3**, order everything in ascending mode by **name** and then get only the value of
 the property `name` of each one of the elements:
@@ -96,7 +96,7 @@ other methods via `this`, just as if it were a real method of the collection cla
 method to the `Collection` class:
 
 ```javascript
-import { Collection } from '@secjs/utils'
+import { Collection } from '@athenna/common'
 
 Collection.macro('toUpper', function () {
   return this.map(item => item.toUpperCase())

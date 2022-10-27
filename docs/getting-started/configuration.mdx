@@ -31,9 +31,9 @@ tags:
 
 - #### [Introduction](#id-introduction)
 - #### [Environment configuration](#id-environment-configuration)
-    - #### [Determining the current environment](#id-determining-the-current-environment)
-    - #### [Get an environment variable value](#id-get-an-environment-variable-value)
-    - #### [Get a configuration value](#id-get-a-configuration-value)
+- #### [Determining the current environment](#id-determining-the-current-environment)
+- #### [Get an environment variable value](#id-get-an-environment-variable-value)
+- #### [Get a configuration value](#id-get-a-configuration-value)
 - #### [Debug mode](#id-debug-mode)
 
 ## Introduction {#id-introduction}
@@ -103,17 +103,17 @@ This is the default `.env` file that comes in Athenna project:
 
 ```dotenv
 HOST=localhost
-PORT=(1335)
+PORT=1335
 NODE_ENV=local
 
 APP_NAME=Athenna
-APP_DEBUG=(true)
+APP_DEBUG=true
 APP_URL=http://${HOST}:${PORT}
 APP_DOMAIN=${HOST}
 APP_DOCUMENTATION=${APP_URL}
 APP_SOURCE=https://github.com/AthennaIO
 
-LOG_HTTP=(true)
+LOG_HTTP=true
 LOG_CHANNEL=application
 ```
 
@@ -121,17 +121,17 @@ If you create a new `.env.local` file in your project root path, Athenna will lo
 
 ```dotenv
 HOST=localhost
-PORT=(3030)
+PORT=3030
 NODE_ENV=local
 
 APP_NAME=Athenna Local
-APP_DEBUG=(true)
+APP_DEBUG=true
 APP_URL=http://localhost:3030
 APP_DOMAIN=${HOST}
 APP_DOCUMENTATION=${APP_URL}
 APP_SOURCE=https://github.com/MyGithubUserHere/MyRepositoryHere
 
-LOG_HTTP=(true)
+LOG_HTTP=true
 LOG_CHANNEL=application
 ```
 
@@ -152,64 +152,67 @@ it for you when you call the function to get the value:
 <table>
     <thead>
     <tr>
-        <th>.env</th>
-        <th>Env()</th>
+        <th>Value in .env or process.env</th>
+        <th>Value returned by Env() function</th>
     </tr>
     </thead>
     <tbody>
     <tr>
         <td>true</td>
-        <td>"true"</td>
-    </tr>
-    <tr>
-        <td>(true)</td>
         <td>true</td>
     </tr>
     <tr>
-        <td>"(false)"</td>
-        <td>false</td>
+        <td>(true)</td>
+        <td>"true"</td>
     </tr>
     <tr>
         <td>10</td>
-        <td>"10"</td>
+        <td>10</td>
+    </tr>
+    <tr>
+        <td>10.090909</td>
+        <td>10.090909</td>
     </tr>
     <tr>
         <td>(10)</td>
-        <td>10</td>
-    </tr>
-    <tr>
-        <td>"(10)"</td>
-        <td>10</td>
+        <td>"10"</td>
     </tr>
     <tr>
         <td>{`{"name":"Paulo"}`}</td>
-        <td>{`"{"name":"Paulo"}"`}</td>
+        <td>{`{ name: 'Paulo' }`}</td>
     </tr>
     <tr>
         <td>{`({"name":"Paulo"})`}</td>
-        <td>{`{ name: 'Paulo' }`}</td>
-    </tr>
-    <tr>
-        <td>{`"({"name":"Paulo"})"`}</td>
-        <td>{`{ name: 'Paulo' }`}</td>
+        <td>{`"{"name":"Paulo"}"`}</td>
     </tr>
     </tbody>
 </table>
 
-:::tip
-
-Maybe you want to force that your environment variable have the parentheses chars `(your-value)` or `(true)`. For that,
-the `Env` function has the third parameter called `autoCast` that by default is always `true`, if you set as `false` it
-will not cast the value for you.
+Let's see a more practical example of it:
 
 ```javascript
-process.env.APP_DEBUG = '(true)'
+process.env.APP_DEBUG = 'true'
+process.env.APP_DEBUG_STRING = '(true)'
+
+console.log(Env('APP_DEBUG')) // true <- boolean
+console.log(Env('APP_DEBUG_STRING')) // "true" <- string
+```
+
+:::tip
+
+Maybe you want to force that your environment variable have the parentheses chars `(your-value)` or `(true)` or just turn
+off the auto cast for some reason. For that, the `Env` function has the third parameter called `autoCast` that by default
+is always `true`, if you set as `false` it will not cast the value for you:
+
+```javascript
+process.env.APP_DEBUG = 'true'
+process.env.APP_DEBUG_STRING = '(true)'
 
 const defaultValue = false
 const autoCast = false
 
-console.log(Env('APP_DEBUG', defaultValue)) // true
-console.log(Env('APP_DEBUG', defaultValue, autoCast)) // '(true)'
+console.log(Env('APP_DEBUG', defaultValue, autoCast)) // 'true'
+console.log(Env('APP_DEBUG_STRING', defaultValue, autoCast)) // '(true)'
 ```
 
 :::
@@ -224,7 +227,6 @@ APP_DOMAIN=http://${HOST}:${PORT}
 ```
 
 ```javascript
-/** @type {string} */
 console.log(Env('APP_DOMAIN')) // "http://localhost:1335"
 ```
 
@@ -235,11 +237,22 @@ The configuration values may be accessed using `"dot (.)"` syntax, which include
 wish to access. A default value may also be specified and will be returned if the configuration option does not exist:
 
 ```javascript
-/** @type {string} */
-const name = Config.get('app.name', 'Athenna')
+const defaultValue = 'Athenna'
+
+const name = Config.get('app.name', defaultValue)
 
 console.log(name) // MyAppName
 ```
+
+:::tip
+
+You can get all the configuration values using `get` method without any key:
+
+```javascript
+console.log(Config.get()) // { app: {...}, http: {...}, ... }
+```
+
+:::
 
 ## Debug mode {#id-debug-mode}
 
