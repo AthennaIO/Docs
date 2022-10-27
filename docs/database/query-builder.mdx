@@ -40,7 +40,7 @@ tags:
     - #### [Additional where clauses](#id-additional-where-clauses)
 - #### [Ordering, limit & skip](#id-ordering-limit-skip)
 - #### [Pagination](#id-pagination)
-- #### [Relations](#id-relations)
+- #### [Joins](#id-joins)
 
 ## Introduction {#id-introduction}
 
@@ -52,7 +52,7 @@ drivers.
 
 #### Retrieve all rows from a table {#id-retrieve-all-rows-from-a-table}
 
-You may use the `buildTable` method provided by the `Database` facade to begin a query. The `buildTable` method returns a fluent
+You may use the `table` method provided by the `Database` facade to begin a query. The `table` method returns a fluent
 query builder instance for the given table, allowing you to chain more constraints onto the query and then finally retrieve
 the results of the query using the `findMany` method:
 
@@ -60,10 +60,10 @@ the results of the query using the `findMany` method:
 import { Database } from '@athenna/database'
 
 const users = await Database
-        .buildTable('users')
-        .buildSelect('id', 'name')
-        .buildWhereILike({ name: '%Valmir Barbosa%' })
-        .buildOrderBy('name', 'ASC')
+        .table('users')
+        .select('id', 'name')
+        .whereILike({ name: '%Valmir Barbosa%' })
+        .orderBy('name', 'ASC')
         .findMany()
 ```
 
@@ -72,10 +72,10 @@ You may access each column's value using the `all` method:
 
 ```javascript
 const collection = await Database
-        .buildTable('users')
-        .buildSelect('id', 'name')
-        .buildWhereILike({ name: '%Valmir Barbosa%' })
-        .buildOrderBy('name', 'ASC')
+        .table('users')
+        .select('id', 'name')
+        .whereILike({ name: '%Valmir Barbosa%' })
+        .orderBy('name', 'ASC')
         .collection()
 
 const users = collection.all()
@@ -93,9 +93,9 @@ method will return a single object:
 
 ```javascript
 const user = await Database
-        .buildTable('users')
-        .buildSelect('id', 'name')
-        .buildWhere({ name: 'Rodrigo Kamada' })
+        .table('users')
+        .select('id', 'name')
+        .where({ name: 'Rodrigo Kamada' })
         .find()
 ```
 
@@ -117,14 +117,12 @@ You should be extremely careful to avoid creating SQL injection vulnerabilities 
 To get the vanilla client of your connection driver you can use the `getClient` method:
 
 ```javascript
-const client = Database.getClient()
+const client = Database.connection('postgres').getClient()
 
+// Knex client
 const result = await client
-        .createQueryBuilder('user')
-        .where('user.id = :id', { id: 1 })
-        .andWhere('user.status = :status', { status: 'ACTIVE' })
-        .orWhere('user.status = :otherStatus', { otherStatus: 'PENDING' })
-        .getMany()
+        .where({ id: 1, status: 'ACTIVE' })
+        .orWhere('status', 'PENDING')
 ```
 
 ## Aggregates {#id-aggregates}
@@ -133,49 +131,43 @@ The query builder also provides a variety of methods for retrieving aggregate va
 You may call any of these methods after constructing your query:
 
 ```javascript
-const numberOfUsers = await Database.buildTable('users').count()
-const maxPriceOrder = await Database.buildTable('orders').max('price')
+const numberOfUsers = await Database.table('users').count()
+const maxPriceOrder = await Database.table('orders').max('price')
 ```
 
 Of course, you may combine these methods with other clauses to fine-tune how your aggregate value is calculated:
 
 ```javascript
 const priceAverage = await Database
-        .buildTable('orders')
-        .buildWhere('finalized', true)
+        .table('orders')
+        .where('finalized', true)
         .avg('price')
 ```
 
 ## Select statements {#id-select-statements}
 
-You may not always want to select all columns from a database table. Using the `buildSelect` method, you can specify a
+You may not always want to select all columns from a database table. Using the `select` method, you can specify a
 custom "select" clause for the query:
 
 ```javascript
 const { id, name } = await Database
-        .buildTable('users')
-        .buildSelect('id', 'name')
+        .table('users')
+        .select('id', 'name')
         .find()
 ```
 
-If you already have a query builder instance, and you wish to add a column to its existing select clause, you may use the
-`buildAddSelect` method:
+If you want to select all fields including the `hidden` you can use the `*` operator:
 
 ```javascript
-const { id, name } = await Database
-        .buildTable('users')
-        .buildSelect('id')
-        .buildAddSelect('name')
+const { id, name, email } = await Database
+        .table('users')
+        .select('*')
         .find()
 ```
-
-:::tip
-The `buildAddSelect` method is very useful when you want to show hidden fields of [models](/docs/database/orm).
-:::
 
 ## Where clauses {#id-where-clauses}
 
-You may use the query builder's `buildWhere` method to add "where" clauses to the query. The most basic call to the `buildWhere`
+You may use the query builder's `where` method to add "where" clauses to the query. The most basic call to the `where`
 method requires three arguments. The first argument is the name of the column. The second argument is an operator, which can be
 any of the database's supported operators. The third argument is the value to compare against the column's value.
 
@@ -184,19 +176,19 @@ column is greater than `35`:
 
 ```javascript
 const user = await Database
-        .buildTable('users')
-        .buildWhere('votes', '=', 100)
-        .buildWhere('age', '>', 35)
+        .table('users')
+        .where('votes', '=', 100)
+        .where('age', '>', 35)
         .find()
 ```
 
 For convenience, if you want to verify that a column is `=` to a given value, you may pass the value as the second argument
-to the `buildWhere` method. Athenna will assume you would like to use the `=` operator:
+to the `where` method. Athenna will assume you would like to use the `=` operator:
 
 ```javascript
 const users = await Database
-        .buildTable('users')
-        .buildWhere('votes', 100)
+        .table('users')
+        .where('votes', 100)
         .findMany()
 ```
 
@@ -204,18 +196,18 @@ As previously mentioned, you may use any operator that is supported by your data
 
 ```javascript
 const users = await Database
-        .buildTable('users')
-        .buildWhere('votes', '>=', 100)
+        .table('users')
+        .where('votes', '>=', 100)
         .findMany()
 
 const users = await Database
-        .buildTable('users')
-        .buildWhere('votes', '<>', 100)
+        .table('users')
+        .where('votes', '<>', 100)
         .findMany()
 
 const users = await Database
-        .buildTable('users')
-        .buildWhere('name', 'like', 'J%')
+        .table('users')
+        .where('name', 'like', 'J%')
         .findMany()
 ```
 
@@ -223,82 +215,82 @@ You may also pass an object of conditions, but remember that when using objects 
 
 ```javascript
 const users = await Database
-        .buildTable('users')
-        .buildWhere({ name: 'João Lenon', deletedAt: null })
+        .table('users')
+        .where({ name: 'João Lenon', deletedAt: null })
         .findMany()
 ```
 
 ### Where not clauses {#id-where-not-clauses}
 
-The `buildWhereNot` and `buildOrWhereNot` methods may be used to negate a given constraint. For example, the following query
+The `whereNot` and `orWhereNot` methods may be used to negate a given constraint. For example, the following query
 excludes the product with `id` ten:
 
 ```javascript
 const products = await Database
-        .buildTable('products')
-        .buildWhereNot('id', 10)
+        .table('products')
+        .whereNot('id', 10)
         .findMany()
 ```
 
 ### Additional where clauses {#id-additional-where-clauses}
 
-> buildWhereBetween / buildWhereNotBetween
+> whereBetween / whereNotBetween
 
-The `buildWhereBetween` method verifies that a column's value is between two values:
+The `whereBetween` method verifies that a column's value is between two values:
 
 ```javascript
 const users = await Database
-        .buildTable('users')
-        .buildWhereBetween('votes', [1, 100])
+        .table('users')
+        .whereBetween('votes', [1, 100])
         .findMany()
 ```
 
-The `buildWhereNotBetween` method verifies that a column's value lies outside two values:
+The `whereNotBetween` method verifies that a column's value lies outside two values:
 
 ```javascript
 const users = await Database
-        .buildTable('users')
-        .buildWhereNotBetween('votes', [1, 100])
+        .table('users')
+        .whereNotBetween('votes', [1, 100])
         .findMany()
 ```
 
-> buildWhereIn / buildWhereNotIn
+> whereIn / whereNotIn
 
-The `buildWhereIn` method verifies that a given column's value is contained within the given array:
+The `whereIn` method verifies that a given column's value is contained within the given array:
 
 ```javascript
 const users = await Database
-        .buildTable('users')
-        .buildWhereIn('id', [1, 2, 3])
+        .table('users')
+        .whereIn('id', [1, 2, 3])
         .findMany()
 ```
 
-The `buildWhereNotIn` method verifies that the given column's value is not contained in the given array:
+The `whereNotIn` method verifies that the given column's value is not contained in the given array:
 
 ```javascript
 const users = await Database
-        .buildTable('users')
-        .buildWhereNotIn('id', [1, 2, 3])
+        .table('users')
+        .whereNotIn('id', [1, 2, 3])
         .findMany()
 ```
 
-> buildWhereNull / buildWhereNotNull
+> whereNull / whereNotNull
 
-The `buildWhereNull` method verifies that the value of the given column is `NULL`:
+The `whereNull` method verifies that the value of the given column is `NULL`:
 
 ```javascript
 const users = await Database
-        .buildTable('users')
-        .buildWhereNull('deletedAt')
+        .table('users')
+        .whereNull('deletedAt')
         .findMany()
 ```
 
-The `buildWhereNotNull` method verifies that the column's value is not `NULL`:
+The `whereNotNull` method verifies that the column's value is not `NULL`:
 
 ```javascript
 const users = await Database
-        .buildTable('users')
-        .buildWhereNotNull('deletedAt')
+        .table('users')
+        .whereNotNull('deletedAt')
         .findMany()
 ```
 
@@ -310,44 +302,6 @@ Coming soon...
 
 Coming soon...
 
-## Relations {#id-relations}
+## Joins {#id-joins}
 
-The database connection will always bootstrap with your [models](/docs/database/orm) configured, so the `Database` facade
-will always know all the **relations of your table**:
-
-```javascript
-// One user has many products
-const user = await Database
-        .buildTable('users')
-        .buildIncludes('products')
-        .find()
-
-const userProducts = user.products // [...]
-```
-
-### Including sub relations {#id-including-sub-relations}
-
-To include sub relations you can simply call `buildIncludes` method again, and use the alias of your relation as param:
-
-```javascript
-const user = await Database
-        .buildTable('users')
-        .buildIncludes('products')
-        .buildIncludes('products.productDetails')
-        .find()
-
-const userProducts = user.products // [...]
-const detailsOfFirstProduct = user.products[0].productDetails // [...]
-```
-
-You can also use the same syntax for other methods:
-
-```javascript
-const user = await Database
-        .buildTable('users')
-        .buildIncludes('products')
-        .buildIncludes('products.productDetails')
-        .buildSelect('users.name', 'products.name', 'productDetails.id')
-        .buildWhere('productDetails.status', 'ACTIVE')
-        .find()
-```
+Coming soon...

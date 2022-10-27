@@ -95,12 +95,12 @@ familiar with its contents:
     <tr>
         <td><code>mysql</code></td>
         <td><a target="_blank" href="https://www.mysql.com/">https://www.mysql.com/</a></td>
-        <td><a target="_blank" href="https://typeorm.io/">TypeORM</a></td>
+        <td><a target="_blank" href="https://knexjs.org/">Knex</a></td>
     </tr>
     <tr>
         <td><code>postgresql</code></td>
         <td><a target="_blank" href="https://www.postgresql.org/">https://www.postgresql.org/</a></td>
-        <td><a target="_blank" href="https://typeorm.io/">TypeORM</a></td>
+        <td><a target="_blank" href="https://knexjs.org/">Knex</a></td>
     </tr>
     </tbody>
 </table>
@@ -113,12 +113,12 @@ the Athenna CLI have added some environment variables there to help you connect 
 ```dotenv
 DB_CONNECTION=postgres
 DB_HOST=127.0.0.1
-DB_PORT=(5432)
-DB_DEBUG=(false)
+DB_PORT=5432
+DB_DEBUG=false
 DB_USERNAME=root
 DB_PASSWORD=root
 DB_DATABASE=database
-DB_AUTO_CONNECT=(true)
+DB_AUTO_CONNECT=true
 ```
 
 Let's focus in **DB_CONNECTION, DB_DEBUG and DB_AUTO_CONNECT** variables:
@@ -211,7 +211,7 @@ If you don't know what is a transaction you can check [clicking here](/docs/data
 import { Log } from '@athenna/logger'
 
 const trx = await Database.startTransaction()
-const query = trx.buildTable('users')
+const query = trx.table('users')
 
 const users = [] // Imagine a lot of users to be inserted here...
 
@@ -230,7 +230,7 @@ try {
 
 ## Running queries {#id-running-queries}
 
-You may use the `buildTable` method provided by the `Database` facade to begin a query. The `buildTable` method returns a
+You may use the `table` method provided by the `Database` facade to begin a query. The `table` method returns a
 fluent query builder instance for the given table, allowing you to chain more constraints onto the query and then finally
 retrieve the results of the query using one of the **executors** methods. These are the most relevant methods:
 
@@ -242,15 +242,15 @@ retrieve the results of the query using one of the **executors** methods. These 
 - delete
 
 Everytime that you use the `Database` facade you are using a different instance of `DatabaseImpl` class. This means that you
-would need to call `buildTable` method everytime for different queries. To get around this, you can save the instance in a local
+would need to call `table` method everytime for different queries. To get around this, you can save the instance in a local
 variable:
 
 ```javascript
 import { Database } from '@athenna/database'
 
-const userQuery = Database.buildTable('users') // First instance of QueryBuilder
-const orderQuery = Database.buildTable('orders') // Second instance of QueryBuilder
-const productsQuery = Database.buildTable('products') // Third instance of QueryBuilder
+const userQuery = Database.table('users') // First instance of QueryBuilder
+const orderQuery = Database.table('orders') // Second instance of QueryBuilder
+const productsQuery = Database.table('products') // Third instance of QueryBuilder
 ```
 
 #### Running a find query {#id-running-a-find-query}
@@ -258,11 +258,11 @@ const productsQuery = Database.buildTable('products') // Third instance of Query
 The `find` method is useful to retrieve only one record that match the query statements from database:
 
 ```javascript
-const query = Database.buildTable('users')
+const query = Database.table('users')
 
 const { id, name } = await query
-    .buildSelect('id', 'name')
-    .buildWhere({ id: 10 })
+    .select('id', 'name')
+    .where({ id: 10 })
     .find()
 ```
 
@@ -271,13 +271,13 @@ const { id, name } = await query
 The `findMany` method is useful to retrieve more than one record that match the query statements from database:
 
 ```javascript
-const query = Database.buildTable('users')
+const query = Database.table('users')
 
 const users = await query
-    .buildSelect('id', 'name')
-    .buildWhereNull('deletedAt')
-    .buildWhereLike('name', '%Lenon%')
-    .buildOrderBy('name', 'DESC')
+    .select('id', 'name')
+    .whereNull('deletedAt')
+    .whereLike('name', '%Lenon%')
+    .orderBy('name', 'DESC')
     .findMany()
 ```
 
@@ -286,7 +286,7 @@ const users = await query
 The `create` method is useful to create one record in database:
 
 ```javascript
-const query = Database.buildTable('users')
+const query = Database.table('users')
 
 const user = await query.create({ name: 'Victor Tesoura' })
 ```
@@ -296,7 +296,7 @@ const user = await query.create({ name: 'Victor Tesoura' })
 The `createMany` method is useful to create many records in database:
 
 ```javascript
-const query = Database.buildTable('users')
+const query = Database.table('users')
 
 const users = await query.createMany([
     { name: 'Victor Tesoura' },
@@ -309,12 +309,12 @@ const users = await query.createMany([
 The `update` method is useful to update one or more records based in statements in database:
 
 ```javascript
-const query = Database.buildTable('users')
+const query = Database.table('users')
 
 const users = await query
-    .buildSelect('id', 'name')
-    .buildWhereIn('id', [1, 2])
-    .buildOrderBy('name', 'ASC')
+    .select('id', 'name')
+    .whereIn('id', [1, 2])
+    .orderBy('name', 'ASC')
     .update({ name: 'Danrley Morais' })
 ```
 
@@ -323,9 +323,9 @@ const users = await query
 The `delete` method is useful to delete one or more records based in statements in database:
 
 ```javascript
-const query = Database.buildTable('users')
+const query = Database.table('users')
 
-await query.buildWhereBetween('id', [1, 10]).delete()
+await query.whereBetween('id', [1, 10]).delete()
 ```
 
 ### Using multiple database connections {#id-using-multiple-database-connections}
@@ -337,12 +337,12 @@ to explicit call the `connect` method when working with other connection that is
 
 ```javascript
 const database = await Database.connection('mysql').connect()
-const query = database.buildTable('users')
+const query = database.table('users')
 
 const users = await query
-    .buildSelect('id', 'name')
-    .buildWhereNotIn('id', [1, 2])
-    .buildOrderBy('name', 'ASC')
+    .select('id', 'name')
+    .whereNotIn('id', [1, 2])
+    .orderBy('name', 'ASC')
     .findMany()
 ```
 
@@ -351,10 +351,10 @@ class. This means that if you call the `connection` method of `Database` facade 
 
 ```javascript
 await Datatabase.connection('mysql')
-    .buildTable('users')
-    .buildSelect('id', 'name')
-    .buildWhereNotIn('id', [1, 2])
-    .buildOrderBy('name', 'ASC')
+    .table('users')
+    .select('id', 'name')
+    .whereNotIn('id', [1, 2])
+    .orderBy('name', 'ASC')
     .findMany()
 ```
 
@@ -368,10 +368,10 @@ const saveOnDriver = false // Set if connection should be saved in Database driv
 const database = await Datatabase.connection('mysql').connect(force, saveOnDriver)
 
 await database
-    .buildTable('users')
-    .buildSelect('id', 'name')
-    .buildWhereNotIn('id', [1, 2])
-    .buildOrderBy('name', 'ASC')
+    .table('users')
+    .select('id', 'name')
+    .whereNotIn('id', [1, 2])
+    .orderBy('name', 'ASC')
     .findMany()
 ```
 
@@ -382,11 +382,13 @@ using **your** database instance. We will see next how to close a database conne
 
 ### Closing database connections {#id-closing-database-connections}
 
-You can simply close a connection using the `close` method of `Database` facade:
+You can simply close a connection using the `close` or `closeAll` methods of `Database` facade:
 
 ```javascript
 await Database.close()
 await Database.connection('mysql').close()
+
+await Database.closeAll()
 ```
 
 Remember that when creating a connection that will not be saved in driver, you will need to close the connection
@@ -399,10 +401,10 @@ const saveOnDriver = false
 const database = await Datatabase.connection('mysql').connect(force, saveOnDriver)
 
 await database
-    .buildTable('users')
-    .buildSelect('id', 'name')
-    .buildWhereNotIn('id', [1, 2])
-    .buildOrderBy('name', 'ASC')
+    .table('users')
+    .select('id', 'name')
+    .whereNotIn('id', [1, 2])
+    .orderBy('name', 'ASC')
     .findMany()
 
 await database.close()
