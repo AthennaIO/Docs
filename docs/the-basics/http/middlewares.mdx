@@ -77,7 +77,7 @@ export class EnsureApiKeyIsValid {
     * @param {import('@athenna/http').HandleContextContract} ctx
     * @return {any}
     */
-  handle({ queries, next }: HandleContextContract) {
+  handle({ queries, next }) {
     if (queries.apiKey !== 'my-api-key') {
         throw new UnauthorizedException('Your api key does not match with application api key.')
     }

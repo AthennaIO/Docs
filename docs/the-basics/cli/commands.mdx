@@ -258,13 +258,13 @@ and copy it to the `resources/templates` folder in our project root:
 node artisan template:customize
 ```
 
-Now in our `resources/templates` folder we have the `exception.ejs` file, let's create a custom template for it that removes
+Now in our `resources/templates` folder we have the `exception.edge` file, let's create a custom template for it that removes
 all comments of the class:
 
 ```ejs
 import { Exception } from '@athenna/core'
 
-export class <%= namePascal %>Exception extends Exception {
+export class {{ namePascal }}Exception extends Exception {
   constructor(message, statusCode, code, help) {
     super(message, statusCode, code, help)
   }
@@ -273,7 +273,7 @@ export class <%= namePascal %>Exception extends Exception {
 
 :::caution
 
-Remember that the file name needs to be `exception.ejs` to be replaced by Artisan original template.
+Remember that the file name needs to be `exception.edge` to be replaced by Artisan original template.
 
 :::
 

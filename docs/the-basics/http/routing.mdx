@@ -39,7 +39,6 @@ tags:
 - #### [Route groups](#id-route-groups)
   - #### [Middlewares](#id-middlewares)
   - #### [Route prefixes](#id-route-prefixes)
-- #### [Rate limiting](#id-rate-limiting)
 - #### [Cross-origin resource sharing (CORS)](#id-cross-origin-resource-sharing)
 
 ## Basic routing {#id-base-routing}
@@ -167,22 +166,6 @@ Route.group(() => {
     })
 }).prefix('admin')
 ```
-
-## Rate limiting {#id-rate-limiting}
-
-Rate limiters ensure the fair usage of your http server by clients. It regulates the number of times a user can request
-your application in a given time-frame.
-
-Athenna uses the [`fastify-rate-limit`](https://github.com/fastify/fastify-rate-limit) plugin inside `HttpKernel`. All
-the configurations that `fastify-rate-limit` supports can be set inside `config/http.js` file in the `rateLimit` object.
-
-Rate limit plugin is registered in your http application by default, but you can remove it setting the `noRateLimit` as
-`true` in `config/http.js` file.
-
-:::tip
-For more information on Rate limit and Rate limit headers, please consult the
-[Meta article about rate limiters](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/).
-:::
 
 ## Cross-origin resource sharing (CORS) {#id-cross-origin-resource-sharing}
 

@@ -108,9 +108,9 @@ export class UserService {
   /**
    * Find one user by id.
    *
-   * @param id
+   * @param {string} id
    */
-  async findOne(id: string) {
+  async findOne(id) {
     return this.#myAppService.findOne(id)
   }
 }

@@ -101,7 +101,7 @@ export class PaginationMiddleware {
   /**
    * Handle method is executed before the request gets in your controller.
    *
-   * @param {import('@athenna/http').HandleContextContract}
+   * @param {import('@athenna/http').HandleContextContract} ctx
    */
   handle({ request, data, next }) {
     const page = request.queries.page ? parseInt(request.queries.page) : 0

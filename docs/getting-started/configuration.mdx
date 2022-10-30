@@ -34,6 +34,7 @@ tags:
   - #### [Determining the current environment](#id-determining-the-current-environment)
   - #### [Get an environment variable value](#id-get-an-environment-variable-value)
   - #### [Get a configuration value](#id-get-a-configuration-value)
+  - #### [Load a custom configuration file](#id-load-a-custom-configuration-value)
 - #### [Debug mode](#id-debug-mode)
 
 ## Introduction {#id-introduction}
@@ -252,6 +253,41 @@ You can get all the configuration values using `get` method without any key:
 console.log(Config.get()) // { app: {...}, http: {...}, ... }
 ```
 
+:::
+
+### Load a custom configuration value {#id-load-a-custom-configuration-value}
+
+The `Config` class will always load all the configuration files inside `config` folder. But in some point you may want to load
+a custom configuration file that is not inside `config` folder. To do that you can use `load`, `safeLoad` and `loadAll` methods:
+
+```javascript
+import { Path } from '@athenna/common'
+
+// Load all configuration files of some folder path
+await Config.loadAll(Path.pwd('/customConfigs'))
+
+// Load the configuration only if it has not been loaded yet
+await Config.safeLoad(Path.pwd('/customConfigs/custom.js'))
+
+// Load or reload the configuration file
+await Config.load(Path.pwd('/customConfigs/custom.js'))
+```
+
+:::tip
+As you can see, you can easily reload some configuration file in runtime using `load` method of `Config` class:
+
+```javascript
+import { Path } from '@athenna/common'
+
+// Subscribe your APP_DESCRIPTION env
+process.env.APP_DESCRIPTION = 'Athenna is the best!'
+
+// Reload configuration file
+await Config.load(Path.config('app.js'))
+
+// Will be equals to -> "Athenna is the best!"
+console.log(Config.get('app.description'))
+```
 :::
 
 ## Debug mode {#id-debug-mode}

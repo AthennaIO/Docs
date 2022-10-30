@@ -1,0 +1,73 @@
+---
+sidebar_position: 4
+
+id: graceful-shutdown
+title: Graceful Shutdown
+hide_title: true
+hide_table_of_contents: true
+tags:
+- Http
+- Graceful Shutdown
+- Digging Deeper
+---
+
+<nav aria-label="breadcrumbs">
+    <ul class="breadcrumbs">
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/">🏠</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link">Digging Deeper</a>
+        </li>
+        <li class="breadcrumbs__item">
+            <a class="breadcrumbs__link" href="/docs/digging-deeper/graceful-shutdown">Graceful Shutdown</a>
+        </li>
+    </ul>
+</nav>
+
+<span class="badge badge--secondary margin-top-bot">version 1.0.0</span>
+
+# Graceful Shutdown
+
+- #### [Introduction](#id-introduction)
+- #### [Configurations](#id-configurations)
+- #### [Disabling graceful shutdown](#id-disabling-graceful-shutdown)
+
+## Introduction {#id-introduction}
+
+Graceful shutdown means that the OS (operating system) can safely shut down its processes and close all connections, however long that takes.
+This helps to prevent accidental data loss or other unexpected problems if the shutdown is performed intentionally by the user.
+
+## Configurations {#id-configuration}
+
+Athenna already comes with graceful shutdown configured by default using the `gracefulShutdown` object in `config/app.js` file. In this
+object you can configure all [`SIGNALS`](https://www.geeksforgeeks.org/node-js-process-signal-events/) that Node.js process will listen for in your application. Athenna comes with `SIGINT` and `SIGTERM`
+already configured by default:
+
+```javascript
+import { ProviderHelper } from '@athenna/core'
+
+gracefulShutdown: {
+    SIGINT: async () => {
+      await ProviderHelper.shutdownAll(false)
+
+      process.exit()
+    },
+    SIGTERM: async signal => {
+      await ProviderHelper.shutdownAll()
+
+      process.kill(process.pid, signal)
+    },
+},
+```
+
+It's imperative that you always call the `ProviderHelper.shutdownAll()` method in your signals configurations. This method is who will
+call the `shutdown` method of Athenna providers.
+
+## Disabling graceful shutdown {#id-disabling-graceful-shutdown}
+
+To disable the graceful shutdown of some SIGNAL you can just remove it from `gracefulShutdown` object in `config/app.js`:
+
+```javascript
+gracefulShutdown: {}
+```

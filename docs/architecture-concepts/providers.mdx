@@ -31,6 +31,7 @@ tags:
 - #### [Writing service providers](#id-writing-service-providers)
   - #### [The register method](#id-the-register-method)
   - #### [The boot method](#id-the-boot-method)
+  - #### [The shutdown method](#id-the-shutdown-method)
 - #### [Registering providers](#id-registering-providers)
 - #### [Choosing applications](#id-choosing-applications)
 
@@ -84,9 +85,9 @@ export class MyAppProvider extends ServiceProvider {
   /**
    * Register any application services.
    *
-   * @return void
+   * @return {Promise<void>}
    */
-  register(): void {
+  register() {
     this.container.singleton('MyApp/Service', MyAppService)
   }
 }
@@ -152,13 +153,41 @@ export class MyAppProvider extends ServiceProvider {
   /**
    * Bootstrap any application services.
    *
-   * @return void
+   * @return {Promise<void>}
    */
-  boot(): void {
+  boot() {
       /** @type {import('#app/Utils/MyAppRepository').MyAppRepository} */
     const myAppRepository = this.container.safeUse('MyApp/Repository')
 
     this.container.instance('MyApp/Service', new MyAppService(myAppRepository))
+  }
+}
+```
+
+### The shutdown method {#id-the-shutdown-method}
+
+The shutdown method will be called when the application is going down for some reason. This method is extremely useful for [`gracefully shutdown`](/docs/digging-deeper/graceful-shutdown)
+the application, and it's used in providers such as `HttpServerProvider` and `DatabaseProvider`:
+
+```javascript
+import { ServiceProvider } from '@athenna/ioc'
+
+export class MyAppProvider extends ServiceProvider {
+
+  /**
+   * Shutdown any application services.
+   *
+   * @return {Promise<void>}
+   */
+  async shutdown() {
+    /** @type {import('#app/Utils/MyAppRepository').MyAppRepository} */
+    const MyAppService = this.container.use('MyApp/Service')
+
+    if (!MyAppService) {
+        return
+    }
+
+    await MyAppService.close()
   }
 }
 ```

@@ -57,7 +57,7 @@ With this behavior you can set additional flags for your command when registerin
 ```javascript
 import { Artisan } from '@athenna/artisan' // Artisan Facade
 
-Artisan.command('hello', function (options: any) {
+Artisan.command('hello', function (options) {
   if (options.error) {
     this.error('Hello from Athenna!')
 
