@@ -32,13 +32,14 @@ tags:
 - #### [Introduction](#id-introduction)
 - #### [Running database queries](#id-running-database-queries)
     - #### [Raw expressions](#id-raw-expressions)
+      - #### [Raw methods](#id-raw-methods)
     - #### [Get the client of driver](#id-get-the-client-of-driver)
 - #### [Aggregates](#id-aggregates)
 - #### [Select statements](#id-select-statements)
 - #### [Where clauses](#id-where-clauses)
     - #### [Where not clauses](#id-where-not-clauses)
     - #### [Additional where clauses](#id-additional-where-clauses)
-- #### [Ordering, limit & skip](#id-ordering-limit-skip)
+- #### [Ordering, grouping, limit & skip](#id-ordering-grouping-limit-skip)
 - #### [Pagination](#id-pagination)
 - #### [Joins](#id-joins)
 
@@ -111,6 +112,10 @@ const users = await Database.raw('SELECT * FROM users')
 :::caution
 You should be extremely careful to avoid creating SQL injection vulnerabilities using the `raw` method.
 :::
+
+#### Raw methods {#id-raw-methods}
+
+Coming soon...
 
 ### Get the client of driver {#id-get-the-client-of-driver}
 
@@ -294,9 +299,69 @@ const users = await Database
         .findMany()
 ```
 
-## Ordering, limit & skip {#id-ordering-limit-skip}
+## Ordering, grouping, limit & skip {#id-ordering-grouping-limit-skip}
 
-Coming soon...
+### Ordering {#id-ordering}
+
+#### The `orderBy` method {#id-the-orderby-method}
+
+The `orderBy` method allows you to sort the results of the query by a given column. The first argument accepted by the
+`orderBy` method should be the column you wish to sort by, while the second argument determines the direction of the
+sort and may be either `asc`, `ASC`, `desc` or `DESC`:
+
+```javascript
+const users = await Database
+        .table('users')
+        .orderBy('name', 'desc')
+        .findMany()
+```
+
+To sort by multiple columns, you may simply invoke `orderBy` as many times as necessary:
+
+```javascript
+const users = await Database
+        .table('users')
+        .orderBy('name', 'desc')
+        .orderBy('email', 'asc')
+        .findMany()
+```
+
+### Grouping {#id-grouping}
+
+#### The `groupBy` & `having` method {#id-the-groupby-&-having-method}
+
+As you might expect, the `groupBy` and `having` methods may be used to group the query results. The having method's
+signature is similar to that of the `where` method:
+
+```javascript
+const users = await Database
+        .table('users')
+        .groupBy('account_id')
+        .having('account_id', '>', 100)
+        .findMany()
+```
+
+You can use the `havingBetween` method to filter the results within a given range:
+
+```javascript
+const users = await Database
+        .table('users')
+        .groupBy('account_id')
+        .havingBetween('account_id', [1, 100])
+        .findMany()
+```
+
+You may pass multiple arguments to the `groupBy` method to group by multiple columns:
+
+```javascript
+const users = await Database
+        .table('users')
+        .groupBy('first_name', 'status')
+        .having('account_id', '>', 100)
+        .findMany()
+```
+
+To build more advanced `having` statements, see the [`havingRaw`](/docs/database/query-builder#id-raw-methods) method.
 
 ## Pagination {#id-pagination}
 
