@@ -360,6 +360,18 @@ const users = await Database.table('users')
 
 To build more advanced `having` statements, see the [`havingRaw`](/docs/database/query-builder#id-raw-methods) method.
 
+### Limit & Offset
+
+You may use the `offset` (equivalent to `skip`) and `limit` (equivalent to `take`) methods to limit the number of results
+returned from the query or to skip a given number of results in the query:
+
+```javascript
+const users = await Database.table('users')
+        .offset(10)
+        .limit(5)
+        .findMany()
+```
+
 ## Pagination {#id-pagination}
 
 Coming soon...
