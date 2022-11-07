@@ -60,8 +60,7 @@ the results of the query using the `findMany` method:
 ```javascript
 import { Database } from '@athenna/database'
 
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .select('id', 'name')
         .whereILike({ name: '%Valmir Barbosa%' })
         .orderBy('name', 'ASC')
@@ -72,8 +71,7 @@ Athenna also provides the `collection` method that returns an `Collection` insta
 You may access each column's value using the `all` method:
 
 ```javascript
-const collection = await Database
-        .table('users')
+const collection = await Database.table('users')
         .select('id', 'name')
         .whereILike({ name: '%Valmir Barbosa%' })
         .orderBy('name', 'ASC')
@@ -93,8 +91,7 @@ If you just need to retrieve a single row from a database table, you may use the
 method will return a single object:
 
 ```javascript
-const user = await Database
-        .table('users')
+const user = await Database.table('users')
         .select('id', 'name')
         .where({ name: 'Rodrigo Kamada' })
         .find()
@@ -143,8 +140,7 @@ const maxPriceOrder = await Database.table('orders').max('price')
 Of course, you may combine these methods with other clauses to fine-tune how your aggregate value is calculated:
 
 ```javascript
-const priceAverage = await Database
-        .table('orders')
+const priceAverage = await Database.table('orders')
         .where('finalized', true)
         .avg('price')
 ```
@@ -155,8 +151,7 @@ You may not always want to select all columns from a database table. Using the `
 custom "select" clause for the query:
 
 ```javascript
-const { id, name } = await Database
-        .table('users')
+const { id, name } = await Database.table('users')
         .select('id', 'name')
         .find()
 ```
@@ -164,8 +159,7 @@ const { id, name } = await Database
 If you want to select all fields including the `hidden` you can use the `*` operator:
 
 ```javascript
-const { id, name, email } = await Database
-        .table('users')
+const { id, name, email } = await Database.table('users')
         .select('*')
         .find()
 ```
@@ -180,8 +174,7 @@ For example, the following query retrieves users where the value of the `votes` 
 column is greater than `35`:
 
 ```javascript
-const user = await Database
-        .table('users')
+const user = await Database.table('users')
         .where('votes', '=', 100)
         .where('age', '>', 35)
         .find()
@@ -191,8 +184,7 @@ For convenience, if you want to verify that a column is `=` to a given value, yo
 to the `where` method. Athenna will assume you would like to use the `=` operator:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .where('votes', 100)
         .findMany()
 ```
@@ -200,18 +192,15 @@ const users = await Database
 As previously mentioned, you may use any operator that is supported by your database system:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .where('votes', '>=', 100)
         .findMany()
 
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .where('votes', '<>', 100)
         .findMany()
 
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .where('name', 'like', 'J%')
         .findMany()
 ```
@@ -219,8 +208,7 @@ const users = await Database
 You may also pass an object of conditions, but remember that when using objects the operation is always going to be `=`:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .where({ name: 'João Lenon', deletedAt: null })
         .findMany()
 ```
@@ -244,8 +232,7 @@ const products = await Database
 The `whereBetween` method verifies that a column's value is between two values:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .whereBetween('votes', [1, 100])
         .findMany()
 ```
@@ -253,8 +240,7 @@ const users = await Database
 The `whereNotBetween` method verifies that a column's value lies outside two values:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .whereNotBetween('votes', [1, 100])
         .findMany()
 ```
@@ -264,8 +250,7 @@ const users = await Database
 The `whereIn` method verifies that a given column's value is contained within the given array:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .whereIn('id', [1, 2, 3])
         .findMany()
 ```
@@ -273,8 +258,7 @@ const users = await Database
 The `whereNotIn` method verifies that the given column's value is not contained in the given array:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .whereNotIn('id', [1, 2, 3])
         .findMany()
 ```
@@ -284,8 +268,7 @@ const users = await Database
 The `whereNull` method verifies that the value of the given column is `NULL`:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .whereNull('deletedAt')
         .findMany()
 ```
@@ -293,8 +276,7 @@ const users = await Database
 The `whereNotNull` method verifies that the column's value is not `NULL`:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .whereNotNull('deletedAt')
         .findMany()
 ```
@@ -310,8 +292,7 @@ The `orderBy` method allows you to sort the results of the query by a given colu
 sort and may be either `asc`, `ASC`, `desc` or `DESC`:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .orderBy('name', 'desc')
         .findMany()
 ```
@@ -319,11 +300,29 @@ const users = await Database
 To sort by multiple columns, you may simply invoke `orderBy` as many times as necessary:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .orderBy('name', 'desc')
         .orderBy('email', 'asc')
         .findMany()
+```
+
+#### The `latest` & `oldest` methods {#id-the-latest-&-oldest-methods}
+
+The `latest` and `oldest` methods allow you to easily order results by date. By default, the result will be ordered by
+the table's `createdAt` column:
+
+```javascript
+const user = await Database.table('users')
+        .latest()
+        .find()
+```
+
+Or, you may pass the column name that you wish to sort by:
+
+```javascript
+const user = await Database.table('users')
+        .oldest('updatedAt')
+        .find()
 ```
 
 ### Grouping {#id-grouping}
@@ -334,8 +333,7 @@ As you might expect, the `groupBy` and `having` methods may be used to group the
 signature is similar to that of the `where` method:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .groupBy('account_id')
         .having('account_id', '>', 100)
         .findMany()
@@ -344,18 +342,17 @@ const users = await Database
 You can use the `havingBetween` method to filter the results within a given range:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
+        .selectRaw('count(id) as number_of_users, account_id')
         .groupBy('account_id')
-        .havingBetween('account_id', [1, 100])
+        .havingBetween('number_of_users', [0, 100])
         .findMany()
 ```
 
 You may pass multiple arguments to the `groupBy` method to group by multiple columns:
 
 ```javascript
-const users = await Database
-        .table('users')
+const users = await Database.table('users')
         .groupBy('first_name', 'status')
         .having('account_id', '>', 100)
         .findMany()
