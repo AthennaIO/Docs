@@ -736,7 +736,22 @@ await Database.table('users').where('id', 1).decrement('votes')
 
 ## Delete statements {#id-delete-statements}
 
-Coming soon...
+The query builder's `delete` method may be used to delete records from the table. You may constrain delete statements by
+adding "where" clauses before calling the `delete` method:
+
+```javascript
+await Database.table('users').delete()
+await Database.table('users').where('votes', '>', 100).delete()
+```
+
+If you wish to truncate an entire table, which will remove all records from the table and reset the auto-incrementing ID to
+zero, you may use the truncate method:
+
+```javascript
+const tableName = 'users'
+
+await Database.truncate(tableName)
+```
 
 ## Debugging {#id-debugging}
 
