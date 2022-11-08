@@ -37,6 +37,7 @@ tags:
 - #### [Running queries](#id-running-queries)
   - #### [Using multiple database connections](#id-using-multiple-database-connections)
   - #### [Closing database connections](#id-closing-database-connections)
+- #### [Database transactions](#id-database-transactions)
 
 ## Introduction {#id-introduction}
 
@@ -413,4 +414,23 @@ await database.close()
 // created above since DriverFactory doesn't
 // know what is your connection.
 await Database.connection('mysql').close()
+```
+
+## Database transactions {#id-database-transactions}
+
+You may use the `startTransaction` method provided by the `Database` facade to run a set of operations within a database
+transaction. You can use a `try/catch` block to verify if an exception is thrown within your try block, and roll back if
+some error occurs. If the closure executes successfully, the transaction should be committed:
+
+```javascript
+const trx = await Database.startTransaction()
+
+try {
+    await trx.raw('update users set votes = 1')
+    await trx.table('posts').delete()
+
+    await trx.commitTransaction()
+} catch (err) {
+    await trx.rollbackTransaction()
+}
 ```
