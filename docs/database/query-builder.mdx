@@ -41,6 +41,7 @@ tags:
     - #### [Or where clauses](#id-or-where-clauses)
     - #### [Where not clauses](#id-where-not-clauses)
     - #### [Additional where clauses](#id-additional-where-clauses)
+    - #### [Logical grouping](#id-logical-grouping)
 - #### [Advanced where clauses](#id-advanced-where-clauses)
   - #### [Where exists clauses](#id-where-exists-clauses)
 - #### [Ordering, grouping, limit & skip](#id-ordering-grouping-limit-and-skip)
@@ -378,6 +379,35 @@ const users = await Database.table('users')
         .whereNotNull('deletedAt')
         .findMany()
 ```
+
+### Logical grouping {#id-logical-grouping}
+
+Sometimes you may need to group several "where" clauses within parentheses in order to achieve your query's desired
+logical grouping. In fact, you should generally always group calls to the `orWhere` method in parentheses in order
+to avoid unexpected query behavior. To accomplish this, you may pass a closure to the `where` method:
+
+```javascript
+const users = await Database.table('users')
+        .where('name', '=', 'João')
+        .where(query => {
+                query
+                    .where('votes', '>', 100)
+                    .orWhere('title', '=', 'Admin')
+        })
+        .findMany()
+```
+
+As you can see, passing a closure into the `where` method instructs the query builder to begin a constraint group.
+The closure will receive a query builder instance which you can use to set the constraints that should be contained
+within the parenthesis group. The example above will produce the following SQL:
+
+```sql
+select * from users where name = 'João' and (votes > 100 or title = 'Admin')
+```
+
+:::warning
+You should always group `orWhere` calls in order to avoid unexpected behavior when global scopes are applied.
+:::
 
 ## Advanced where clauses {#id-advanced-where-clauses}
 
