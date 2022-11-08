@@ -710,7 +710,29 @@ const user = await Database.table('users')
 
 ## Update statements {#id-update-statements}
 
-Coming soon...
+In addition to inserting records into the database, the query builder can also update existing records using the `update`
+method. The `update` method, like the `create` method, accepts a record with columns names and values indicating the columns
+to be updated. You may constrain the update query using where clauses. In the example above we are going to "undo" the soft
+delete by searching for all records where the `deletedAt` column is not null and setting it to `null`:
+
+```javascript
+const user = await Database.table('users')
+        .whereNotNull('deletedAt')
+        .update({ deletedAt: null })
+```
+
+### Incrementing & decrementing {#id-incrementing-and-decrementing}
+
+The query builder also provides convenient methods for incrementing or decrementing the value of a given column. Both of
+these methods accept at least one argument: the column to modify:
+
+```javascript
+await Database.table('users').increment('votes')
+await Database.table('users').where('id', 1).increment('votes')
+
+await Database.table('users').decrement('votes')
+await Database.table('users').where('id', 1).decrement('votes')
+```
 
 ## Delete statements {#id-delete-statements}
 
