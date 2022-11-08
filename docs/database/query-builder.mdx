@@ -190,7 +190,61 @@ Instead of using the `Database.raw` method, you may also use the following metho
 into various parts of your query. Remember, Athenna can not guarantee that any query using raw expressions is
 protected against SQL injection vulnerabilities.
 
-Coming soon...
+#### `selectRaw` {#id-select-raw}
+
+The `selectRaw` method can be used in place of `select(Database.raw(/* ... */))`. This method accepts an
+optional array of bindings as its second argument:
+
+```javascript
+const orders = await Database.table('orders')
+        .selectRaw('price * ? as price_with_tax', [1.0825])
+        .findMany()
+```
+
+#### `whereRaw / orWhereRaw` {#id-where-raw}
+
+The `whereRaw` and `orWhereRaw` methods can be used to inject a raw "where" clause into your query.
+These methods accept an optional array of bindings as their second argument:
+
+```javascript
+const orders = await Database.table('orders')
+        .whereRaw('price > IF(state= "TX", ?, 100)', [200])
+        .findMany()
+```
+
+#### `havingRaw / orHavingRaw` {#id-having-raw}
+
+The `havingRaw` and `orHavingRaw` methods may be used to provide a raw string as the value of the "having" clause.
+These methods accept an optional array of bindings as their second argument:
+
+```javascript
+const orders = await Database.table('orders')
+        .select('department', Database.raw('SUM(price) as total_sales'))
+        .groupBy('department')
+        .havingRaw('SUM(price) > ?', [2500])
+        .findMany()
+```
+
+#### `orderByRaw` {#id-orderby-raw}
+
+The `orderByRaw` method may be used to provide a raw string as the value of the "order by" clause:
+
+```javascript
+const orders = await Database.table('orders')
+        .orderByRaw('updated_at - created_at DESC')
+        .findMany()
+```
+
+#### `groupByRaw` {#id-groupby-raw}
+
+The `groupByRaw` method may be used to provide a raw string as the value of the "group by" clause:
+
+```javascript
+const orders = await Database.table('orders')
+        .select('city', 'state')
+        .groupByRaw('city, state')
+        .findMany()
+```
 
 ## Joins {#id-joins}
 
@@ -513,7 +567,7 @@ const users = await Database.table('users')
         .findMany()
 ```
 
-To build more advanced `having` statements, see the [`havingRaw`](/docs/database/query-builder#id-raw-methods) method.
+To build more advanced `having` statements, see the [`havingRaw`](/docs/database/query-builder#id-having-raw) method.
 
 ### Limit & Offset
 
