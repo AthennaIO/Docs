@@ -193,7 +193,53 @@ Coming soon...
 
 ## Joins {#id-joins}
 
-Coming soon...
+### Inner join clause {#id-inner-join-clause}
+
+The query builder may also be used to add join clauses to your queries. To perform a basic "inner join",
+you may use the join method on a query builder instance. The first argument passed to the `join` method is
+the name of the table you need to join to, while the remaining arguments specify the column constraints for
+the join. You may even join multiple tables in a single query:
+
+```javascript
+const users = await Database.table('users')
+        .join('contacts', 'users.id', '=', 'contacts.user_id')
+        .join('orders', 'users.id', '=', 'orders.user_id')
+        .select('users.*', 'contacts.phone', 'orders.price')
+        .findMany()
+```
+
+### Other join clauses {#id-other-join-clauses}
+
+If you would like to perform a "left join" or "right join" instead of an "inner join", use the `leftJoin` or `rightJoin`
+methods. They have the same signature of `join` method:
+
+```javascript
+const users = await Database.table('users')
+        .leftJoin('contacts', 'users.id', '=', 'contacts.user_id')
+        .rightJoin('orders', 'users.id', '=', 'orders.user_id')
+        .select('users.*', 'contacts.phone', 'orders.price')
+        .findMany()
+```
+
+You can use any of the join types bellow in your queries:
+
+- leftJoin
+- rightJoin
+- crossJoin
+- outerJoin
+- fullOuterJoin
+- leftOuterJoin
+- rightOuterJoin
+
+### Advanced join clauses {#id-advanced-join-clauses}
+
+You may also specify more advanced join clauses using the `Database` facade:
+
+```javascript
+const users = await Database.table('users')
+        .join('contacts', join => join.on('users.id', '=', 'contacts.user_id').orOn(/* ... */))
+        .findMany()
+```
 
 ## Basic where clauses {#id-basic-where-clauses}
 
