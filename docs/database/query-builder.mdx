@@ -31,13 +31,10 @@ tags:
 
 - #### [Introduction](#id-introduction)
 - #### [Running database queries](#id-running-database-queries)
-    - #### [Retrieve all rows from a table](#id-retrieve-all-rows-from-a-table)
-    - #### [Retrieve a single row](#id-retrieve-a-single-row)
     - #### [Get the client of driver](#id-get-the-client-of-driver)
 - #### [Aggregates](#id-aggregates)
 - #### [Select statements](#id-select-statements)
 - #### [Raw expressions](#id-raw-expressions)
-  - #### [Raw methods](#id-raw-methods)
 - #### [Joins](#id-joins)
 - #### [Basic where clauses](#id-basic-where-clauses)
     - #### [Where clauses](#id-where-clauses)
@@ -46,7 +43,7 @@ tags:
     - #### [Additional where clauses](#id-additional-where-clauses)
 - #### [Advanced where clauses](#id-advanced-where-clauses)
   - #### [Where exists clauses](#id-where-exists-clauses)
-- #### [Ordering, grouping, limit & skip](#id-ordering-grouping-limit-skip)
+- #### [Ordering, grouping, limit & skip](#id-ordering-grouping-limit-and-skip)
 - #### [Conditional clauses](#id-conditional-clauses)
 - #### [Pagination](#id-pagination)
 - #### [Insert statements](#id-insert-statements)
@@ -278,7 +275,7 @@ const products = await Database
 
 > whereBetween / orWhereBetween
 
-The `whereBetween` or `orWhereBetween` method verifies that a column's value is between two values:
+The `whereBetween` or `orWhereBetween` methods verifies that a column's value is between two values:
 
 ```javascript
 const users = await Database.table('users')
@@ -288,7 +285,7 @@ const users = await Database.table('users')
 
 > whereNotBetween / orWhereNotBetween
 
-The `whereNotBetween` or `orWhereNotBetween` method verifies that a column's value lies outside two values:
+The `whereNotBetween` or `orWhereNotBetween` methods verifies that a column's value lies outside two values:
 
 ```javascript
 const users = await Database.table('users')
@@ -298,7 +295,7 @@ const users = await Database.table('users')
 
 > whereIn / orWhereIn
 
-The `whereIn` or `orWhereIn` method verifies that a given column's value is contained within the given array:
+The `whereIn` or `orWhereIn` methods verifies that a given column's value is contained within the given array:
 
 ```javascript
 const users = await Database.table('users')
@@ -308,7 +305,7 @@ const users = await Database.table('users')
 
 > whereNotIn / orWhereNotIn
 
-The `whereNotIn` or `orWhereNotIn` method verifies that the given column's value is not contained in the given array:
+The `whereNotIn` or `orWhereNotIn` methods verifies that the given column's value is not contained in the given array:
 
 ```javascript
 const users = await Database.table('users')
@@ -318,7 +315,7 @@ const users = await Database.table('users')
 
 > whereNull / orWhereNull
 
-The `whereNull` or `orWhereNull` method verifies that the value of the given column is `NULL`:
+The `whereNull` or `orWhereNull` methods verifies that the value of the given column is `NULL`:
 
 ```javascript
 const users = await Database.table('users')
@@ -328,7 +325,7 @@ const users = await Database.table('users')
 
 > whereNotNull / orWhereNotNull
 
-The `whereNotNull` or `orWhereNotNull` method verifies that the column's value is not `NULL`:
+The `whereNotNull` or `orWhereNotNull` methods verifies that the column's value is not `NULL`:
 
 ```javascript
 const users = await Database.table('users')
@@ -364,7 +361,7 @@ where exists (
 )
 ```
 
-## Ordering, grouping, limit & skip {#id-ordering-grouping-limit-skip}
+## Ordering, grouping, limit & skip {#id-ordering-grouping-limit-and-skip}
 
 ### Ordering {#id-ordering}
 
@@ -410,7 +407,7 @@ const user = await Database.table('users')
 
 ### Grouping {#id-grouping}
 
-#### The `groupBy` & `having` method {#id-the-groupby-&-having-method}
+#### The `groupBy` & `having` methods {#id-the-groupby-and-having-method}
 
 As you might expect, the `groupBy` and `having` methods may be used to group the query results. The having method's
 signature is similar to that of the `where` method:
