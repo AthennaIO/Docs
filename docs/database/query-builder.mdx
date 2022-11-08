@@ -755,4 +755,14 @@ await Database.truncate(tableName)
 
 ## Debugging {#id-debugging}
 
-Coming soon...
+You may use the `dump` method while building a query to dump the current query bindings and SQL. The `dump` method will
+display the debug information and continue executing the code:
+
+```javascript
+const users = await Database.table('users')
+        .whereNull('deletedAt')
+        .dump() // <- Will log in the terminal your query until this point
+        .oldest('deletedAt')
+        .dump() // <- Will log in the terminal your query until this point
+        .findMany()
+```
