@@ -391,8 +391,7 @@ the "exists" clause:
 const users = await Database.table('users')
         .whereExists(Database.table('orders')
                         .selectRaw(1)
-                        .whereRaw("`orders`.`user_id` = `users`.`id`")
-        )
+                        .whereRaw("`orders`.`user_id` = `users`.`id`"))
         .findMany()
 ```
 
@@ -488,8 +487,8 @@ To build more advanced `having` statements, see the [`havingRaw`](/docs/database
 
 ### Limit & Offset
 
-You may use the `offset` (equivalent to `skip`) and `limit` (equivalent to `take`) methods to limit the number of results
-returned from the query or to skip a given number of results in the query:
+You may use the `offset` and `limit` methods to limit the number of results returned from the query or to skip a given
+number of results in the query:
 
 ```javascript
 const users = await Database.table('users')
@@ -497,6 +496,11 @@ const users = await Database.table('users')
         .limit(5)
         .findMany()
 ```
+
+:::tip
+The `offset` method is equivalent to `skip` and the `limit` method is equivalent to `take`. `take` and `skip` are usually
+used by other query builders.
+:::
 
 ## Conditional clauses {#id-conditional-clauses}
 
