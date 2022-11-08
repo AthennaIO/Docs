@@ -40,6 +40,7 @@ tags:
     - #### [Where not clauses](#id-where-not-clauses)
     - #### [Additional where clauses](#id-additional-where-clauses)
 - #### [Ordering, grouping, limit & skip](#id-ordering-grouping-limit-skip)
+- #### [Conditional clauses](#id-conditional-clauses)
 - #### [Pagination](#id-pagination)
 - #### [Joins](#id-joins)
 
@@ -369,6 +370,37 @@ returned from the query or to skip a given number of results in the query:
 const users = await Database.table('users')
         .offset(10)
         .limit(5)
+        .findMany()
+```
+
+## Conditional clauses {#id-conditional-clauses}
+
+Sometimes you may want certain query clauses to apply to a query based on another condition. For instance, you may only
+want to apply a `where` statement if a given input value is present on the incoming HTTP request. You may accomplish this
+using the `when` method:
+
+```javascript
+const role = request.payload('role')
+
+await Database.table('users')
+        .when(role, (query, role) => query.where('roleId', role))
+        .findMany()
+```
+
+The `when` method only executes the given closure when the first argument is `true`. If the first argument is `false`, the
+closure will not be executed. So, in the example above, the closure given to the `when` method will only be invoked if the
+role field is present on the incoming request and evaluates to a `truthy` value.
+
+You can also add two `when` methods to your query to execute a different closure when the `role` **IS NOT** present in your query:
+
+```javascript
+const role = request.payload('role')
+
+await Database.table('users')
+        // Executes if role is present
+        .when(role, (query, role) => query.where('roleId', role))
+        // Executes if role is not present
+        .when(!role, (query, role) => query.where('roleId', role))
         .findMany()
 ```
 
