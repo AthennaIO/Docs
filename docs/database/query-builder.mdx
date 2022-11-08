@@ -618,7 +618,52 @@ await Database.table('users')
 
 ## Pagination {#id-pagination}
 
-Coming soon...
+You can paginate the results of your database using the `paginate` method. These methods support 3 arguments, the first argument
+is the page (default value is `0`) it defines the page where your pagination will start, the second is the limit
+(default value is `10`) it defines the limit of data that will be retrieved per page and the third one defines the resource url
+that Athenna will use to create the pagination links:
+
+```javascript
+const { data, meta, links } = await Database.table('users')
+        .whereNull('deletedAt')
+        .paginate(0, 10, '/users')
+```
+
+The `data` param is where all the data retrieved from database will stay:
+
+```javascript
+console.log(data) // -> [{...}]
+```
+
+The `meta` param will have information about the pagination such as the total of items finds using that query,
+items per page, total pages left, current page and the number of itens in that specific execution:
+
+```javascript
+console.log(meta)
+/**
+* {
+*    totalItems: 10,
+*    itemsPerPage: 10,
+*    totalPages: 10,
+*    currentPage: 1,
+*    itemCount: 10
+* }
+*/
+```
+
+The `links` object will help ho is consuming you API to know what is the next resource to call to go through your paginated data:
+
+```javascript
+console.log(links)
+/**
+* {
+*   next: '/users?page=2&limit=10',
+*   previous: '/users?page=0&limit=10',
+*   last: '/users?page=10&limit=10,
+*   first: '/users?&limit=10'
+* }
+*/
+```
 
 ## Insert statements {#id-insert-statements}
 
