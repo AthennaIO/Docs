@@ -53,7 +53,7 @@ node artisan make:migration create_flights_table
 
 :::tip
 Migrations templates may be customized using the
-[template customization command](https://athenna.io/docs/the-basics/cli/commands#id-registering-custom-templates).
+[`template customization command`](https://athenna.io/docs/the-basics/cli/commands#id-registering-custom-templates).
 :::
 
 ## Migration structure {#id-migration-structure}
@@ -61,7 +61,7 @@ Migrations templates may be customized using the
 A migration class contains two methods: `up` and `down`. The `up` method is used to add new tables, columns, or indexes to
 your database, while the `down` method should reverse the operations performed by the `up` method.
 
-Within both of these methods, you may use the [Knex schema builder](https://knexjs.org/guide/schema-builder.html) to
+Within both of these methods, you may use the [`Knex schema builder`](https://knexjs.org/guide/schema-builder.html) to
 expressively create and modify tables. For example, the following migration creates a `flights` table:
 
 ```javascript
@@ -163,7 +163,7 @@ will be reverted too.
 
 ## The migration schema API {#id-the-migration-schema-api}
 
-If you wish to know more about the migrations API under the `schema` property of [Knex](https://knexjs.org) you can check the
-[Knex schema builder documentation](https://knexjs.org/guide/schema-builder.html). Knex documentation is very good and will
+If you wish to know more about the migrations API under the `schema` property of [`Knex`](https://knexjs.org) you can check the
+[`Knex schema builder documentation`](https://knexjs.org/guide/schema-builder.html). Knex documentation is very good and will
 be very useful for more advanced methods of schema builder API.
 
