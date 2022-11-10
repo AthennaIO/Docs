@@ -151,13 +151,22 @@ Instead of using auto-incrementing integers as your model's primary keys, you ma
 universally unique alphanumeric identifiers that are 36 characters long.
 
 If you would like a model to use a UUID key instead of an auto-incrementing integer key, you may use the `Column.autoIncrementedUuid`
-method in your primary key (`id`). Athenna will automatically identify if you are using UUID's as your primary key and generate
-a new uuid after creating some record in your database:
+method in your primary key and then set what is your primary key (the default is already the `id` property). Athenna will automatically
+identify if you are using UUID's in your primary key and generate a new uuid after creating some record in your database:
 
 ```javascript
 import { Model, Column } from '@athenna/database'
 
 export class Article extends Model {
+  /**
+   * Set the primary key of your model.
+   *
+   * @return {string}
+   */
+  static get primaryKey() {
+      return 'id'
+  }
+
   /**
    * The default schema for model instances.
    *
