@@ -37,6 +37,9 @@ tags:
     - #### [Schemas](#id-schemas)
     - #### [Database connections](#id-database-connections)
 - #### [Retrieving models](#id-retrieving-models)
+    - #### [Building queries](#id-building-queries)
+    - #### [Refreshing models](#id-refreshing-models)
+- #### [Collections](#id-collections)
 
 ## Introduction {#id-introduction}
 
@@ -264,5 +267,60 @@ export class Article extends Model {
 ```
 
 ## Retrieving models {#id-retrieving-models}
+
+Once you have created a model and its associated database table, you are ready to start retrieving data from your database. You can think of each model as a
+powerful query builder allowing you to fluently query the database table associated with the model. The model's `findMany` method will retrieve all the records
+from the model's associated database table:
+
+```javascript
+import { Flight } from '#app/Models/Flight'
+
+const flights = await Flight.findMany()
+
+flights.forEach(flight => console.log(flight.name))
+```
+
+### Building queries {#id-building-queries}
+
+The model `findMany` method will return all the results in the model's table. However, since each model serves as a query builder, you may invoke the `query`
+method first and add additional constraints to queries and then invoke the `findMany` method to retrieve the results:
+
+```javascript
+const flights = await Flight.query()
+        .where('active', 1)
+        .orderBy('name')
+        .limit(10)
+        .findMany()
+```
+
+:::tip
+Since models are query builders, you should review all the methods provided by [`Athenna's query builder`](https://athenna.io/docs/database/query-builder).
+You may use any of these methods when writing your model queries.
+:::
+
+### Refreshing models {#id-refreshing-models}
+
+If you already have an instance of an model that was retrieved from the database, you can "refresh" the model using the `fresh` and `refresh` methods. The `fresh`
+method will re-retrieve the model from the database. The existing model instance will not be affected:
+
+```javascript
+const flight = await Flight.find({ number: 'FR 900' })
+
+const freshFlight = await flight.fresh()
+```
+
+The `refresh` method will re-hydrate the existing model using fresh data from the database. In addition, all of its loaded relationships will be refreshed as well:
+
+```javascript
+const flight = await Flight.find({ number: 'FR 900' })
+
+flight.number = 'FR 456'
+
+await flight.refresh()
+
+console.log(flight.number) // -> "FR 900"
+```
+
+## Collections {#id-collections}
 
 Coming soon...
