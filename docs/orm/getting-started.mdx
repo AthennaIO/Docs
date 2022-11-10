@@ -33,6 +33,7 @@ tags:
 - #### [Model conventions](#id-model-conventions)
     - #### [Table names](#id-table-names)
     - #### [Primary keys](#id-primary-keys)
+    - #### [Default attributes values](#id-default-attributes-values)
     - #### [Schemas](#id-schemas)
     - #### [Database connections](#id-database-connections)
 
@@ -119,6 +120,59 @@ export class Flight extends Model {
   /*...*/
 }
 ```
+
+### Default attributes vales {#id-default-attributes-values}
+
+By default, a newly instantiated model instance will not contain any attribute values. If you would like to define the default values
+for some of your model's attributes, you may define a static getter `attributes` on your model:
+
+```javascript
+import { Uuid } from '@athenna/common'
+import { Model } from '@athenna/database'
+
+export class Flight extends Model {
+  /**
+   * Set the default attributes of your model.
+   *
+   * @return {any}
+   */
+  static get attributes() {
+      return {
+          id: Uuid.generate()
+      }
+  }
+
+  /*...*/
+}
+```
+
+As you can see we are defining an `id` property in our static getter `attributes`. This property will have the value of a generated
+uuid randomly everytime that Athenna calls the `attributes` getter. This means that `attributes` is totally different from the default
+values that you set in your database migrations. Athenna will call the `attributes` getter everytime that `create`, `createMany` and `update`
+methods are called, this means that a new uuid will be generated for each call:
+
+```javascript
+import { Flight } from '#app/Models/Flight'
+
+const flight1 = await Flight.create()
+const flight2 = await Flight.query().create()
+
+console.log(flight1.id) // -> 43bf66ec-658a-4f59-8f89-2aac5ae96e6a
+console.log(flight2.id) // -> cbe35c9c-60f3-11ed-9b6a-0242ac120002
+```
+
+:::tip
+But always remember that if you have already set the attribute in one of these methods, the `attributes` getter will not subscribe then:
+
+```javascript
+import { Flight } from '#app/Models/Flight'
+
+// Setting my own id attribute
+const flight = await Flight.create({ id: '299dabf8-60f4-11ed-9b6a-0242ac120002' })
+
+console.log(flight.id) // -> 299dabf8-60f4-11ed-9b6a-0242ac120002
+```
+:::
 
 ### Schemas {#id-schemas}
 
