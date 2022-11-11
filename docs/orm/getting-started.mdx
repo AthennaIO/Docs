@@ -93,11 +93,6 @@ defining a static getter `table` on the model:
 import { Model } from '@athenna/database'
 
 export class Flight extends Model {
-  /**
-   * Set the table name of this model instance.
-   *
-   * @return {string}
-   */
   static get table() {
       return 'my_flights'
   }
@@ -116,11 +111,6 @@ key:
 import { Model } from '@athenna/database'
 
 export class Flight extends Model {
-  /**
-   * Set the primary key of your model.
-   *
-   * @return {string}
-   */
   static get primaryKey() {
       return 'id'
   }
@@ -139,11 +129,6 @@ import { Uuid } from '@athenna/common'
 import { Model } from '@athenna/database'
 
 export class Flight extends Model {
-  /**
-   * Set the default attributes of your model.
-   *
-   * @return {any}
-   */
   static get attributes() {
       return {
           id: Uuid.generate()
@@ -191,11 +176,6 @@ use the `Column` class to define all the options available in your database:
 import { Model, Column } from '@athenna/database'
 
 export class Flight extends Model {
-  /**
-   * The default schema for model instances.
-   *
-   * @return {any}
-   */
   static schema() {
     return {
       id: Column.autoIncrementedInt(),
@@ -220,20 +200,10 @@ identify if you are using UUID's in your primary key and generate a new uuid aft
 import { Model, Column } from '@athenna/database'
 
 export class Article extends Model {
-  /**
-   * Set the primary key of your model.
-   *
-   * @return {string}
-   */
   static get primaryKey() {
       return 'id'
   }
 
-  /**
-   * The default schema for model instances.
-   *
-   * @return {any}
-   */
   static schema() {
     return {
       id: Column.autoIncrementedUuid(),
@@ -257,11 +227,6 @@ static getter `connection` on the model:
 import { Model } from '@athenna/database'
 
 export class Article extends Model {
-  /**
-   * Set the db connection that this model instance will work with.
-   *
-   * @return {string}
-   */
   static get connection() {
       return 'mysql'
   }
@@ -484,11 +449,6 @@ the model. For example, let's make the `name` attribute of our Flight model mass
 import { Model } from '@athenna/database'
 
 export class Flight extends Model {
-  /**
-   * The attributes that could be persisted in database.
-   *
-   *  @return {string[]}
-   */
   static get persistOnly() {
     return ['name']
   }
@@ -511,11 +471,6 @@ asterisk (`['*']`). If you choose to unguarded your model, you should take speci
 methods:
 
 ```javascript
-/**
- * The attributes that could be persisted in database.
- *
- *  @return {string[]}
- */
 static get persistOnly() {
     return ['*']
 }
@@ -611,5 +566,114 @@ await Flight.query().where('active', 0).delete()
 
 ## Soft deleting {#id-soft-deleting}
 
+In addition to actually removing records from your database, the ORM can also "soft delete" models. When models are soft deleted, they are not actually
+removed from your database. Instead, a `deletedAt` attribute is set on the model indicating the date and time at which the model was "deleted". To enable
+soft deletes for a model, you can just make the static getter `isSoftDelete` return true in your model:
+
+```javascript
+export class Flight extends Model {
+  static get isSoftDelete() {
+    return false
+  }
+
+  /*...*/
+}
+```
+
+You should also add the `deletedAt` column to your database table in your migrations:
+
+```javascript
+import { Migration } from '@athenna/database'
+
+export class FlightMigration extends Migration {
+  async up({ schema }) {
+    return schema.createTable('my_flights', table => {
+      table.increments('id')
+      table.string('flight_title')
+      table.timestamps(true, true, true)
+      table.dateTime('deletedAt').nullable().defaultTo(null)
+    })
+  }
+
+  async down({ schema }) {
+    return schema.dropTableIfExists('my_flights')
+  }
+}
+```
+
+And in your Model schema:
+
+```javascript
+export class Flight extends Model {
+  static get isSoftDelete() {
+    return false
+  }
+
+  static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      title: Column.string('flight_title'),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+  }
+
+  /*...*/
+}
+```
+
+Now, when you call the `delete` method on the model, Athenna will update your model with setting the current date and time in your `deletedAt` column
+However, the model's database record will be left in the table. When querying a model that uses soft deletes, the soft deleted models will automatically
+be excluded from all query results:
+
+```javascript
+const where = { id: 1 }
+const flight = await Flight.find(where)
+
+await flight.delete()
+
+// The flight with id = 1 will not be inside the above array.
+const flights = await Flight.findMany()
+```
+
+To determine if a given model instance has been soft deleted, you may use the `isTrashed` method:
+
+```javascript
+if (flight.isTrashed()) {
+    //
+}
+```
+
+### Restoring soft delete models {#id-restoring-soft-delete-models}
+
+Sometimes you may wish to "un-delete" a soft deleted model. To restore a soft deleted model, you may call the `restore` method on a model instance. The
+`restore` method will set the model's `deletedAt` column to `null`:
+
+```javascript
+await flight.restore()
+```
+
+You may also use the `restore` method in a query to restore multiple models:
+
+```javascript
+const flights = await Flight.query()
+    .where('airlineId', 1)
+    .restore()
+```
+
+### Permanently deleting a model {#id-permanently-deleting-a-model}
+
+Sometimes you may need to truly remove a model from your database. You may use the `delete` method with a `true` value in the first argument to permanently
+remove a soft deleted model from the database table:
+
+```javascript
+const force = true
+await flight.delete(force)
+```
+
+### Querying soft delete models {#id-querying-soft-delete-models}
+
 Coming soon...
+
 
