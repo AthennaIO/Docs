@@ -41,6 +41,7 @@ tags:
     - #### [Refreshing models](#id-refreshing-models)
 - #### [Collections](#id-collections)
 - #### [Retrieve single models & Aggregates](#id-retrieve-single-models-and-aggregates)
+- #### [Inserting & Updating models](#id-inserting-and-updating-models)
 
 ## Introduction {#id-introduction}
 
@@ -389,3 +390,7 @@ const max = await Flight.query().where('active', 1).max('price')
 :::warning
 Aggregate methods will not exist directly in your models, you will always need to call the `query` method first and then execute it using one of then.
 :::
+
+## Inserting & Updating models {#id-inserting-and-updating-models}
+
+Coming soon...
