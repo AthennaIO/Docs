@@ -338,4 +338,54 @@ const availableFlights = flights.reject(flight => flight.cancelled)
 
 ## Retrieve single models & Aggregates {#id-retrieve-single-models-and-aggregates}
 
-Coming soon...
+In addition to retrieving all the records matching a given query, you may also retrieve single records using the `find` method. Instead of returning an array or
+collection of models, this method return a single model instance:
+
+```javascript
+const flight = await Flight.find({ id: 1 })
+
+const flight = await Flight.find({ active: 1 })
+
+const flight = await Flight.query().where('active', 1).find()
+```
+
+Sometimes you may wish to perform some other action if no results are found. The `findOr` method will return a single model instance or, if no results are found,
+execute the given closure. The value returned by the closure **will be considered the result of the method:**
+
+```javascript
+const flight = await Flight.findOr({ id: 1 }, async () => {
+    // ...
+})
+
+const flight = await Flight.query()
+        .where('legs', '>', 3)
+        .findOr(async () => {
+            // ...
+        })
+```
+
+### Not found exceptions {#id-not-found-exceptions}
+
+Sometimes you may wish to throw an exception if a model is not found. This is particularly useful in routes or controllers. The `findOrFail` method will retrieve
+the first result of the query; however, if no result is found, an `ModelNotFoundException` will be thrown:
+
+```javascript
+const flight = await Flight.findOrFail({ id: 1 })
+
+const flight = await Flight.query().where('legs', '>', 3).findOrFail()
+```
+
+### Retrieving aggregates {#id-retrieving-aggregates}
+
+When interacting with models, you may also use the `count`, `sum`, `max`, and other aggregate methods provided by the [`Athenna query builder`](/docs/database/query-builder).
+As you might expect, these methods return a scalar value instead of a model instance:
+
+```javascript
+const count = await Flight.query().where('active', 1).count()
+
+const max = await Flight.query().where('active', 1).max('price')
+```
+
+:::warning
+Aggregate methods will not exist directly in your models, you will always need to call first the `query` method first and then execute it using one of then.
+:::
