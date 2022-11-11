@@ -547,7 +547,9 @@ const where = {
 }
 const data = {
     price: 99,
-    discounted: 1
+    discounted: 1,
+    departure: 'Oakland',
+    destination: 'San Diego'
 }
 
 await Flight.createOrUpdate(where, data)
@@ -561,6 +563,8 @@ await Flight.query()
     .where('destination', 'San Diego')
     .createOrUpdate({
         price: 99,
-        discounted: 1
+        discounted: 1,
+        departure: 'Oakland',
+        destination: 'San Diego'
     })
 ```
