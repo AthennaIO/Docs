@@ -136,7 +136,7 @@ being executed in your database.
 #### DB_AUTO_CONNECT
 
 This variable specify for Athenna if the default connection should be auto connected inside `DatabaseProvider`. We set the
-value of this variable as true when bootstrapping the application by `bootstrap/main.js` file, but when running the application
+value of this variable as `true` when bootstrapping the application by `bootstrap/main.js` file, but when running the application
 from `artisan` we set this variable to false. If this variable is set to `false` you will need to call the `connect` method from
 `Database` facade, we will check how to use it further in the documentation.
 
@@ -196,7 +196,7 @@ await Database.hasTable('not-found') // false
 
 #### Running and reverting migrations {#id-running-and-reverting-migrations}
 
-If you don't know what is a migration you can check [clicking here](/docs/database/migrations)
+If you don't know what is a migration you can check [`clicking here`](/docs/database/migrations)
 
 ```javascript
 await Database.runMigrations()
@@ -205,7 +205,7 @@ await Database.revertMigrations()
 
 #### Transactions {#id-transactions}
 
-If you don't know what is a transaction you can check [clicking here](/docs/database/getting-started#id-database-transactions)
+If you don't know what is a transaction you can check [`clicking here`](/docs/database/getting-started#id-database-transactions)
 
 ```javascript
 import { Log } from '@athenna/logger'
