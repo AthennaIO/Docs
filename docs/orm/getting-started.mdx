@@ -42,6 +42,8 @@ tags:
 - #### [Collections](#id-collections)
 - #### [Retrieve single models & Aggregates](#id-retrieve-single-models-and-aggregates)
 - #### [Inserting & Updating models](#id-inserting-and-updating-models)
+- #### [Deleting models](#id-deleting-models)
+- #### [Soft deleting](#id-soft-deleting)
 
 ## Introduction {#id-introduction}
 
@@ -568,3 +570,46 @@ await Flight.query()
         destination: 'San Diego'
     })
 ```
+
+## Deleting models {#id-deleting-models}
+
+To delete a model, you may call the `delete` method on the model instance:
+
+```javascript
+import { Flight } from '#app/Models/Flight'
+
+const where = { id: 1 }
+await Flight.delete(where)
+```
+
+You can also delete an instance directly:
+
+```javascript
+import { Flight } from '#app/Models/Flight'
+
+const where = { id: 1 }
+const flight = await Flight.find(where)
+
+await flight.delete()
+```
+
+You may call the `truncate` method to delete all the model's associated database records. The `truncate` operation will also reset any auto-incrementing
+IDs on the model's associated table:
+
+```javascript
+await Flight.truncate()
+```
+
+### Deleting models using queries {#id-deleting-models-using-queries}
+
+Of course, you may build a query to delete all models matching your query's criteria. In this example, we will delete all flights that are marked as
+inactive:
+
+```javascript
+await Flight.query().where('active', 0).delete()
+```
+
+## Soft deleting {#id-soft-deleting}
+
+Coming soon...
+
