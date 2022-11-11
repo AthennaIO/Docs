@@ -40,6 +40,7 @@ tags:
     - #### [Building queries](#id-building-queries)
     - #### [Refreshing models](#id-refreshing-models)
 - #### [Collections](#id-collections)
+- #### [Retrieve single models & Aggregates](#id-retrieve-single-models-and-aggregates)
 
 ## Introduction {#id-introduction}
 
@@ -322,5 +323,19 @@ console.log(flight.number) // -> "FR 900"
 ```
 
 ## Collections {#id-collections}
+
+As we have seen, the models method `findMany` retrieve multiple records from the database. However, the Athenna model has a `collection` method that will also retrieve
+multiple records from the database but return it as an instance of the [`Collection`](/docs/digging-deeper/collections) class.
+
+The Collection class provides a variety of helpful methods for interacting with data collections. For example, the `reject` method may be used to remove models from a
+collection based on the results of an invoked closure:
+
+```javascript
+const flights = await Flight.collection({ destination: 'Paris' })
+
+const availableFlights = flights.reject(flight => flight.cancelled)
+```
+
+## Retrieve single models & Aggregates {#id-retrieve-single-models-and-aggregates}
 
 Coming soon...
