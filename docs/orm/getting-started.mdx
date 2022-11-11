@@ -393,4 +393,39 @@ Aggregate methods will not exist directly in your models, you will always need t
 
 ## Inserting & Updating models {#id-inserting-and-updating-models}
 
+### Inserts {#id-inserts}
+
+Of course, when using the models, we don't only need to retrieve then from the database. We also need to insert new records. Thankfully, the models makes it simple.
+To insert a new record into the database, you should instantiate a new model instance and set attributes on the model. Then, call the `save` method on the model instance:
+
+```javascript
+import { Flight } from '#app/Models/Flight'
+
+const flight = new Flight()
+
+flight.name = 'Brazil to Ukraine'
+
+await flight.save()
+```
+
+In this example, we assign the `name` field to the name attribute of the `#app/Models/Flight` model instance. When we call the `save` method, a record will be inserted into
+the database. The model's `createdAt` and `updatedAt` timestamps will automatically be set when the `save` method is called, so there is no need to set them manually.
+
+Alternatively, you may use the `create` method to "save" a new model using a single statement. The inserted model instance will be returned to you by the `create` method:
+
+```javascript
+import { Flight } from '#app/Models/Flight'
+
+const flight = await Flight.create({ name: 'Brazil to Angola' })
+```
+
+However, we highly recommend that before using the `create` method, you specify the static getter `persistOnly` on your model class. This property will help your models to
+get protected against mass assignment vulnerabilities. To learn more about mass assignment, please consult the [`mass assignment documentation.`](/docs/orm/getting-started#id-mass-assignment)
+
+### Updates {#id-updates}
+
+Coming soon...
+
+#### Mass updates {#id-mass-updates}
+
 Coming soon...
