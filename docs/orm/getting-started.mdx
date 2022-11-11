@@ -424,15 +424,113 @@ get protected against mass assignment vulnerabilities. To learn more about mass 
 
 ### Updates {#id-updates}
 
-Coming soon...
+The `save` method may also be used to update models that already exist in the database. To update a model, you should retrieve it and set any attributes
+you wish to update. Then, you should call the model's `save` method. Again, the `updatedAt` timestamp will automatically be updated, so there is no need
+to manually set its value:
+
+```javascript
+import { Flight } from '#app/Models/Flight'
+
+const flight = await Flight.query()
+    .where({ id: 1 })
+    .find()
+
+flight.name = 'Paris to London'
+
+await flight.save()
+```
 
 #### Mass updates {#id-mass-updates}
 
-Coming soon...
+Updates can also be performed against models that match a given query. In this example, all flights that are `active` and have a `destination` of `San Diego`
+will be marked as delayed:
+
+```javascript
+await Flight.query()
+      .where('active', 1)
+      .where('destination', 'San Diego')
+      .update({ delayed: 1 })
+```
+
+The `update` method expects a record of columns and value pairs representing the columns that should be updated. The `update` method will always return one
+instance of your model if your query only modifies one value. If you query modifies more than one the `update` method will return an array of your models
+instance.
 
 ### Mass assignment {#id-mass-assignment}
 
-Coming soon...
+You may use the `create` method to "save" a new model using a single statement. The inserted model instance will be returned to you by the method:
+
+```javascript
+import { Flight } from '#app/Models/Flight'
+
+const flight = await Flight.create({
+    name: 'London to Korea',
+})
+```
+
+However, before using the `create` method, we extremely recommend you to specify the static getter `persistOnly` on your model class. This property are
+will help you to stay protected against mass assignment vulnerabilities.
+
+A mass assignment vulnerability occurs when a user passes an unexpected field using some object and that field changes a column in your database that
+you did not expect. For example, a malicious user might send an `isAdmin` parameter through an HTTP request, which is then passed to your model's `create`
+method, allowing the user to escalate themselves to an administrator.
+
+So, to get started, you should define which model attributes you want to make mass assignable. You may do this using the static getter `persistOnly` on
+the model. For example, let's make the `name` attribute of our Flight model mass assignable:
+
+```javascript
+import { Model } from '@athenna/database'
+
+export class Flight extends Model {
+  /**
+   * The attributes that could be persisted in database.
+   *
+   *  @return {string[]}
+   */
+  static get persistOnly() {
+    return ['name']
+  }
+
+  /*...*/
+}
+```
+
+Once you have specified which attributes are mass assignable, you may use the `create` method to insert a new record in the database. The `create`
+method returns the newly created model instance:
+
+```javascript
+const flight = await Flight.create({ name: 'London to Paris' })
+```
+
+### Allowing mass assignment {#id-allowing-mass-assignment}
+
+If you would like to make all of your attributes mass assignable, you may define your model's static getter `persistOnly` as an array returning an
+asterisk (`['*']`). If you choose to unguarded your model, you should take special care to always hand-craft the arrays passed to `create` and `update`
+methods:
+
+```javascript
+/**
+ * The attributes that could be persisted in database.
+ *
+ *  @return {string[]}
+ */
+static get persistOnly() {
+    return ['*']
+}
+```
+
+:::tip
+By default, the Model class already implements the static getter `persistOnly` returning the array with asterisk (`['*']`). So if you don't want mass
+assignment protection, you could only delete this getter from your model:
+
+```javascript
+import { Model } from '@athenna/database'
+
+export class Flight extends Model {
+  /*...*/
+}
+```
+:::
 
 ### Insert or update (upserts) {#id-insert-or-update-upserts}
 
