@@ -387,5 +387,5 @@ const max = await Flight.query().where('active', 1).max('price')
 ```
 
 :::warning
-Aggregate methods will not exist directly in your models, you will always need to call first the `query` method first and then execute it using one of then.
+Aggregate methods will not exist directly in your models, you will always need to call the `query` method first and then execute it using one of then.
 :::
