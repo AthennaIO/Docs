@@ -515,6 +515,28 @@ export class Flight extends Model {
 ```
 :::
 
+#### Allowing mass assignment for some calls {#id-allowing-mass-assignment-for-some-calls}
+
+You can also allow mass assignment when calling your `create`, `createMany`, `createOrUpdate` and `update` methods:
+
+```javascript
+const data = { name: 'Brazil to Mexico' }
+const where = { active: 1 }
+const ignorePersistOnly = true
+
+await Flight.create(data, ignorePersistOnly)
+await Flight.query().create(data, ignorePersistOnly)
+
+await Flight.createMany([data], ignorePersistOnly)
+await Flight.query().createMany([data], ignorePersistOnly)
+
+await Flight.createOrUpdate(where, data, ignorePersistOnly)
+await Flight.query().createOrUpdate(where, data, ignorePersistOnly)
+
+await Flight.update(where, data, ignorePersistOnly)
+await Flight.query().update(where, data, ignorePersistOnly)
+```
+
 ### Insert or update (Upserts) {#id-insert-or-update-upserts}
 
 Occasionally, you may need to update an existing model or create a new model if no matching model exists. The `createOrUpdate` method will update the model
