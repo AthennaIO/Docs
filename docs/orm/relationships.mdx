@@ -139,7 +139,7 @@ export class User extends Model {
 }
 ```
 
-#### Defining the inverse side of the relation {#id-defining-the-inverse-side-of-the-relation}
+#### Defining the inverse side of the has one {#id-defining-the-inverse-side-of-the-has-one}
 
 So, we can access the `Phone` model from our `User` model. Next, let's define a relationship on the `Phone` model that will let us access the `user` that
 owns the `phone`. We can define the inverse of a `hasOne` relationship using the `belongsTo` method:
@@ -228,7 +228,150 @@ export class Phone extends Model {
 
 ### Has Many {#id-has-many}
 
-Coming soon...
+A has many relationship is used to define relationships where a single model is the parent to one or more child models. For example, a blog post may have
+an infinite number of comments. Like all other Athenna ORM relationships, has many relationships are defined by placing the relation property in the `schema`
+method:
+
+```javascript
+import { Comment } from '#app/Models/Comment'
+import { Model, Column, Relation } from '@athenna/database'
+
+export class Post extends Model {
+  static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      title: Column.string(),
+      comments: Relation.hasMany(Comment, 'post'),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+  }
+
+  /*...*/
+}
+```
+
+Remember, Athenna will automatically determine the proper foreign key column for the `Comment` model. By convention, Athenna will take the "camelCase" name
+of the parent model and suffix it with `Id`. So, in this example, Athenna will assume the foreign key column on the `Comment` model is `postId`.
+
+Once the relationship property has been defined, we can access the related `comments` by including it with the `includes` method and accessing the
+`comments` property:
+
+```javascript
+import { Post } from '#app/Models/Post'
+
+const post = await Post.query().includes('comments').find()
+const comments = post.comments
+
+comments.forEach(comment => {
+    //
+})
+```
+
+Like the `hasOne` method, you may also override the foreign and local keys by building the relationship from scratch:
+
+```javascript
+static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      title: Column.string(),
+      comments: Relation.type('hasMany')
+                      .model(Comment)
+                      .inverseSide('post')
+                      .primaryKey('id') // <-
+                      .foreignKey('post_id') // <-
+                      .get(),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+}
+```
+
+#### Defining the inverse side of the has many {#id-defining-the-inverse-side-of-the-has-many}
+
+Now that we can access all of a post's comments, let's define a relationship to allow a comment to access its parent post. To define the inverse of a
+`hasMany` relationship, define a relationship property on the child model `schema` which calls the `belongsTo` method:
+
+```javascript
+import { Post } from '#app/Models/Post'
+import { Model, Column, Relation } from '@athenna/database'
+
+export class Comment extends Model {
+  static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      content: Column.string(),
+      postId: Column.string(),
+      post: Relation.belongsTo(Post, 'comments'),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+  }
+
+  /*...*/
+}
+```
+
+Once the relationship has been defined, we can retrieve a comment's parent post using the `includes` method:
+
+```javascript
+import { Comment } from '#app/Models/Comment'
+
+const comment = await Comment.query().includes('post').find()
+
+console.log(comment.post.title)
+```
+
+In the example above, Athenna will attempt to find a `Post` model that has an `id` which matches the `postId` column on the `Comment` model.
+
+Athenna determines the default foreign key name by examining the name of the relationship property and suffixing the method name with the name of the
+parent model's primary key column in "camelCase" style. So, in this example, Athenna will assume the `Post` model's foreign key on the `comments` table
+is `postId`.
+
+However, if the foreign key for your relationship does not follow these conventions, you may create your `belongsTo` relation from scratch:
+
+```javascript
+static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      content: Column.string(),
+      postId: Column.string(),
+      post: Relation.type('belongsTo')
+                    .model(Post)
+                    .inverseSide('comments')
+                    .foreignKey('post_id') // <-
+                    .get(),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+}
+```
+
+If your parent model does not use `id` as its primary key, or you wish to find the associated model using a different column, you may use the `primaryKey` method
+in the relation construction:
+
+```javascript
+static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      content: Column.string(),
+      postId: Column.string(),
+      post: Relation.type('belongsTo')
+                    .model(Post)
+                    .inverseSide('comments')
+                    .primaryKey('id') // <-
+                    .foreignKey('post_id')
+                    .get(),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+}
+```
 
 ### Many to Many {#id-many-to-many}
 
