@@ -44,6 +44,7 @@ tags:
 - #### [Inserting & Updating models](#id-inserting-and-updating-models)
 - #### [Deleting models](#id-deleting-models)
 - #### [Soft deleting](#id-soft-deleting)
+- #### [Criterias](#id-criterias)
 
 ## Introduction {#id-introduction}
 
@@ -674,6 +675,30 @@ await flight.delete(force)
 
 ### Querying soft delete models {#id-querying-soft-delete-models}
 
+As noted above, soft deleted models will automatically be excluded from query results. However, you may force soft deleted models to be included in a
+query's results by calling the `withTrashed` method on the query:
+
+```javascript
+const flights = await Flight.query()
+    .withTrashed()
+    .where('airlineId', 1)
+    .findMany()
+```
+
+#### Retrieving only soft deleted models {#id-retrieving-only-soft-deleted-models}
+
+The `onlyTrashed` method will retrieve only soft deleted models:
+
+```javascript
+const flights = await Flight.query()
+    .onlyTrashed()
+    .where('airlineId', 1)
+    .findMany()
+```
+
+## Criterias {#id-criterias}
+
 Coming soon...
+
 
 
