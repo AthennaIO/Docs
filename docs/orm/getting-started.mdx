@@ -39,6 +39,7 @@ tags:
 - #### [Retrieving models](#id-retrieving-models)
     - #### [Building queries](#id-building-queries)
     - #### [Refreshing models](#id-refreshing-models)
+- #### [Pagination](#id-pagination)
 - #### [Collections](#id-collections)
 - #### [Retrieve single models & Aggregates](#id-retrieve-single-models-and-aggregates)
 - #### [Inserting & Updating models](#id-inserting-and-updating-models)
@@ -288,6 +289,31 @@ flight.number = 'FR 456'
 await flight.refresh()
 
 console.log(flight.number) // -> "FR 900"
+```
+
+## Pagination {#id-pagination}
+
+The Athenna models also has a `paginate` method that works exact like the [`paginate method from the query builder:`](/docs/database/query-builder#id-pagination)
+
+```javascript
+const page = 0
+const limit = 10
+const resourceUrl = '/flights'
+const where = { active: 1 }
+
+const { data, meta, links } = await Flight.paginate(page, limit, resourceUrl, where)
+```
+
+You can also use the `paginate` method when working with the `ModelQueryBuilder:`
+
+```javascript
+const page = 0
+const limit = 10
+const resourceUrl = '/flights'
+
+const { data, meta, links } = await Flight.query()
+        .where({ active: 1 })
+        .paginate(page, limit, resourceUrl)
 ```
 
 ## Collections {#id-collections}
