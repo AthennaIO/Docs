@@ -29,5 +29,208 @@ tags:
 # ORM: Relationships
 
 - #### [Introduction](#id-introduction)
+- #### [Defining relationships](#id-defining-relationships)
+    - #### [Has One](#id-has-one)
+    - #### [Has Many](#id-has-many)
+    - #### [Many to Many](#id-many-to-many)
+
+Database tables are often related to one another. For example, a blog post may have many comments or an order could be related to the user who placed it.
+Athenna makes managing and working with these relationships easy, and supports a variety of common relationships:
+
+- [`Has One`](/docs/orm/relationships#id-has-one)
+- [`Has Many`](/docs/orm/relationships#id-has-many)
+- [`Many to Many`](/docs/orm/relationships#id-one-to-one)
+
+## Defining relationships {#id-defining-relationships}
+
+Athenna relationships are defined in the static `schema` method using the [`Relation`](https://github.com/AthennaIO/Database/blob/develop/src/Relations/Relation.js)
+class in your model classes. Let's learn how to define each type of relationship supported by Athenna.
+
+### Has One {#id-has-one}
+
+A one-to-one relationship is a very basic type of database relationship. For example, a `User` model might be associated with one `Phone` model. To define
+this relationship, we will place a `phone` property in the `schema` method on the `User` model. The `phone` property should call the `hasOne` method from the
+`Relation` class:
+
+```javascript
+import { Phone } from '#app/Models/Phone'
+import { Model, Column, Relation } from '@athenna/database'
+
+export class User extends Model {
+  static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      name: Column.string(),
+      phoneId: Column.integer('phone_id'),
+      phone: Relation.hasOne(Phone, 'user'),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+  }
+
+  /*...*/
+}
+```
+
+The first argument passed to the `hasOne` method is the related model class and the second is the inverse side of the relation in the `Phone` class.
+Once the relationship is defined, we may retrieve the related record using the `includes` method of the model query builder:
+
+```javascript
+const user = await User.query().includes('phone').find()
+const phone = user.phone
+```
+
+Athenna determines the foreign key of the relationship based on the parent model name. In this case, the `Phone` model is automatically assumed to have a
+`userId` foreign key. If you wish to override this convention, you may construct your relation from scratch with the `Relation` class:
+
+```javascript
+import { Phone } from '#app/Models/Phone'
+import { Model, Column, Relation } from '@athenna/database'
+
+export class User extends Model {
+  static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      name: Column.string(),
+      phoneId: Column.integer('phone_id'),
+      phone: Relation.type('hasOne')
+                      .model(Phone)
+                      .inverseSide('user')
+                      .foreignKey('user_id') // <-
+                      .get(),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+  }
+
+  /*...*/
+}
+```
+
+Additionally, Athenna assumes that the foreign key should have a value matching the primary key column of the parent. In other words, Athenna will look
+for the value of the user's `id` column in the `userId` column of the `Phone` record. If you would like the relationship to use a primary key value other
+than id or your model's static getter `primaryKey`, you may pass a `primaryKey` method to the `Relation` class:
+
+```javascript
+import { Phone } from '#app/Models/Phone'
+import { Model, Column, Relation } from '@athenna/database'
+
+export class User extends Model {
+  static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      name: Column.string(),
+      phoneId: Column.integer('phone_id'),
+      phone: Relation.type('hasOne')
+                      .model(Phone)
+                      .inverseSide('user')
+                      .primaryKey('id') // <-
+                      .foreignKey('user_id')
+                      .get(),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+  }
+
+  /*...*/
+}
+```
+
+#### Defining the inverse side of the relation {#id-defining-the-inverse-side-of-the-relation}
+
+So, we can access the `Phone` model from our `User` model. Next, let's define a relationship on the `Phone` model that will let us access the `user` that
+owns the `phone`. We can define the inverse of a `hasOne` relationship using the `belongsTo` method:
+
+```javascript
+import { User } from '#app/Models/Phone'
+import { Model, Column, Relation } from '@athenna/database'
+
+export class Phone extends Model {
+  static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      number: Column.string(),
+      userId: Column.integer('user_id'),
+      user: Relation.belongsTo(User, 'phone'),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+  }
+
+  /*...*/
+}
+```
+
+When invoking the `includes` method with the `user` in first param, Athenna will attempt to find a `User` model that has an `id` which matches the `userId`
+column on the `Phone` model.
+
+Athenna determines the foreign key name by examining the name of the relationship method and suffixing the method name with `Id`. So, in this case,
+Athenna assumes that the `Phone` model has a `userId` column. However, if the foreign key on the `Phone` model is not `userId`, you may build your relation
+from scratch to set it:
+
+```javascript
+import { User } from '#app/Models/Phone'
+import { Model, Column, Relation } from '@athenna/database'
+
+export class Phone extends Model {
+  static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      number: Column.string(),
+      userId: Column.integer('user_id'),
+      user: Relation.type('belongsTo')
+                      .model(User)
+                      .inverseSide('phone')
+                      .foreignKey('phone_id') // <-
+                      .get(),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+  }
+
+  /*...*/
+}
+```
+
+If the parent model does not use `id` as its primary key, or you wish to find the associated model using a different column, you may pass a `primaryKey`
+method to the `Relation` class:
+
+```javascript
+import { User } from '#app/Models/Phone'
+import { Model, Column, Relation } from '@athenna/database'
+
+export class Phone extends Model {
+  static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      number: Column.string(),
+      userId: Column.integer('user_id'),
+      user: Relation.type('belongsTo')
+                      .model(User)
+                      .inverseSide('phone')
+                      .primaryKey('id') // <-
+                      .foreignKey('phone_id')
+                      .get(),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+  }
+
+  /*...*/
+}
+```
+
+### Has Many {#id-has-many}
 
 Coming soon...
+
+### Many to Many {#id-many-to-many}
+
+Coming soon...
+
