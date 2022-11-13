@@ -530,6 +530,45 @@ table.
 
 ## Querying relationships {#id-querying-relationships}
 
-Coming soon...
+As you can see you can use the `includes` method to obtain an instance of the relationship without actually executing a query to load the related models.
+In addition, when you include a model you can make more queries using the relation model inside the father model.
+
+For example, imagine a blog application in which a `User` model has many associated `Post` models. You may query the `posts` relationship and then use all
+the instance methods available from `Post` model like so:
+
+```javascript
+import { User } from '#app/Models/User'
+
+const user = await User.query().includes('posts').find()
+const posts = user.posts
+
+const promises = posts.map(post => post.delete())
+```
+
+### Sub-queries in relationships {#id-sub-queries-in-relationships}
+
+Also, the `includes` method can receive a closure as second parameter where you can define a lot of queries for when including your relationships. In the
+example bellow we are going to load all the users and include the active posts with all it comments:
+
+```javascript
+import { User } from '#app/Models/User'
+
+const user = await User.query()
+    .includes('posts', query => query.includes('comments').where('active', 1))
+    .findMany()
+
+const activePosts = user.posts
+
+activePosts.forEach(post => {
+    const comments = post.comments
+
+    //
+})
+```
+
+:::tip
+The `query` value in `includes` closure will be an instance of `ModelQueryBuilder` but of the relation. So you can use all its methods too.
+:::
+
 
 
