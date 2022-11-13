@@ -522,7 +522,7 @@ import { User } from '#app/Models/User'
 const user = await User.query().includes('roles').find()
 const roles = user.roles
 
-roles.forEach(role => console.log(role.pivot.createdAt))
+roles.forEach(role => console.log(role.pivot.id))
 ```
 
 Notice that each `Role` model we retrieve is automatically assigned a `pivot` attribute. This attribute contains all the data representing the intermediate
