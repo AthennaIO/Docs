@@ -530,8 +530,10 @@ table.
 
 ## Querying relationships {#id-querying-relationships}
 
-As you can see you can use the `with`` method to obtain an instance of the relationship without actually executing a query to load the related models.
-In addition, when you include a model you can make more queries using the relation model inside the father model.
+### Eager loading {#id-eager-loading}
+
+As you can see, you can use the `with` method to eager load your relationships in your model. In addition, when you include a model you can make more
+queries using the relation model inside the father model.
 
 For example, imagine a blog application in which a `User` model has many associated `Post` models. You may query the `posts` relationship and then use all
 the instance methods available from `Post` model like so:
@@ -542,12 +544,16 @@ import { User } from '#app/Models/User'
 const user = await User.query().with('posts').find()
 const posts = user.posts
 
-const promises = posts.map(post => post.delete())
+for (const post of posts) {
+    post.name = 'The incredible Daniel Luna!'
+
+    await post.save()
+}
 ```
 
 ### Sub-queries in relationships {#id-sub-queries-in-relationships}
 
-Also, the `with`` method can receive a closure as second parameter where you can define a lot of queries for when including your relationships. In the
+Also, the `with` method can receive a closure as second parameter where you can define a lot of queries for when including your relationships. In the
 example bellow we are going to load all the users and include the active posts with all it comments:
 
 ```javascript
@@ -569,6 +575,66 @@ activePosts.forEach(post => {
 :::tip
 The `query` value in `with` closure will be an instance of `ModelQueryBuilder` but of the relation. So you can use all its methods too.
 :::
+
+### Loading nested relations {#id-loading-nested-relations}
+
+Nested relations are loaded via **dot notation**. We are going to simplify the above example loading the relationships using **dot notation**:
+
+```javascript
+import { User } from '#app/Models/User'
+
+const user = await User.query()
+    .with('posts.comments', query => query.where('active', 1))
+    .findMany()
+```
+
+Now your `user` constant will have this data structure:
+
+```javascript
+{
+    id: 1,
+    name: 'Vinicius Campelo',
+    email: 'vinicius.campelo@zenvia.com',
+    posts: [{
+        id: 1,
+        title: 'Campelo will comeback someday',
+        active: 1,
+        comments: [{
+            id: 1,
+            content: 'Yea!!!',
+            active: 1
+        }]
+    }]
+}
+```
+
+### Lazy eager loading {#id-lazy-eager-loading}
+
+To load relationships **after** you have already fetched the user data, you can use the `load` method. For example, to load related `posts` after already
+fetching a `User`:
+
+```javascript
+const user = await User.find()
+
+await user.load('posts')
+```
+
+The `with` method and `load` method have the same signature, this means that you can also use the **dot notation** and sub-queries when using it:
+
+```javascript
+const user = await User.find()
+const postsWithComments = await user.load('posts.comments', query => query.where('active', 1))
+
+for (const post of user.posts) {
+    //
+}
+```
+
+:::tip
+The only difference between `with` and `load` methods is that the `load` method will always return the lazily fetched data. As you can see in the above
+example we are saving the posts with comments loaded in the `postsWithComments` constant.
+:::
+
 
 
 
