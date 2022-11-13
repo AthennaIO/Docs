@@ -33,6 +33,7 @@ tags:
     - #### [Has One](#id-has-one)
     - #### [Has Many](#id-has-many)
     - #### [Many to Many](#id-many-to-many)
+- #### [Querying relationships](#id-querying-relationships)
 
 Database tables are often related to one another. For example, a blog post may have many comments or an order could be related to the user who placed it.
 Athenna makes managing and working with these relationships easy, and supports a variety of common relationships:
@@ -375,5 +376,160 @@ static schema() {
 
 ### Many to Many {#id-many-to-many}
 
+Many-to-many relations are slightly more complicated than `hasOne` and `hasMany` relationships. An example of a many-to-many relationship is a user that
+has many roles and those roles are also shared by other users in the application. For example, a user may be assigned the role of "Author" and "Editor";
+however, those roles may also be assigned to other users as well. So, a user has many roles and a role has many users.
+
+#### Table structure {#id-table-structure}
+
+To define this relationship, three database tables are needed: `users`, `roles`, and `role_user`. The `role_user` table is derived from the alphabetical
+order of the related model names and contains `userId` and `roleId` columns. This table is used as an intermediate table linking the users and roles.
+
+Remember, since a role can belong to many users, we cannot simply place a `userId` column on the `roles` table. This would mean that a role could only
+belong to a single user. In order to provide support for roles being assigned to multiple users, the `role_user` table is needed. We can summarize the
+relationship's table structure like so:
+
+```
+users
+    id - integer
+    name - string
+
+roles
+    id - integer
+    name - string
+
+role_user
+    userId - integer
+    roleId - integer
+```
+
+#### Model structure {#id-model-structure}
+
+Many-to-many relationships are defined by writing a property using the `manyToMany` method from `Relation` class. For example, let's define a `roles`
+property on our `User` model schema. The first argument passed to this method is the model of the related table and the second argument is the inverse
+side of the relation in the `Role` model:
+
+```javascript
+import { Role } from '#app/Models/Role'
+import { Model, Column, Relation } from '@athenna/database'
+
+export class User extends Model {
+  static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      name: Column.string(),
+      roles: Relation.manyToMany(Role, 'users'),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+  }
+
+  /*...*/
+}
+```
+
+Once the relationship is defined, you may access the user's roles using the `includes` method:
+
+```javascript
+import { User } from '#app/Models/User'
+
+const user = await User.query().includes('roles').find()
+const roles = user.roles
+
+roles.forEach(role => {
+    //
+})
+```
+
+To determine the table name of the relationship's intermediate table, Athenna will join the two related model names in alphabetical order. However, you
+are free to override this convention. You may do so by passing a third argument to the `manyToMany` method:
+
+```javascript
+static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      name: Column.string(),
+      roles: Relation.manyToMany(Role, 'users', 'users_roles'),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+}
+```
+
+In addition to customizing the name of the intermediate table, you may also customize the column names of the keys on the table by build the many-to-many
+relation from scratch. The `pivotLocalForeignKey` method defines the foreign key name of the model on which you are defining the relationship, while the
+`pivotRelationForeignKey` method defines the foreign key name of the model that you are joining to:
+
+```javascript
+static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      name: Column.string(),
+      roles: Relation.type('manyToMany')
+                     .model(Role)
+                     .inverseSide('users')
+                     .pivotTable('users_roles')
+                     .pivotLocalForeignKey('user_id')
+                     .pivotRelationForeignKey('role_id')
+                     .get(),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+}
+```
+
+#### Defining the inverse side of the many to many {#id-defining-the-inverse-side-of-the-many-to-many}
+
+To define the "inverse" of a many-to-many relationship, you should define a property on the related model which also returns the result of the `manyToMany`
+method. To complete our user / role example, let's define the `users` property on the `Role` model:
+
+```javascript
+import { User } from '#app/Models/User'
+import { Model, Column, Relation } from '@athenna/database'
+
+export class Role extends Model {
+  static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      name: Column.string(),
+      users: Relation.manyToMany(User, 'roles'),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+  }
+
+  /*...*/
+}
+```
+
+As you can see, the relationship is defined exactly the same as its `User` model counterpart with the exception of referencing the `User` model and a different
+inverse side. Since we're reusing the `manyToMany` method, all the usual table and key customization options are available when defining the "inverse" of
+many-to-many relationships.
+
+#### Retrieving intermediate table columns {#id-retrieving-intermediate-table-columns}
+
+As you have already learned, working with many-to-many relations requires the presence of an intermediate table. Athenna provides some very helpful ways
+of interacting with this table. For example, let's assume our `User` model has many `Role` models that it is related to. After loading the relationship,
+using the `includes` method we may access the intermediate table using the `pivot` attribute on the models:
+
+```javascript
+import { User } from '#app/Models/User'
+
+const user = await User.query().includes('roles').find()
+const roles = user.roles
+
+roles.forEach(role => console.log(role.pivot.createdAt))
+```
+
+Notice that each `Role` model we retrieve is automatically assigned a `pivot` attribute. This attribute contains all the data representing the intermediate
+table.
+
+## Querying relations {#id-querying-relations}
+
 Coming soon...
+
 
