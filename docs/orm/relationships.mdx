@@ -431,7 +431,7 @@ roles
     id - integer
     name - string
 
-role_user
+roles_users
     userId - integer
     roleId - integer
 ```
@@ -825,6 +825,36 @@ await post.refresh()
 You may also use the `createOrUpdate` method to [`create and update models on relationships`](/docs/orm/getting-started#id-insert-or-update-upserts).
 :::
 
+### Manipulating relationships with instance methods {#id-manipulating-relationships-with-instance-methods}
+
+Instead of using relationships queries methods you can modify the relation directly in the parent model instance. In the example bellow the `User` model
+belongs to an `Account`, let's see how we can update the username using an instance of the `Account` model:
+
+```javascript
+const account = await Account.query().with('user').find()
+
+account.user.name = 'Daniel Luna'
+
+await account.user.save()
+```
+
+:::tip
+As you can see in the example above we are calling the `save` method in the `user` relationship of `account`. Always remember that all the instance
+methods of the models like `save`, `load`, `refresh`, etc... will be available in relationships instances too.
+:::
+
+This is also applicable to a `User` model that has many `Post`:
+
+```javascript
+const user = await User.find()
+
+await user.load('posts')
+
+user.posts[0].title = 'New title for the first post'
+
+await user.posts[0].save()
+```
+
 ### Belongs to relationship {#id-belongs-to-relationship}
 
 If you would like to assign a child model to a new parent model, you may use the `associate` method. In this example, the `User` model defines a `belongsTo`
@@ -888,6 +918,50 @@ To remove the relationship record from the pivot table and the `roles` you can u
 ```javascript
 await user.rolesQuery().delete()
 ```
+
+#### Using instance properties in many-to-many {#id-using-instance-properties-in-many-to-many}
+
+Instead of using relationships queries methods you can modify the relation directly in the parent model instance and call `save` method:
+
+```javascript
+const user = await User.query().with('roles').find()
+const role = new Role()
+
+role.name = 'Admin'
+
+user.roles.push(role)
+
+await user.save()
+```
+
+You can also modify the values inside the array to update the `roles`:
+
+```javascript
+const user = await User.query().with('roles').find()
+
+user.roles = user.roles.map(role => {
+    if (role.name === 'Admin') {
+        role.name = 'Other name'
+    }
+
+    return role
+})
+
+await user.save()
+```
+
+To remove a role from the user you can simply remove it from the `roles` array:
+
+```javascript
+const user = await User.query().with('roles').find()
+
+// The filter function will leave only the roles
+// that the name is not Admin
+user.roles = user.roles.filter(role => role.name !== 'Admin')
+
+await user.save()
+```
+
 
 
 
