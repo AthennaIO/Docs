@@ -32,15 +32,20 @@ tags:
 - #### [Defining relationships](#id-defining-relationships)
     - #### [Has One](#id-has-one)
     - #### [Has Many](#id-has-many)
-    - #### [Many to Many](#id-many-to-many)
+    - #### [Belongs To Many](#id-belongs-to-many)
 - #### [Querying relationships](#id-querying-relationships)
+- #### [Defining relationships queries in model](#id-defining-relationships-queries-in-model)
+    - #### [Finding one or multiples relationships](#id-finding-one-or-multiples-relationships)
+    - #### [Creating a new record in the relationship](#id-creating-a-new-record-in-the-relationships)
+    - #### [Updating records in the relationship](#id-updating-records-in-the-relationships)
+    - #### [Deleting records in the relationship](#id-deleting-records-in-the-relationships)
 
 Database tables are often related to one another. For example, a blog post may have many comments or an order could be related to the user who placed it.
 Athenna makes managing and working with these relationships easy, and supports a variety of common relationships:
 
 - [`Has One`](/docs/orm/relationships#id-has-one)
 - [`Has Many`](/docs/orm/relationships#id-has-many)
-- [`Many to Many`](/docs/orm/relationships#id-one-to-one)
+- [`Belongs To Many`](/docs/orm/relationships#id-belongs-to-many)
 
 ## Defining relationships {#id-defining-relationships}
 
@@ -75,7 +80,7 @@ export class User extends Model {
 ```
 
 The first argument passed to the `hasOne` method is the related model class and the second is the inverse side of the relation in the `Phone` class.
-Once the relationship is defined, we may retrieve the related record using the `with`` method of the model query builder:
+Once the relationship is defined, we may retrieve the related record using the `with` method of the model query builder:
 
 ```javascript
 const user = await User.query().with('phone').find()
@@ -166,7 +171,7 @@ export class Phone extends Model {
 }
 ```
 
-When invoking the `with`` method with the `user` in first param, Athenna will attempt to find a `User` model that has an `id` which matches the `userId`
+When invoking the `with` method with the `user` in first param, Athenna will attempt to find a `User` model that has an `id` which matches the `userId`
 column on the `Phone` model.
 
 Athenna determines the foreign key name by examining the name of the relationship method and suffixing the method name with `Id`. So, in this case,
@@ -256,7 +261,7 @@ export class Post extends Model {
 Remember, Athenna will automatically determine the proper foreign key column for the `Comment` model. By convention, Athenna will take the "camelCase" name
 of the parent model and suffix it with `Id`. So, in this example, Athenna will assume the foreign key column on the `Comment` model is `postId`.
 
-Once the relationship property has been defined, we can access the related `comments` by including it with the `with`` method and accessing the
+Once the relationship property has been defined, we can access the related `comments` by including it with the `with` method and accessing the
 `comments` property:
 
 ```javascript
@@ -316,7 +321,7 @@ export class Comment extends Model {
 }
 ```
 
-Once the relationship has been defined, we can retrieve a comment's parent post using the `with`` method:
+Once the relationship has been defined, we can retrieve a comment's parent post using the `with` method:
 
 ```javascript
 import { Comment } from '#app/Models/Comment'
@@ -374,11 +379,12 @@ static schema() {
 }
 ```
 
-### Many to Many {#id-many-to-many}
+### Belongs To Many {#id-belongs-to-many}
 
-Many-to-many relations are slightly more complicated than `hasOne` and `hasMany` relationships. An example of a many-to-many relationship is a user that
-has many roles and those roles are also shared by other users in the application. For example, a user may be assigned the role of "Author" and "Editor";
-however, those roles may also be assigned to other users as well. So, a user has many roles and a role has many users.
+Belongs to many relations are slightly more complicated than `hasOne` and `hasMany` relationships. An example of a belongs-to-many (many-to-many)
+relationship is a user that has many roles and those roles are also shared by other users in the application. For example, a user may be assigned
+the role of "Author" and "Editor"; however, those roles may also be assigned to other users as well. So, a user has many roles and a role has many
+users.
 
 #### Table structure {#id-table-structure}
 
@@ -405,7 +411,7 @@ role_user
 
 #### Model structure {#id-model-structure}
 
-Many-to-many relationships are defined by writing a property using the `manyToMany` method from `Relation` class. For example, let's define a `roles`
+Many-to-many relationships are defined by writing a property using the `belongsToMany` method from `Relation` class. For example, let's define a `roles`
 property on our `User` model schema. The first argument passed to this method is the model of the related table and the second argument is the inverse
 side of the relation in the `Role` model:
 
@@ -418,7 +424,7 @@ export class User extends Model {
     return {
       id: Column.autoIncrementedInt(),
       name: Column.string(),
-      roles: Relation.manyToMany(Role, 'users'),
+      roles: Relation.belongsToMany(Role, 'users'),
       createdAt: Column.createdAt(),
       updatedAt: Column.updatedAt(),
       deletedAt: Column.deletedAt(),
@@ -429,7 +435,7 @@ export class User extends Model {
 }
 ```
 
-Once the relationship is defined, you may access the user's roles using the `with`` method:
+Once the relationship is defined, you may access the user's roles using the `with` method:
 
 ```javascript
 import { User } from '#app/Models/User'
@@ -443,14 +449,14 @@ roles.forEach(role => {
 ```
 
 To determine the table name of the relationship's intermediate table, Athenna will join the two related model names in alphabetical order. However, you
-are free to override this convention. You may do so by passing a third argument to the `manyToMany` method:
+are free to override this convention. You may do so by passing a third argument to the `belongsToMany` method:
 
 ```javascript
 static schema() {
     return {
       id: Column.autoIncrementedInt(),
       name: Column.string(),
-      roles: Relation.manyToMany(Role, 'users', 'users_roles'),
+      roles: Relation.belongsToMany(Role, 'users', 'users_roles'),
       createdAt: Column.createdAt(),
       updatedAt: Column.updatedAt(),
       deletedAt: Column.deletedAt(),
@@ -467,7 +473,7 @@ static schema() {
     return {
       id: Column.autoIncrementedInt(),
       name: Column.string(),
-      roles: Relation.type('manyToMany')
+      roles: Relation.type('belongsToMany')
                      .model(Role)
                      .inverseSide('users')
                      .pivotTable('users_roles')
@@ -481,10 +487,10 @@ static schema() {
 }
 ```
 
-#### Defining the inverse side of the many to many {#id-defining-the-inverse-side-of-the-many-to-many}
+#### Defining the inverse side of the belongs to many {#id-defining-the-inverse-side-of-the-belongs-to-many}
 
-To define the "inverse" of a many-to-many relationship, you should define a property on the related model which also returns the result of the `manyToMany`
-method. To complete our user / role example, let's define the `users` property on the `Role` model:
+To define the "inverse" of a belongs-to-many relationship, you should define a property on the related model which also returns the result of the
+`belongsToMany` method. To complete our user / role example, let's define the `users` property on the `Role` model:
 
 ```javascript
 import { User } from '#app/Models/User'
@@ -495,7 +501,7 @@ export class Role extends Model {
     return {
       id: Column.autoIncrementedInt(),
       name: Column.string(),
-      users: Relation.manyToMany(User, 'roles'),
+      users: Relation.belongsToMany(User, 'roles'),
       createdAt: Column.createdAt(),
       updatedAt: Column.updatedAt(),
       deletedAt: Column.deletedAt(),
@@ -507,14 +513,14 @@ export class Role extends Model {
 ```
 
 As you can see, the relationship is defined exactly the same as its `User` model counterpart with the exception of referencing the `User` model and a different
-inverse side. Since we're reusing the `manyToMany` method, all the usual table and key customization options are available when defining the "inverse" of
-many-to-many relationships.
+inverse side. Since we're reusing the `belongsToMany` method, all the usual table and key customization options are available when defining the "inverse" of
+belongs-to-many relationships.
 
 #### Retrieving intermediate table columns {#id-retrieving-intermediate-table-columns}
 
-As you have already learned, working with many-to-many relations requires the presence of an intermediate table. Athenna provides some very helpful ways
+As you have already learned, working with belongs-to-many relations requires the presence of an intermediate table. Athenna provides some very helpful ways
 of interacting with this table. For example, let's assume our `User` model has many `Role` models that it is related to. After loading the relationship,
-using the `with`` method we may access the intermediate table using the `pivot` attribute on the models:
+using the `with` method we may access the intermediate table using the `pivot` attribute on the models:
 
 ```javascript
 import { User } from '#app/Models/User'
@@ -634,6 +640,120 @@ for (const post of user.posts) {
 The only difference between `with` and `load` methods is that the `load` method will always return the lazily fetched data. As you can see in the above
 example we are saving the posts with comments loaded in the `postsWithComments` constant.
 :::
+
+## Defining relationships queries in model {#id-defining-relationships-queries-in-model}
+
+As you can see you can use the `with` to eager load and `load` to lazy load your relationships. But you can also define a query for your relationship for
+your model, this will help a lot to automatically set values when making operations in your relationships.
+
+Before going to the examples, lets check how we can define these methods in the father model. Let's use the classic example of `User` and `Post`:
+
+```javascript
+import { Post } from '#app/Models/Post'
+import { Model, Column, Relation } from '@athenna/database'
+
+export class User extends Model {
+  static schema() {
+    return {
+      id: Column.autoIncrementedInt(),
+      name: Column.string(),
+      posts: Relation.hasMany(Post, 'user'),
+      createdAt: Column.createdAt(),
+      updatedAt: Column.updatedAt(),
+      deletedAt: Column.deletedAt(),
+    }
+  }
+
+  postsQuery() {
+      const withCriterias = true
+
+      return this.hasMany(Post, withCriterias)
+  }
+
+  /*...*/
+}
+```
+
+:::tip
+The `hasOne`, `hasMany`, `belongsTo` and `belongsToMany` methods will always create a specific query builder for each type of relation that will extend the
+`ModelQueryBuilder`. This means that basically you can use all the `ModelQueryBuilder` methods in the relationships query builder.
+:::
+
+### Finding one or multiples relationships {#id-finding-one-or-multiples-relationships}
+
+When you use the `postsQuery` you are only going to be able to perform queries where the `posts` belongs to the `user`. Let's check some examples of how
+to use it starting by how to **find one** and **find many** `posts`:
+
+```javascript
+const user = await User.find()
+
+const activePostsOfUser = await user.postsQuery()
+    .where('active', 1)
+    .findMany()
+
+const latestPostOfUser = await user.postsQuery()
+    .where('active', 1)
+    .latest()
+    .find()
+```
+
+If you use the `dump` method to check to query you will se that there already a where clause there that Athenna has put to retrieve only the `posts` that
+belongs to the `user`:
+
+```javascript
+const activePostsOfUser = await user.postsQuery()
+    .where('active', 1)
+    .dump()
+    .findMany()
+```
+
+Will print:
+
+```shell
+select * from posts where userId = 1 and where active = 1;
+```
+
+### Creating a new record in the relationship {#id-creating-a-new-record-in-the-relationship}
+
+You can create new records in the relationship using the `create`, `createMany` or `createOrUpdate` methods. Just like the above example, Athenna will
+automatically set the values in these methods that will define that a post will be created for that specific user. In other words, in the example bellow
+you do not need to define the `userId` when creating a new product using the `postsQuery` method, Athenna will automatically do it for you.
+
+```javascript
+const user = await User.find()
+const newPost = await user.postsQuery().create({ title: 'New post' })
+```
+
+:::warning
+The `newPost` will not be available in your `user` constant when using the `postsQuery` method. To "refresh" your user data you can use the `load` method
+that will retrieve all the posts of the user again:
+
+```javascript
+await user.load('posts')
+
+console.log(user.posts)
+```
+
+If you have already loaded before your posts, you can use the `refresh` method:
+
+```javascript
+const user = await User.query().with('posts').find()
+
+// This post will not be available in the "user.posts"
+const newPost = await user.postsQuery().create({ title: 'New post' })
+
+// Now the "newPost" is available
+await user.refresh()
+```
+:::
+
+### Updating records in the relationship {#id-updating-records-in-the-relationship}
+
+Coming soon...
+
+### Deleting records in the relationship {#id-deleting-records-in-the-relationship}
+
+Coming soon...
 
 
 
