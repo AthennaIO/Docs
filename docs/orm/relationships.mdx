@@ -34,7 +34,7 @@ tags:
     - #### [Has Many](#id-has-many)
     - #### [Belongs To Many](#id-belongs-to-many)
 - #### [Querying relationships](#id-querying-relationships)
-- #### [Defining relationships queries in model](#id-defining-relationships-queries-in-model)
+- #### [Defining relationships queries in models](#id-defining-relationships-queries-in-models)
     - #### [Finding one or multiples relationships](#id-finding-one-or-multiples-relationships)
     - #### [Creating a new record in the relationship](#id-creating-a-new-record-in-the-relationships)
     - #### [Updating records in the relationship](#id-updating-records-in-the-relationships)
@@ -641,7 +641,7 @@ The only difference between `with` and `load` methods is that the `load` method 
 example we are saving the posts with comments loaded in the `postsWithComments` constant.
 :::
 
-## Defining relationships queries in model {#id-defining-relationships-queries-in-model}
+## Defining relationships queries in models {#id-defining-relationships-queries-in-models}
 
 As you can see you can use the `with` to eager load and `load` to lazy load your relationships. But you can also define a query for your relationship for
 your model, this will help a lot to automatically set values when making operations in your relationships.
