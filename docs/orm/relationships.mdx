@@ -35,10 +35,7 @@ tags:
     - #### [Belongs To Many](#id-belongs-to-many)
 - #### [Querying relationships](#id-querying-relationships)
 - #### [Defining relationships queries in models](#id-defining-relationships-queries-in-models)
-    - #### [Finding one or multiples relationships](#id-finding-one-or-multiples-relationships)
-    - #### [Creating a new record in the relationship](#id-creating-a-new-record-in-the-relationships)
-    - #### [Updating records in the relationship](#id-updating-records-in-the-relationships)
-    - #### [Deleting records in the relationship](#id-deleting-records-in-the-relationships)
+- #### [Inserting, updating and deleting related tables](#id-inserting-updating-and-deleting-related-tables)
 
 Database tables are often related to one another. For example, a blog post may have many comments or an order could be related to the user who placed it.
 Athenna makes managing and working with these relationships easy, and supports a variety of common relationships:
@@ -80,11 +77,25 @@ export class User extends Model {
 ```
 
 The first argument passed to the `hasOne` method is the related model class and the second is the inverse side of the relation in the `Phone` class.
-Once the relationship is defined, we may retrieve the related record using the `with` method of the model query builder:
+Once the relationship is defined, we may retrieve the related record using the [`with method`](/docs/orm/relationships#id-eager-loading) of the model
+query builder, the [`load method`](/docs/orm/relationships#id-lazy-eager-loading) of the model instance or the
+[`relationships model queries`](/docs/orm/relationships#id-defining-relationships-queries-in-models):
 
-```javascript
+```javascript title="Using with method"
 const user = await User.query().with('phone').find()
 const phone = user.phone
+```
+```javascript title="Using load method"
+const user = await User.find()
+
+await user.load('phone')
+
+const phone = user.phone
+```
+```javascript title="Using relationships model queries"
+const user = await User.find()
+
+const phone = await user.phoneQuery().find()
 ```
 
 Athenna determines the foreign key of the relationship based on the parent model name. In this case, the `Phone` model is automatically assumed to have a
@@ -261,18 +272,29 @@ export class Post extends Model {
 Remember, Athenna will automatically determine the proper foreign key column for the `Comment` model. By convention, Athenna will take the "camelCase" name
 of the parent model and suffix it with `Id`. So, in this example, Athenna will assume the foreign key column on the `Comment` model is `postId`.
 
-Once the relationship property has been defined, we can access the related `comments` by including it with the `with` method and accessing the
-`comments` property:
+Once the relationship is defined, we may retrieve the related record using the [`with method`](/docs/orm/relationships#id-eager-loading) of the model
+query builder, the [`load method`](/docs/orm/relationships#id-lazy-eager-loading) of the model instance or the
+[`relationships model queries`](/docs/orm/relationships#id-defining-relationships-queries-in-models):
 
-```javascript
-import { Post } from '#app/Models/Post'
-
+```javascript title="Using with method"
 const post = await Post.query().with('comments').find()
 const comments = post.comments
 
 comments.forEach(comment => {
     //
 })
+```
+```javascript title="Using load method"
+const post = await Post.find()
+
+await post.load('user')
+
+const user = post.user
+```
+```javascript title="Using relationships model queries"
+const post = await Post.find()
+
+const user = await post.userQuery().find()
 ```
 
 Like the `hasOne` method, you may also override the foreign and local keys by building the relationship from scratch:
@@ -435,17 +457,28 @@ export class User extends Model {
 }
 ```
 
-Once the relationship is defined, you may access the user's roles using the `with` method:
+Once the relationship is defined, we may retrieve the related record using the [`with method`](/docs/orm/relationships#id-eager-loading) of the model
+query builder, the [`load method`](/docs/orm/relationships#id-lazy-eager-loading) of the model instance or the
+[`relationships model queries`](/docs/orm/relationships#id-defining-relationships-queries-in-models):
 
-```javascript
-import { User } from '#app/Models/User'
-
+```javascript title="Using with method"
 const user = await User.query().with('roles').find()
 const roles = user.roles
 
 roles.forEach(role => {
     //
 })
+```
+```javascript title="Using load method"
+const user = await User.find()
+
+await user.load('roles')
+
+const roles = user.roles
+```
+```javascript title="Using relationships model queries"
+const user = await User.find()
+const roles = await user.rolesQuery().findMany()
 ```
 
 To determine the table name of the relationship's intermediate table, Athenna will join the two related model names in alphabetical order. However, you
@@ -516,23 +549,20 @@ As you can see, the relationship is defined exactly the same as its `User` model
 inverse side. Since we're reusing the `belongsToMany` method, all the usual table and key customization options are available when defining the "inverse" of
 belongs-to-many relationships.
 
-#### Retrieving intermediate table columns {#id-retrieving-intermediate-table-columns}
+#### Retrieving pivot table columns {#id-retrieving-pivot-table-columns}
 
-As you have already learned, working with belongs-to-many relations requires the presence of an intermediate table. Athenna provides some very helpful ways
+As you have already learned, working with belongs-to-many relations requires the presence of an pivot table. Athenna provides some very helpful ways
 of interacting with this table. For example, let's assume our `User` model has many `Role` models that it is related to. After loading the relationship,
 using the `with` method we may access the intermediate table using the `pivot` attribute on the models:
 
 ```javascript
-import { User } from '#app/Models/User'
-
 const user = await User.query().with('roles').find()
 const roles = user.roles
 
 roles.forEach(role => console.log(role.pivot.id))
 ```
 
-Notice that each `Role` model we retrieve is automatically assigned a `pivot` attribute. This attribute contains all the data representing the intermediate
-table.
+Notice that each `Role` model we retrieve is automatically assigned a `pivot` attribute. This attribute contains all the data representing the pivot table.
 
 ## Querying relationships {#id-querying-relationships}
 
@@ -545,8 +575,6 @@ For example, imagine a blog application in which a `User` model has many associa
 the instance methods available from `Post` model like so:
 
 ```javascript
-import { User } from '#app/Models/User'
-
 const user = await User.query().with('posts').find()
 const posts = user.posts
 
@@ -563,8 +591,6 @@ Also, the `with` method can receive a closure as second parameter where you can 
 example bellow we are going to load all the users and include the active posts with all it comments:
 
 ```javascript
-import { User } from '#app/Models/User'
-
 const user = await User.query()
     .with('posts', query => query.with('comments').where('active', 1))
     .findMany()
@@ -587,8 +613,6 @@ The `query` value in `with` closure will be an instance of `ModelQueryBuilder` b
 Nested relations are loaded via **dot notation**. We are going to simplify the above example loading the relationships using **dot notation**:
 
 ```javascript
-import { User } from '#app/Models/User'
-
 const user = await User.query()
     .with('posts.comments', query => query.where('active', 1))
     .findMany()
@@ -679,81 +703,147 @@ The `hasOne`, `hasMany`, `belongsTo` and `belongsToMany` methods will always cre
 `ModelQueryBuilder`. This means that basically you can use all the `ModelQueryBuilder` methods in the relationships query builder.
 :::
 
-### Finding one or multiples relationships {#id-finding-one-or-multiples-relationships}
+## Inserting, updating & deleting related tables {#id-inserting-updating-and-deleting-related-tables}
 
-When you use the `postsQuery` you are only going to be able to perform queries where the `posts` belongs to the `user`. Let's check some examples of how
-to use it starting by how to **find one** and **find many** `posts`:
+### The `create` method {#id-the-create-method}
 
-```javascript
-const user = await User.find()
-
-const activePostsOfUser = await user.postsQuery()
-    .where('active', 1)
-    .findMany()
-
-const latestPostOfUser = await user.postsQuery()
-    .where('active', 1)
-    .latest()
-    .find()
-```
-
-If you use the `dump` method to check to query you will se that there already a where clause there that Athenna has put to retrieve only the `posts` that
-belongs to the `user`:
+Athenna provides convenient methods for adding new models to relationships. For example, perhaps you need to add a new comment to a post. Instead of
+manually setting the postId attribute on the `Comment` model you may insert the comment using the relationship's `create` method:
 
 ```javascript
-const activePostsOfUser = await user.postsQuery()
-    .where('active', 1)
-    .dump()
-    .findMany()
+const comment = new Comment()
+
+comment.content = 'A new comment.'
+
+const post = await Post.find()
+
+await post.commentsQuery().create(comment)
 ```
 
-Will print:
+The `create` method will automatically add the appropriate `postId` value to the new `Comment` model.
 
-```shell
-select * from posts where userId = 1 and where active = 1;
-```
-
-### Creating a new record in the relationship {#id-creating-a-new-record-in-the-relationship}
-
-You can create new records in the relationship using the `create`, `createMany` or `createOrUpdate` methods. Just like the above example, Athenna will
-automatically set the values in these methods that will define that a post will be created for that specific user. In other words, in the example bellow
-you do not need to define the `userId` when creating a new product using the `postsQuery` method, Athenna will automatically do it for you.
+If you need to save multiple related models, you may use the `createMany` method:
 
 ```javascript
-const user = await User.find()
-const newPost = await user.postsQuery().create({ title: 'New post' })
+const comment = new Comment()
+
+comment.content = 'A new comment.'
+
+const post = await Post.find()
+
+// Notice that you can use the Comment model and a plain object
+await post.commentsQuery().createMany([comment, { content: 'Other comment.'} ])
 ```
 
-:::warning
-The `newPost` will not be available in your `user` constant when using the `postsQuery` method. To "refresh" your user data you can use the `load` method
-that will retrieve all the posts of the user again:
+The `create` and `createMany` methods will persist the given model instances, but will not add the newly persisted models to any in-memory relationships
+that are already loaded onto the parent model. If you plan on accessing the relationship after using the `create` or `createMany` methods, you may wish
+to use the `load` method to reload the relationships:
 
 ```javascript
-await user.load('posts')
+await post.commentsQuery().create(comment)
 
-console.log(user.posts)
+await post.load('comments')
+
+// All comments, including the newly saved comment
+post.comments
 ```
 
-If you have already loaded before your posts, you can use the `refresh` method:
+:::tip
+The `save` method saves the model and relationships recursively this means that you can change your relationships data and save it from the parent model:
 
 ```javascript
-const user = await User.query().with('posts').find()
+const post = await Post.query().with('user').find()
 
-// This post will not be available in the "user.posts"
-const newPost = await user.postsQuery().create({ title: 'New post' })
+post.user.name = 'Valmir Barbosa'
+post.user.email = 'valmirphp@gmail.com'
 
-// Now the "newPost" is available
-await user.refresh()
+await post.save()
 ```
 :::
 
-### Updating records in the relationship {#id-updating-records-in-the-relationship}
+### The `update` method {#id-the-update-method}
 
-Coming soon...
+You can also use the `update` method to update your model using the query builder method:
 
-### Deleting records in the relationship {#id-deleting-records-in-the-relationship}
+```javascript
+const post = await Post.query().with('user').find()
 
-Coming soon...
+await post.userQuery().update({ name: 'Valmir Barbosa', email: 'valmirphp@gmail.com' })
+
+// As we have already loaded the 'user' relation in
+// the first line, we can use the refresh method to
+// reload the post model and the already loaded relations.
+await post.refresh()
+```
+
+:::tip
+You may also use the `createOrUpdate` method to [`create and update models on relationships`](/docs/orm/getting-started#id-insert-or-update-upserts).
+:::
+
+### Belongs to relationship {#id-belongs-to-relationship}
+
+If you would like to assign a child model to a new parent model, you may use the `associate` method. In this example, the `User` model defines a `belongsTo`
+relationship to the `Account` model. This `associate` method will set the foreign key on the child model:
+
+```javascript
+const user = await User.find()
+const account = await Account.find()
+
+user.accountQuery().associate(account)
+
+await user.save()
+```
+
+To remove a parent model from a child model, you may use the `dissociate` method. This method will set the relationship's foreign key to `null` and will
+not delete any model:
+
+```javascript
+user.accountQuery().dissociate()
+
+await user.save()
+```
+
+To remove the relationship and the parent model you can use the `delete` method:
+
+```javascript
+await user.accountQuery().delete()
+```
+
+### Many to many relationships {#id-many-to-many-relationships}
+
+Athenna also provides methods to make working with many-to-many relationships more convenient. For example, let's imagine a user can have many roles
+and a role can have many users. You may use the `attach` method to attach a role to a user by inserting a record in the relationship's pivot table:
+
+```javascript
+const role = await Role.find()
+const user = await User.find()
+
+await user.rolesQuery().attach(role.id)
+```
+
+When attaching a relationship to a model, you may also pass an array of additional data to be inserted into the pivot table:
+
+```javascript
+await user.rolesQuery().attach(role.id, { expiresAt: new Date() })
+```
+
+Sometimes it may be necessary to remove a role from a user. To remove a many-to-many relationship record, use the `detach` method. The `detach` method
+will delete the appropriate record out of the pivot table; however, both models will remain in the database:
+
+```javascript
+// Detach a single role from the user
+await user.rolesQuery().detach(role.id)
+
+// Detach all roles from the user
+await user.rolesQuery().detach()
+```
+
+To remove the relationship record from the pivot table and the `roles` you can use the `delete` method:
+
+```javascript
+await user.rolesQuery().delete()
+```
+
 
 
 
