@@ -34,6 +34,11 @@ tags:
     - #### [Has Many](#id-has-many)
     - #### [Belongs To Many](#id-belongs-to-many)
 - #### [Querying relationships](#id-querying-relationships)
+    - #### [Eager loading](#id-eager-loading)
+    - #### [Sub-queries in relationships](#id-sub-queries-in-relationships)
+    - #### [Loading nested relations](#id-loading-nested-relations)
+    - #### [Lazy eager loading](#id-lazy-eager-loading)
+    - #### [Querying relationships existence](#id-querying-relationships-existence)
 - #### [Defining relationships queries in models](#id-defining-relationships-queries-in-models)
 - #### [Inserting, updating and deleting related tables](#id-inserting-updating-and-deleting-related-tables)
 
@@ -665,7 +670,7 @@ The only difference between `with` and `load` methods is that the `load` method 
 example we are saving the posts with comments loaded in the `postsWithComments` constant.
 :::
 
-### Querying relationships existence {#id-querying-relationships=existence}
+### Querying relationships existence {#id-querying-relationships-existence}
 
 When retrieving model records, you may wish to limit your results based on the existence of a relationship. For example, imagine you want to retrieve all
 blog posts that have at least one comment. To do so, you may pass the name of the relationship to the `has` method:
