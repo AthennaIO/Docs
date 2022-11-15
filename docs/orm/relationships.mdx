@@ -665,6 +665,46 @@ The only difference between `with` and `load` methods is that the `load` method 
 example we are saving the posts with comments loaded in the `postsWithComments` constant.
 :::
 
+### Querying relationships existence {#id-querying-relationships=existence}
+
+When retrieving model records, you may wish to limit your results based on the existence of a relationship. For example, imagine you want to retrieve all
+blog posts that have at least one comment. To do so, you may pass the name of the relationship to the `has` method:
+
+```javascript
+// Retrieve all posts that have at least one comment
+const posts = await Post.query().has('comments').findMany()
+```
+
+You may also specify an operator and count value to further customize the query:
+
+```javascript
+// Retrieve all posts that have three or more comments
+const posts = await Post.query().has('comments', '>=', 3).findMany()
+```
+
+Nested `has` statements may be constructed using "dot" notation. For example, you may retrieve all posts that have at least one comment that has at
+least one image:
+
+```javascript
+// Retrieve posts that have at least one comment with images
+const posts = await Post.query('comments.images').findMany()
+```
+
+If you need even more power, you may use the `whereHas` method to define additional query constraints on your `has` queries, such as inspecting the
+content of a comment:
+
+```javascript
+// Retrieve posts with at least one comment containing words like code%
+const posts = await Post.query()
+    .whereHas('comments', query => query.whereLike('content', 'code%'))
+    .findMany()
+
+// Retrieve posts with at least ten comments containing words like code%
+const posts = await Post.query()
+    .whereHas('comments', query => query.whereLike('content', 'code%'), '>=', 10)
+    .findMany()
+```
+
 ## Defining relationships queries in models {#id-defining-relationships-queries-in-models}
 
 As you can see you can use the `with` to eager load and `load` to lazy load your relationships. But you can also define a query for your relationship for
