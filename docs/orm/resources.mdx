@@ -108,7 +108,7 @@ const user = await User.query().select('id', 'name').find()
 const json = UserResource.toJson(user) // { id: 1, name: 'Valmir Barbosa' }
 ```
 
-If the value is present in your object, but its values is `null` it be set in your object resource. All the
+If the value is present in your object, but its values is `null`, it will be set in your object resource. Only the
 `undefined` values will be removed from your resources:
 
 ```javascript
@@ -189,7 +189,7 @@ const theSameArray = objects.toResource()
 
 ## Converting relationships {#id-converting-relationships}
 
-If you would like to include related resources in your json, you may load them first to the object that your resource's
+If you would like to include related resources in your json, you may load them first in the object that your resource's
 static `blueprint` method will use to build your json. In this example, we will use the `PostResource` resource's
 static `toArray` method to add the user's blog posts to the resource:
 
@@ -219,8 +219,8 @@ const json = user.toResource()
 ```
 
 :::warning
-Remember that `undefined` values will be removed from the resource json. If you don't load your relationships before
-calling your resource class, it will be removed from the json:
+If you don't load your relationships before calling your resource class, it will be set as `null` in the json when
+using the `toJson` method and set as an empty array when using the `toArray` method:
 
 ```javascript
 // User without blog posts loaded
@@ -229,7 +229,7 @@ const user = await User.query()
     .find()
 
 const json = user.toResource()
-// { id: 1, name: 'Valmir Barbosa', email: 'valmirphp@gmail.com' }
+// { id: 1, name: 'Valmir Barbosa', email: 'valmirphp@gmail.com', posts: [] }
 ```
 :::
 
