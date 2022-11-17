@@ -279,7 +279,7 @@ export class PaginationMiddleware {
    *
    * @param {import('@athenna/http').HandleContextContract} ctx
    */
-  handle({ request, data, next }) {
+  async handle({ request, data }) {
     const page = request.queries.page ? parseInt(request.queries.page) : 0
     const limit = request.queries.limit ? parseInt(request.queries.limit) : 10
     const resourceUrl = `${Config.get('http.domain')}${request.baseUrl}`
@@ -289,8 +289,6 @@ export class PaginationMiddleware {
       limit,
       resourceUrl,
     }
-
-    next()
   }
 }
 ```
@@ -307,14 +305,12 @@ Route.get('/products', ({ response, data }) => {
 
 ### Handle middleware context {#id-handle-middleware}
 
-In `handle` method of middlewares Athenna set the `HandleContextContract`. This ctx is quite the same of ContextContract
-but it has an additional property that is the `next` function used to finish middlewares and calling the next of the queue.
+In `handle` method of middlewares Athenna set the `HandleContextContract`. This ctx is the same of ContextContract.
 
 ### Intercept middleware context {#id-intercept-middleware}
 
 In `intercept` method of middlewares Athenna set the `InterceptContextContract`. This ctx is quite the same of ContextContract,
-but it has an additional properties `body` and `status`. This object does not have the next function because intercept
-middlewares should always return the response body.
+but it has an additional properties `body` and `status`. You should always return the intercepted response body in intercept middlewares.
 
 ### Terminate middleware context {#id-terminate-middleware}
 

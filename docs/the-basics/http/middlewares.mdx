@@ -77,19 +77,16 @@ export class EnsureApiKeyIsValid {
     * @param {import('@athenna/http').HandleContextContract} ctx
     * @return {any}
     */
-  handle({ queries, next }) {
+  async handle({ queries }) {
     if (queries.apiKey !== 'my-api-key') {
         throw new UnauthorizedException('Your api key does not match with application api key.')
     }
-
-    return next()
   }
 }
 ```
 
 As you can see, if the given `apiKey` does not match our application api key, the middleware will return an unauthorized
-exception to the client; otherwise, the request will be passed further into the application. To pass the request deeper
-into the application (allowing the middleware to "pass"), you should call the `next` callback.
+exception to the client; otherwise, the request will be passed further into the application.
 
 It's best to envision middleware as a series of "layers" HTTP requests must pass through before they hit your application.
 Each layer can examine the request and even reject it entirely.
@@ -151,8 +148,7 @@ export class InterceptMiddleware {
     *
     * @param {import('@athenna/http').HandleContextContract} ctx
     */
-  handle({ next }) {
-    return next()
+  async handle() {
   }
 
   /**
@@ -160,7 +156,7 @@ export class InterceptMiddleware {
     *
     * @param {import('@athenna/http').InterceptContextContract} ctx
     */
-  intercept({ body }) {
+  async intercept({ body }) {
     body.intercepted = true
 
     // intercept should always return the new body of the response
@@ -189,8 +185,7 @@ export class TerminateMiddleware {
     *
     * @param {import('@athenna/http').HandleContextContract} ctx
     */
-  handle({ next }) {
-    return next()
+  async handle() {
   }
 
   /**
@@ -198,9 +193,8 @@ export class TerminateMiddleware {
     *
     * @param {import('@athenna/http').TerminateContextContract} ctx
     */
-  terminate({ next }) {
+  async terminate() {
     // create and save metrics of the request
-    return next()
   }
 }
 ```
