@@ -257,6 +257,18 @@ Route.get('/welcome', async ({ response }) => {
 })
 ```
 
+#### The `getFastifyResponse` method {#id-the-getFastifyResponse-method}
+
+With this method you will be able to retrieve the vanilla Fastify response object to use more advanced getters and methods from Fastify:
+
+```javascript
+Route.get('/welcome', ({ response }) => {
+    const fastifyResponse = response.getFastifyResponse()
+
+    /*....*/
+})
+````
+
 ### The params object {#id-the-params}
 
 Athenna `params` is just a simple object that contains the actual HTTP params of the request that is being handled by
