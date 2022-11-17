@@ -35,9 +35,14 @@ tags:
 
 ## Introduction {#id-introduction}
 
-All the Athenna models extends the `Model` class of the `@athenna/database` package. This class provides everything that a model needs to communicate with database in the best
-way possible. But sometimes you may need to write your own methods depending on your business logic and to save some time. You will see at this page how you can easily
-create your own static and instance methods for your models.
+All the Athenna models extends the [`Model`](https://github.com/AthennaIO/Database/blob/develop/src/Models/Model.js) class of the `@athenna/database` package. This class
+provides everything that a model needs to communicate with database in the best way possible. But sometimes you may need to write your own methods depending on your business
+logic and to save some time. You will see at this page how you can easily create your own static and instance methods for your models.
+
+:::tip
+Also, we recommend you to take a look at the implementation of the [`Model`](https://github.com/AthennaIO/Database/blob/develop/src/Models/Model.js) class, this way you
+could have more knowledge about all the methods available for your in the `this` property when implementing your own methods.
+:::
 
 ## Writing static methods {#id-writing-static-methods}
 
