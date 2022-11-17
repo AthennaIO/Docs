@@ -76,6 +76,117 @@ documentation page.
 Athenna `Request` class provides an object-oriented way to interact with the current HTTP request being handled by your
 application as well as retrieve the ip, headers, body, and files that were submitted with the request.
 
+#### The `ip` getter {#id-the-ip-getter}
+
+With this getter you will be able to get the ip from where the requests was executed:
+
+```javascript
+Route.get('/welcome', ({ request }) => {
+    console.log(request.ip) // 192.168.0.1
+
+    /*....*/
+})
+```
+
+#### The `method` getter {#id-the-method-getter}
+
+With this getter you will be able to get the [`REST`](https://restfulapi.net/) method of your request:
+
+```javascript
+Route.get('/welcome', ({ request }) => {
+    console.log(request.method) // GET
+
+    /*....*/
+})
+```
+
+#### The `hostUrl` getter {#id-the-hostUrl-getter}
+
+With this getter you will be able to get the host url of the request concatenating the host:port of your application and the [`originalUrl`](/docs/the-basics/http/context#id-the-originalUrl-getter)
+of the request:
+
+```javascript
+Route.get('/welcome', ({ request }) => {
+    console.log(request.hostUrl) // http://localhost:1335/welcome
+
+    /*....*/
+})
+```
+
+#### The `baseUrl` getter {#id-the-baseUrl-getter}
+
+With this getter you will be able to get the url of the route without the query params:
+
+```javascript
+Route.get('/welcome', ({ request }) => {
+    console.log(request.baseUrl) // /welcome
+
+    /*....*/
+})
+```
+
+#### The `originalUrl` getter {#id-the-originalUrl-getter}
+
+With this getter you will be able to get the original url with the query params:
+
+```javascript
+Route.get('/welcome', ({ request }) => {
+    console.log(request.originalUrl) // /welcome?hello=world
+
+    /*....*/
+})
+```
+
+#### The `body`, `params`, `queries` and `headers` getters {#id-the-body-params-queries-and-headers-getters}
+
+With these getters you will be able to retrieve all the data inside each one of then:
+
+```javascript
+Route.post('/welcome/:id', ({ request }) => {
+    console.log(request.body) // { hello: 'world' }
+    console.log(request.params) // { id: '1' }
+    console.log(request.queries) // { world: 'hello' }
+    console.log(request.headers) // { 'content-type': 'application/json' }
+
+    /*....*/
+})
+```
+
+#### The `payload`, `param`, `query` and `header` methods {#id-the-payload-param-query-and-header-methods}
+
+With these getters you will be able to retrieve only one value per call from the above methods. You can also set a second parameter that will set the default value if the
+first argument key doesn't exist:
+
+```javascript
+Route.post('/welcome/:id', ({ request }) => {
+    console.log(request.payload('hello'), 'found') // 'world'
+    console.log(request.payload('not-found'), 'found') // 'found'
+
+    console.log(request.param('id'), 'found') // '1'
+    console.log(request.param('not-found'), 'found') // 'found'
+
+    console.log(request.query('world'), 'found') // 'hello'
+    console.log(request.query('not-found'), 'found') // 'found'
+
+    console.log(request.header('content-type'), 'found') // 'application/json'
+    console.log(request.header('not-found'), 'found') // 'found'
+
+    /*....*/
+})
+```
+
+#### The `getFastifyRequest` method {#id-the-getFastifyRequest-method}
+
+With this method you will be able to retrieve the vanilla Fastify request object to use more advanced getters and methods from Fastify:
+
+```javascript
+Route.get('/welcome', ({ request }) => {
+    const fastifyRequest = request.getFastifyRequest()
+
+    /*....*/
+})
+````
+
 ### The response object {#id-the-response}
 
 Athenna `Response` class provides an object-oriented way to interact with the current HTTP response being handled by your
