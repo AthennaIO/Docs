@@ -123,7 +123,7 @@ await File.existsSync('package.json')
 await File.createFileOfSize('fake.js', 1024 * 1024 * 100)
 ```
 
----
+
 
 ### Folder {#id-folder}
 
@@ -189,7 +189,7 @@ await Folder.isFolderSync('path/to/folder')
 await Folder.existsSync('path/to/folder')
 ```
 
----
+
 
 ### Is {#id-is}
 
@@ -243,7 +243,7 @@ Is.ArrayOfObjects([1, 2, 3]) // false
 Is.ArrayOfObjects([{ hello: 'world' }]) // true
 ```
 
----
+
 
 ### String {#id-string}
 
@@ -286,10 +286,10 @@ String.ordinalize('10') // '10th'
 
 // And you can also normalize base64 string
 
-String.normalizeBase64('+++///===') // '---___'
+String.normalizeBase64('+++///===') // '___'
 ```
 
----
+
 
 ### Exception {#id-exception}
 
@@ -335,7 +335,7 @@ export class InternalServerException extends Exception {
 throw new InternalServerException()
 ```
 
----
+
 
 ### Path {#id-path}
 
@@ -356,7 +356,7 @@ Path.pwd(subPath, beforePath) // '/home/your/computer/path/your-project-name/bui
 Path.pwd('/src/') // '/home/your/computer/path/your-project-name/build/src'
 ```
 
----
+
 
 ### Json {#id-json}
 
@@ -449,7 +449,7 @@ const fullObject = Json.get(object, '') // Same as object { hello: { world: { va
 const defaultValueInObjectNull = Json.get(undefined, '', { hello: 'world' }) // { hello: 'world' }
 ```
 
----
+
 
 ### Module {#id-module}
 
@@ -524,7 +524,7 @@ console.log(__dirname) // Error! __dirname is not defined in global
 console.log(__filename) // '/Users/...'
 ```
 
----
+
 
 ### Route {#id-route}
 
@@ -549,7 +549,7 @@ regExpMatcher.test(path) // false - because of queryParams
 regExpMatcher.test(Route.removeQueryParams(path)) // true
 ```
 
----
+
 
 ### Number {#id-number}
 
@@ -581,7 +581,7 @@ console.log(Number.randomIntFromInterval(1, 10)) // 8
 
 ```
 
----
+
 
 ### Token {#id-token}
 
@@ -598,7 +598,7 @@ const isUuid = Token.verify(uuidGeneratedToken)
 console.log(isUuid) // true
 ```
 
----
+
 
 ### Parser {#id-parse}
 
@@ -748,7 +748,7 @@ const connectionUrl = Parser.connectionObjToDbUrl(connectionObject)
  */
 ```
 
----
+
 
 ### Clean {#id-clean}
 
@@ -778,7 +778,7 @@ console.log(Clean.cleanArraysInObject(object2)) // { number2: [{ number1: "numbe
 
 ```
 
----
+
 
 ### Debug {#id-debug}
 
