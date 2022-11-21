@@ -194,6 +194,10 @@ const input = request.except('credit_card');
 const input = request.except(['credit_card'])
 ```
 
+:::warning
+The `only` method returns all the key / value pairs that you request; however, it will not return key / value pairs that are not present on the request body.
+:::
+
 #### The `param`, `query` and `header` methods {#id-the-payload-param-query-and-header-methods}
 
 With these methods you will be able to retrieve only one value per call from the above methods. You can also set a second parameter that will set the default value if the
