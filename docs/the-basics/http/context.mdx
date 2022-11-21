@@ -152,24 +152,65 @@ Route.post('/welcome/:id', ({ request }) => {
 })
 ```
 
-#### The `payload`, `param`, `query` and `header` methods {#id-the-payload-param-query-and-header-methods}
+#### The `input` and `payload` methods {#id-the-input-and-payload-methods}
 
-With these getters you will be able to retrieve only one value per call from the above methods. You can also set a second parameter that will set the default value if the
+With these methods you will be able to retrieve only one value per call from the request body:
+
+```javascript
+Route.post('/welcome/:id', ({ request }) => {
+    const defaultValue = 'defaultValue'
+
+    console.log(request.input('hello'), 'found') // 'world'
+    console.log(request.input('not-found'), defaultValue) // 'defaultValue'
+
+    console.log(request.payload('hello'), defaultValue) // 'world'
+    console.log(request.payload('not-found'), defaultValue) // 'defaultValue'
+
+    /*....*/
+})
+```
+
+:::tip
+As you can see, you can use the second argument of this type of methods to set the default value if the key
+has not been found in your request.
+:::
+
+You may even use "dot" syntax to retrieve values that are nested within JSON arrays / objects:
+
+```javascript
+const name = request.input('user.name')
+```
+
+#### The `only` and `except` methods {#id-the-only-and-except-methods}
+
+If you need to retrieve a subset of the input data, you may use the `only` and `except` methods. Both of
+these methods accept a single array or a dynamic list of arguments:
+
+```javascript
+const input = request.only('username', 'password')
+const input = request.only(['username', 'password'])
+
+const input = request.except('credit_card');
+const input = request.except(['credit_card'])
+```
+
+#### The `param`, `query` and `header` methods {#id-the-payload-param-query-and-header-methods}
+
+With these methods you will be able to retrieve only one value per call from the above methods. You can also set a second parameter that will set the default value if the
 first argument key doesn't exist:
 
 ```javascript
 Route.post('/welcome/:id', ({ request }) => {
-    console.log(request.payload('hello'), 'found') // 'world'
-    console.log(request.payload('not-found'), 'found') // 'found'
+    const defaultValue = 'defaultValue'
 
-    console.log(request.param('id'), 'found') // '1'
-    console.log(request.param('not-found'), 'found') // 'found'
+    console.log(request.param('id'), defaultValue) // '1'
+    console.log(request.param('not-found'), defaultValue) // 'defaultValue'
 
-    console.log(request.query('world'), 'found') // 'hello'
-    console.log(request.query('not-found'), 'found') // 'found'
+    console.log(request.query('world'), defaultValue) // 'hello'
+    console.log(request.query('not-found'), defaultValue) // 'defaultValue'
 
-    console.log(request.header('content-type'), 'found') // 'application/json'
-    console.log(request.header('not-found'), 'found') // 'found'
+    console.log(request.header('content-type'), defaultValue) // 'application/json'
+    console.log(request.header('not-found'), defaultValue) // 'defaultValue'
 
     /*....*/
 })
