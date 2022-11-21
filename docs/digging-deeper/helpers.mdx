@@ -796,11 +796,11 @@ const debug = new Debug(context, namespace)
 debug
   .buildContext(context)
   .buildNamespace(namespace)
-  .log('Hello World!') // api:main [SecJS Debugger] - PID: 85580 - 02/15/2022, 11:47:56 AM [API] Hello World! +0ms
+  .log('Hello World!') // api:main [Athenna Debugger] - PID: 85580 - 02/15/2022, 11:47:56 AM [API] Hello World! +0ms
 
 // You can log objects too, it will be converted to string in the formatter
 debug
   .buildContext('Object')
   .buildNamespace('api:object')
-  .log({ hello: 'world' }) // api:object [SecJS Debugger] - PID: 85770 - 02/15/2022, 11:53:48 AM [Object] {"hello":"world"} +0ms
+  .log({ hello: 'world' }) // api:object [Athenna Debugger] - PID: 85770 - 02/15/2022, 11:53:48 AM [Object] {"hello":"world"} +0ms
 ```
