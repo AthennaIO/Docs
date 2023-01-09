@@ -3,7 +3,7 @@ name: CD
 on:
   push:
     branches:
-      - development
+      - main
 
 jobs:
   deploy:
@@ -26,6 +26,6 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./build
-          publish_branch: main
+          publish_branch: ghpage
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
