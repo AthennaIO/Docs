@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[4070],{2481:function(s){s.exports=JSON.parse('{"name":"Errors","permalink":"/docs/tags/errors","docs":[{"id":"the-basics/errors","title":"Error Handling","description":"\ud83c\udfe0","permalink":"/docs/the-basics/errors"}],"allTagsPath":"/docs/tags"}')}}]);

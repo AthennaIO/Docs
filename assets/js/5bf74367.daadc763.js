@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[2259],{6127:function(s){s.exports=JSON.parse('{"name":"Logging","permalink":"/docs/tags/logging","docs":[{"id":"the-basics/logging","title":"Logging","description":"\ud83c\udfe0","permalink":"/docs/the-basics/logging"}],"allTagsPath":"/docs/tags"}')}}]);

@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[7270],{1367:function(a){a.exports=JSON.parse('{"name":"Migrations","permalink":"/docs/tags/migrations","docs":[{"id":"database/migrations","title":"Migrations","description":"\ud83c\udfe0","permalink":"/docs/database/migrations"}],"allTagsPath":"/docs/tags"}')}}]);

@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[248],{2827:function(e){e.exports=JSON.parse('{"name":"Helpers","permalink":"/docs/tags/helpers","docs":[{"id":"digging-deeper/helpers","title":"Helpers","description":"\ud83c\udfe0","permalink":"/docs/digging-deeper/helpers"}],"allTagsPath":"/docs/tags"}')}}]);

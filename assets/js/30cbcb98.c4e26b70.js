@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[7727],{6133:function(e){e.exports=JSON.parse('{"name":"Extending Models","permalink":"/docs/tags/extending-models","docs":[{"id":"orm/extending-models","title":"Extending Models","description":"\ud83c\udfe0","permalink":"/docs/orm/extending-models"}],"allTagsPath":"/docs/tags"}')}}]);

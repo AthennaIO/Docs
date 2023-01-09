@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[6951],{5586:function(e){e.exports=JSON.parse('{"name":"Seeding","permalink":"/docs/tags/seeding","docs":[{"id":"database/seeding","title":"Seeding","description":"\ud83c\udfe0","permalink":"/docs/database/seeding"}],"allTagsPath":"/docs/tags"}')}}]);

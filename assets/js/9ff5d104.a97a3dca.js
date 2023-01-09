@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[7221],{8057:function(e){e.exports=JSON.parse('{"name":"Security","permalink":"/docs/tags/security","docs":[{"id":"security/helmet","title":"Helmet","description":"\ud83c\udfe0","permalink":"/docs/security/helmet"}],"allTagsPath":"/docs/tags"}')}}]);

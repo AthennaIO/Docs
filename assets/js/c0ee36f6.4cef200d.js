@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[4150],{7082:function(e){e.exports=JSON.parse('{"name":"Query builder","permalink":"/docs/tags/query-builder","docs":[{"id":"database/query-builder","title":"Query Builder","description":"\ud83c\udfe0","permalink":"/docs/database/query-builder"}],"allTagsPath":"/docs/tags"}')}}]);

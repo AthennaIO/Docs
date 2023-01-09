@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[987],{7397:function(e){e.exports=JSON.parse('{"name":"Documentation","permalink":"/docs/tags/documentation","docs":[{"id":"digging-deeper/swagger","title":"Documenting with Swagger","description":"\ud83c\udfe0","permalink":"/docs/digging-deeper/swagger"}],"allTagsPath":"/docs/tags"}')}}]);

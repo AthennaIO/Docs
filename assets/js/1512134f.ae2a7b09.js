@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[7011],{6806:function(e){e.exports=JSON.parse('{"name":"Collections","permalink":"/docs/tags/collections","docs":[{"id":"digging-deeper/collections","title":"Collections","description":"\ud83c\udfe0","permalink":"/docs/digging-deeper/collections"}],"allTagsPath":"/docs/tags"}')}}]);

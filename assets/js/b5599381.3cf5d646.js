@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[7462],{4954:function(s){s.exports=JSON.parse('{"name":"Factories","permalink":"/docs/tags/factories","docs":[{"id":"orm/factories","title":"Factories","description":"\ud83c\udfe0","permalink":"/docs/orm/factories"}],"allTagsPath":"/docs/tags"}')}}]);

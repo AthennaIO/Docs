@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[8798],{153:function(t,n,e){e.r(n),e.d(n,{default:function(){return s}});var a=e(7294),c=e(6775);function s(){return a.createElement(c.l_,{to:"/docs/getting-started/installation"})}}}]);
