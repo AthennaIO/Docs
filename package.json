@@ -3,32 +3,41 @@
   "version": "1.0.0",
   "description": "Athenna documentation website using Next.js. A fork from Dracula UI website.",
   "scripts": {
-    "dev": "next dev"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
-  "license": "MIT",
-  "author": "Henrique Cruz <henriquecesps4@gmail.com>",
   "dependencies": {
-    "bootstrap-icons": "^1.4.1",
-    "clipboard": "^2.0.8",
-    "dracula-ui": "^1.0.6",
-    "focus-trap-react": "^8.5.0",
-    "fuse.js": "^6.4.6",
-    "globby": "^11.0.2",
-    "lodash": "^4.17.21",
-    "next": "^10.2.0",
-    "prism-react-renderer": "^1.2.0",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "react-hotkeys": "^2.0.0"
+    "bootstrap-icons": "1.10.3",
+    "clipboard": "2.0.11",
+    "dracula-ui": "1.0.6",
+    "focus-trap-react": "10.1.1",
+    "fuse.js": "6.6.2",
+    "lodash": "4.17.21",
+    "next": "13.2.4",
+    "prism-react-renderer": "1.3.5",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-hotkeys": "2.0.0",
+    "typescript": "5.0.3"
   },
   "devDependencies": {
-    "prettier": "^2.2.1",
-    "typescript": "^4.2.3"
+    "@types/lodash": "4.14.192",
+    "@types/node": "18.15.11",
+    "@types/react": "18.0.32",
+    "@types/react-dom": "18.0.11",
+    "eslint": "8.37.0",
+    "eslint-config-next": "13.2.4",
+    "prettier": "^2.8.7"
   },
   "prettier": {
     "printWidth": 80,
     "semi": false,
     "singleQuote": true,
     "trailingComma": "none"
+  },
+  "eslintConfig": {
+    "extends": "next/core-web-vitals"
   }
 }
