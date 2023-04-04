@@ -61,7 +61,7 @@ export default class Tabs extends Component<TabsProps, TabsState> {
   public render() {
     return (
       <div>
-        <DraculaTabs color='green'>
+        <DraculaTabs mt='xxs' color='green'>
           {this.renderLabels()}
         </DraculaTabs>
         <Box className={styles.codeContainer}>

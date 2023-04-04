@@ -78,7 +78,7 @@ export default class Installation extends Component {
 
           <CodeHighlight language='bash' code={`npm install @athenna/cli -g`}/>
 
-          <Paragraph>
+          <Paragraph mb='none'>
             Then you can run one of these commands to generate your project:
           </Paragraph>
 
