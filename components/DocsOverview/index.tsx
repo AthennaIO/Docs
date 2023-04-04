@@ -11,20 +11,20 @@ export type DocsOverviewProps = {
 export default class DocsOverview extends Component<DocsOverviewProps> {
   public render() {
     return (
-      <Box as="ul" className={styles.docsOverview}>
-        <Text weight="semibold" style={{ textTransform: 'uppercase' }}>
+      <Box as='ul' className={styles.docsOverview}>
+        <Text weight='semibold' style={{ textTransform: 'uppercase' }}>
           On this page
         </Text>
-        <Box color="pinkPurple" style={{ height: 2 }} my="xs" />
+        <Box color='pinkPurple' style={{ height: 2 }} my='xs' />
   
         {this.props.sections.map((section) => {
           return (
-            <Box key={section.title} py="xxs">
+            <Box key={section.title} py='xxs'>
               <Anchor
-                size="sm"
-                color="blackSecondary"
+                size='sm'
+                color='blackSecondary'
                 href={`#${section.title.toLowerCase().replace(/ /g, '-')}`}
-                hoverColor="pinkPurple"
+                hoverColor='pinkPurple'
               >
                 {section.title}
               </Anchor>
@@ -33,12 +33,12 @@ export default class DocsOverview extends Component<DocsOverviewProps> {
         })}
   
         {this.props.showProperties && (
-          <Box key="properties">
+          <Box key='properties'>
             <Anchor
-              size="sm"
-              href="#properties"
-              hoverColor="pinkPurple"
-              color="blackSecondary"
+              size='sm'
+              href='#properties'
+              hoverColor='pinkPurple'
+              color='blackSecondary'
             >
               Properties
             </Anchor>
