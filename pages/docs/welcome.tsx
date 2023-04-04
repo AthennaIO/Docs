@@ -9,7 +9,13 @@ export async function getStaticProps() {
     props: {
       query: {
         title: 'Welcome',
-        description: 'Athenna is the plug & play Node.js framework that focuses on giving a foundation and ecosystem for the developer to build many types of different applications, perfect for working with micro-services architecture. All of this foundation and ecosystem was created based on Laravel, so expect an enjoyable, beautiful, peaceful and productive experience.'
+        description: 
+          'Athenna is the plug & play Node.js framework that focuses on ' +
+          'giving a very reliable foundation for the developer to build ' +
+          'many types of different applications, perfect for working with' +
+          ' micro-services architecture. All of this foundation was created' + 
+          ' based on Laravel, so expect an enjoyable, beautiful, ' +
+          'peaceful and productive experience.'
       }
     }
   }

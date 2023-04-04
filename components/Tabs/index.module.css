@@ -1,0 +1,29 @@
+.tab {
+  cursor: pointer;
+  composes: drac-tab from global;
+}
+
+.tabActive {
+  cursor: pointer;
+  composes: drac-tab from global;
+  composes: drac-tab-active from global;
+}
+
+.tabPanel {
+  display: none;
+}
+
+.tabPanelActive {
+  display: block;
+}
+
+.usage {
+  padding: 2rem;
+}
+
+.usage,
+.codeContainer {
+  composes: drac-scrollbar-grey from global;
+  max-height: 300px;
+  overflow: auto;
+}

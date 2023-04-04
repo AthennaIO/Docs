@@ -77,8 +77,6 @@ export default class Navigation extends Component<NavigationProps> {
   }
 
   public render() {
-    
-
     return (
       <nav className={styles.nav}>
         <Topbar toggleMenu={this.toggleMenu.bind(this)} />

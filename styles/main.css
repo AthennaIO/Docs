@@ -3,6 +3,49 @@ body {
   margin: 0;
 }
 
+blockquote {
+  background-color: #282a36;
+  border-radius: var(--rounded-md);
+  margin: 1em 0;
+  padding: 1rem;
+  position: relative;
+}
+
+blockquote p:first-child {
+  margin-top: 0;
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+blockquote p {
+  color: #626784;
+  font-family: Fira Code,monospace;
+  font-size: var(--font-md);
+  line-height: var(--line-height-md);
+  text-align: justify;
+  margin-left: 0.6em;
+  position: relative;
+}
+
+blockquote p:before {
+  content: "";
+  display: inline-block;
+  width: 1.5em;
+  height: 100%;
+  position: absolute;
+  left: -0.8em;
+  top: 0;
+  border-left: 3px solid #626784;
+}
+
+@media only screen and (min-width: 768px) {
+  blockquote:before {
+    font-size: 3em;
+  }
+}
+
 @font-face {
   font-family: "Abril Text";
   src: url("/static/fonts/AbrilText-Bold.woff2") format("woff2"),
