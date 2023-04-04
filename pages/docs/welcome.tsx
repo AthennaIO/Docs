@@ -9,7 +9,13 @@ export async function getStaticProps() {
     props: {
       query: {
         title: 'Welcome',
-        description: 'Athenna is the plug & play Node.js framework that focuses on giving a foundation and ecosystem for the developer to build many types of different applications, perfect for working with micro-services architecture. All of this foundation and ecosystem was created based on Laravel, so expect an enjoyable, beautiful, peaceful and productive experience.'
+        description: 
+          'Athenna is the plug & play Node.js framework that focuses on ' +
+          'giving a very reliable foundation for the developer to build ' +
+          'many types of different applications, perfect for working with' +
+          ' micro-services architecture. All of this foundation was created' + 
+          ' based on Laravel, so expect an enjoyable, beautiful, ' +
+          'peaceful and productive experience.'
       }
     }
   }
@@ -21,26 +27,26 @@ export default class Welcome extends Component {
   public render() {
     return (
       <Box>
-        <Box my="lg">
+        <Box mt='lg'>
           <img
             className={styles.banner}
-            src="/static/og.jpg"
-            alt="Athenna Framework"
+            src='/static/og.jpg'
+            alt='Athenna Framework'
           />
         </Box>
 
-        <Box my="lg">
-          <Heading as="h2" size="xl">Useful Links</Heading>
-          <List variant="unordered" color="white" p="none" mb="sm">
-            <li><Anchor href="https://github.com/AthennaIO">Github</Anchor></li>
-            <li><Anchor href="https://discord.gg/vaZgRUkMsm">Discord</Anchor></li>
-            <li><Anchor href="https://github.com/AthennaIO/Core/blob/main/LICENSE">License</Anchor></li>
+        <Box mt='lg'>
+          <Heading as='h2' size='xl'>Useful Links</Heading>
+          <List variant='unordered' color='white' p='none' mb='sm'>
+            <li><Anchor href='https://github.com/AthennaIO'>Github</Anchor></li>
+            <li><Anchor href='https://discord.gg/vaZgRUkMsm'>Discord</Anchor></li>
+            <li><Anchor href='https://github.com/AthennaIO/Core/blob/main/LICENSE'>License</Anchor></li>
           </List>
 
-          <List variant="unordered" color="white" p="none">
-            <li><Anchor href="mailto:lenon@athenna.io">Email</Anchor></li>
-            <li><Anchor href="https://github.com/AthennaIO/Core/issues">Issues</Anchor></li>
-            <li><Anchor href="https://github.com/AthennaIO/Core/discussions">Discussions</Anchor></li>
+          <List variant='unordered' color='white' p='none'>
+            <li><Anchor href='mailto:lenon@athenna.io'>Email</Anchor></li>
+            <li><Anchor href='https://github.com/AthennaIO/Core/issues'>Issues</Anchor></li>
+            <li><Anchor href='https://github.com/AthennaIO/Core/discussions'>Discussions</Anchor></li>
           </List>
         </Box>
       </Box>
