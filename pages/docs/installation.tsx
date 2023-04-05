@@ -1,13 +1,12 @@
 import Docs from '#layouts/Docs'
-import Tabs from '#components/Tabs'
+import Topic from '#components/Topic'
 import Topics from '#components/Topics'
-import Anchor from '#components/Anchor'
 import CodeBox from '#components/CodeBox'
 import Blockquote from '#components/Blockquote'
 import CodeHighlight from '#components/CodeHighlight'
 
 import { Component } from 'react'
-import { Box, Paragraph, Anchor as DraculaAnchor } from 'dracula-ui'
+import { Box, Paragraph, Anchor, List } from 'dracula-ui'
 
 export async function getStaticProps() {
   return {
@@ -31,32 +30,10 @@ export default class Installation extends Component {
         { title: 'Installing via package manager' }
       ] 
     },
-    {
-      title: 'Initial configuration'
-    }
+    { 
+      title: 'Running your application',
+    },
   ]
-
-  public httpTabContent() {
-    return (
-      <Box>
-        <Box pb='xs'>
-          <CodeBox language='bash' code={`athenna new my-project-name`}/>
-        </Box>
-
-        <Box>
-          <CodeBox language='bash' code={`athenna new my-project-name --type http`}/>
-        </Box>
-      </Box>
-    )
-  }
-
-  public cliTabContent() {
-    return (
-      <Box>
-        <CodeBox language='bash' code={`athenna new my-project-name --type cli`}/>
-      </Box>
-    )
-  }
 
   public render() {
     return (
@@ -64,50 +41,88 @@ export default class Installation extends Component {
         <Topics showOverview={true} topics={this.topics}/>
         
         <Box mt='lg'>
-          <Anchor size='xl' pb='xs'>Your first Athenna project</Anchor>
+          <Topic size='xl' pb='xs'>Your first Athenna project</Topic>
         </Box>
 
         <Box mt='md'>
-          <Anchor size='lg' pb='xs'>Prerequisites</Anchor>
+          <Topic size='lg' pb='xs'>Prerequisites</Topic>
 
-          <Paragraph> 
+          <Paragraph align='justify'> 
             First you need to install <CodeHighlight href='https://nodejs.org'>Node.js</CodeHighlight>.
             We recommend using <CodeHighlight href='https://github.com/nvm-sh/nvm'>nvm</CodeHighlight> to do that.
           </Paragraph>
 
           <Blockquote>
-            <DraculaAnchor 
+            <Anchor 
               color='yellow'
               target='_blank'
               hoverColor='pink'
               href='https://github.com/nvm-sh/nvm#installing-and-updating'
              >
-              Click here to install nvm and get <CodeHighlight>npm</CodeHighlight> and 
-              <CodeHighlight>Node.js</CodeHighlight> running on your machine
-            </DraculaAnchor>
+              Click here to install nvm and get <CodeHighlight>npm</CodeHighlight> and <CodeHighlight>Node.js</CodeHighlight> running on your machine
+            </Anchor>
           </Blockquote>
         </Box>
 
         <Box mt='md'>
-          <Anchor size='lg' pb='xs'>Installing via package manager</Anchor>
+          <Topic size='lg' pb='xs'>Installing via package manager</Topic>
 
-          <Paragraph>
+          <Paragraph align='justify'>
             We want it to be as easy as possible to get started with Athenna. With 
             that in mind, we developed a CLI to assist in the creation of a new project.
           </Paragraph>
 
           <CodeBox language='bash' code={`npm install @athenna/cli -g`}/>
 
-          <Paragraph mb='none'>
-            Then you can run one of these commands to generate your project:
+          <Paragraph align='justify'>
+            Then you can run this command to generate your project:
           </Paragraph>
 
-          <Tabs
-            sections={[
-              { label: 'http', content: this.httpTabContent() },
-              { label: 'cli', content: this.cliTabContent() }
-            ]}
-          />
+          <CodeBox language='bash' code={`athenna new my-project-name`}/>
+
+          <Paragraph align='justify'>
+            The installation process prompts for the following selections:
+          </Paragraph>
+
+          <Topic size='md' pb='xs'>Application type</Topic>
+          
+          <List variant='unordered' color='purple'>
+            <li className='drac-text drac-text-white'><CodeHighlight>http</CodeHighlight> application is ideal for creating an API server using REST.</li>
+            <li className='drac-text drac-text-white'><CodeHighlight>cli</CodeHighlight> application is ideal for creating global CLI&apos;s to publish in some registry like npm.</li>
+          </List>
+
+          <Topic size='md' pb='xs'>Laravel project structure</Topic>
+          
+          <Paragraph align='justify'>
+            The installation process will ask if you want to create your project 
+            following Laravel project structure. All the Athenna packages implementation
+            assumes that you are using this project structure, but you will always be 
+            able to use your own project structure and configure the packages to work with 
+            it. If you set that you don&apos;t want to use Laravel project structure, Athenna will
+            create a <CodeHighlight>slim</CodeHighlight> project version from the application
+            type that you have selected.
+          </Paragraph>
+        </Box>
+
+        <Box mt='md'>
+          <Topic size='xl' pb='xs'>Running your application</Topic>
+
+          <Paragraph align='justify'>
+            To run your application you can simple use the <CodeHighlight>node</CodeHighlight> script 
+            in your project root. Don&apos;t worry about this file for now, 
+            we&apos;ll talk about it later.
+          </Paragraph>
+
+          <Paragraph align='justify'>
+            In your project root, run the following command:
+          </Paragraph>
+
+          <CodeBox language='bash' code={`./node --watch artisan serve`} />
+
+          <List variant='unordered' color='purple'>
+            <li className='drac-text drac-text-white'>The <CodeHighlight>watch</CodeHighlight> flag is meant to watch the file system for changes and restart your application automatically when doing some change on it.</li>
+            <li className='drac-text drac-text-white'>The <CodeHighlight>serve</CodeHighlight> command will lookup for your <CodeHighlight>bootstrap/main.js</CodeHighlight> file to bootstrap your application with predefined configurations.</li>
+          </List>
         </Box>
       </Box>
     )

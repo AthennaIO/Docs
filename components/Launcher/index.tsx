@@ -39,6 +39,16 @@ export default class Launcher extends Component<LauncherProps, LauncherState> {
         icon: 'cloud-arrow-down-fill',
         title: 'Installation',
         handler: () => Router.push('/docs/installation')
+      },
+      {
+        icon: 'file-earmark-code-fill',
+        title: 'Node script file',
+        handler: () => Router.push('/docs/node-script-file')
+      },
+      {
+        icon: 'gear-wide-connected',
+        title: 'Configuration',
+        handler: () => Router.push('/docs/configuration')
       }
     ]
 
