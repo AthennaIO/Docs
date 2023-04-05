@@ -12,10 +12,17 @@ export type NavigationProps = {
 export default class Navigation extends Component<NavigationProps> {
   public static items = [
     {
-      title: 'Getting Started',
+      title: 'Introduction',
       pages: [
         'Welcome',
+      ]
+    },
+    {
+      title: 'Getting Started',
+      pages: [
         'Installation',
+        'Node script file',
+        'Configuration',
       ]
     },
   ]
@@ -47,7 +54,7 @@ export default class Navigation extends Component<NavigationProps> {
 
           <List variant="none">
             {item.pages.map(page => {
-              const path = `/docs/${page.toLowerCase()}`
+              const path = `/docs/${page.toLowerCase().replace(/ /g, '-')}`
 
               if (item.title.includes('Patterns')) {
                 return (

@@ -1,0 +1,112 @@
+.admonition {
+  margin-bottom: 1em;
+  padding: 15px 30px 15px 15px;
+}
+
+.admonition h5 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.admonitionIcon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.2em;
+}
+
+.admonitionIcon svg {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  stroke-width: 0;
+}
+
+.admonitionContent > :lastChild {
+  margin-bottom: 0;
+}
+
+/** Customization */
+.admonitionWarning {
+  background-color: #ffca800e;
+  border-left: 8px solid var(--orange);
+}
+
+.admonitionWarning h5 {
+  color: var(--orange);
+}
+
+.admonitionWarning .admonitionIcon svg {
+  stroke: var(--orange);
+  fill: var(--orange);
+}
+
+.admonitionTip {
+  background-color: #8bff800e;
+  border-left: 8px solid var(--green);
+}
+
+.admonitionTip h5 {
+  color: var(--green);
+}
+
+.admonitionTip .admonitionIcon svg {
+  stroke: var(--green);
+  fill: var(--green);
+}
+
+.admonitionCaution {
+  background-color: #ff95800e;
+  border-left: 8px solid var(--red);
+}
+
+.admonitionCaution h5 {
+  color: var(--red);
+}
+
+.admonitionCaution .admonitionIcon svg {
+  stroke: var(--red);
+  fill: var(--red);
+}
+
+.admonitionNote {
+  background-color: #9580ff0e;
+  border-left: 8px solid var(--purple);
+}
+
+.admonitionNote h5 {
+  color: var(--purple);
+}
+
+.admonitionNote .admonitionIcon svg {
+  stroke: var(--purple);
+  fill: var(--purple);
+}
+
+.admonitionImportant {
+  background-color: #ffff800e;
+  border-left: 8px solid var(--yellow);
+}
+
+.admonitionImportant h5 {
+  color: var(--yellow);
+}
+
+.admonitionImportant .admonitionIcon svg {
+  stroke: var(--yellow);
+  fill: var(--yellow);
+}
+
+.admonitionQuestion {
+  background-color: #80ffea0e;
+  border-left: 8px solid var(--cyan);
+}
+
+.admonitionQuestion h5 {
+  color: var(--cyan);
+}
+
+.admonitionQuestion .admonitionIcon svg {
+  stroke: var(--cyan);
+  fill: var(--cyan);
+}
