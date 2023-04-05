@@ -1,14 +1,13 @@
 import Docs from '#layouts/Docs'
 import Tabs from '#components/Tabs'
 import Topics from '#components/Topics'
+import Anchor from '#components/Anchor'
 import CodeBox from '#components/CodeBox'
 import Blockquote from '#components/Blockquote'
-import DocsAnchor from '#components/DocsAnchor'
-import DocsOverview from '#components/DocsOverview'
 import CodeHighlight from '#components/CodeHighlight'
 
 import { Component } from 'react'
-import { Box, Anchor, Paragraph } from 'dracula-ui'
+import { Box, Paragraph, Anchor as DraculaAnchor } from 'dracula-ui'
 
 export async function getStaticProps() {
   return {
@@ -21,42 +20,28 @@ export async function getStaticProps() {
   }
 }
 
-const topics = [
-  { 
-    title: 'Your first Athenna project', 
-    childs: [{ title: 'Installing via package manager' }] 
-  },
-  {
-    title: 'Initial configuration'
-  }
-]
-
-function getAllTopics(topics: any): any[] {
-  const _topics = []
-
-  for (let i = 0; i < topics.length; i++) {
-    _topics.push({ title: topics[i].title })
-
-    if (topics[i].childs && topics[i].childs.length) {
-      _topics.push(...getAllTopics(topics[i].childs))
-    }
-  }
-
-  return _topics
-}
-
 export default class Installation extends Component {
   public static Layout = Docs
+
+  public topics = [
+    { 
+      title: 'Your first Athenna project', 
+      childs: [{ title: 'Installing via package manager' }] 
+    },
+    {
+      title: 'Initial configuration'
+    }
+  ]
 
   public httpTabContent() {
     return (
       <Box>
         <Box pb='xs'>
-          <CodeHighlight language='bash' code={`athenna new my-project-name`}/>
+          <CodeBox language='bash' code={`athenna new my-project-name`}/>
         </Box>
 
         <Box>
-          <CodeHighlight language='bash' code={`athenna new my-project-name --type http`}/>
+          <CodeBox language='bash' code={`athenna new my-project-name --type http`}/>
         </Box>
       </Box>
     )
@@ -65,7 +50,7 @@ export default class Installation extends Component {
   public cliTabContent() {
     return (
       <Box>
-        <CodeHighlight language='bash' code={`athenna new my-project-name --type cli`}/>
+        <CodeBox language='bash' code={`athenna new my-project-name --type cli`}/>
       </Box>
     )
   }
@@ -73,39 +58,38 @@ export default class Installation extends Component {
   public render() {
     return (
       <Box>
-        <Topics topics={topics}/>
-        <DocsOverview sections={getAllTopics(topics)}/>
+        <Topics showOverview={true} topics={this.topics}/>
         
         <Box mt='md'>
-          <DocsAnchor size='xl' pb='xs'>Your first Athenna project</DocsAnchor>
+          <Anchor size='xl' pb='xs'>Your first Athenna project</Anchor>
 
           <Paragraph> 
-            First you need to install <CodeBox href='https://nodejs.org'>Node.js</CodeBox>.
-            We recommend using <CodeBox href='https://github.com/nvm-sh/nvm'>nvm</CodeBox> to do that.
+            First you need to install <CodeHighlight href='https://nodejs.org'>Node.js</CodeHighlight>.
+            We recommend using <CodeHighlight href='https://github.com/nvm-sh/nvm'>nvm</CodeHighlight> to do that.
           </Paragraph>
 
           <Blockquote>
-            <Anchor 
+            <DraculaAnchor 
               color='yellow'
               target='_blank'
               hoverColor='pink'
               href='https://github.com/nvm-sh/nvm#installing-and-updating'
              >
-              Click here to install nvm and get <CodeBox>npm</CodeBox> and 
-              <CodeBox>Node.js</CodeBox> running on your machine
-            </Anchor>
+              Click here to install nvm and get <CodeHighlight>npm</CodeHighlight> and 
+              <CodeHighlight>Node.js</CodeHighlight> running on your machine
+            </DraculaAnchor>
           </Blockquote>
         </Box>
 
         <Box mt='md'>
-          <DocsAnchor size='lg' pb='xs'>Installing via package manager</DocsAnchor>
+          <Anchor size='lg' pb='xs'>Installing via package manager</Anchor>
 
           <Paragraph>
             We want it to be as easy as possible to get started with Athenna. With 
             that in mind, we developed a CLI to assist in the creation of a new project.
           </Paragraph>
 
-          <CodeHighlight language='bash' code={`npm install @athenna/cli -g`}/>
+          <CodeBox language='bash' code={`npm install @athenna/cli -g`}/>
 
           <Paragraph mb='none'>
             Then you can run one of these commands to generate your project:

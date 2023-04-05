@@ -1,15 +1,13 @@
-import styles from '#components/DocsAnchor/index.module.css'
-
 import { Component } from 'react'
-import { Text, Anchor, Heading } from 'dracula-ui'
+import { Text, Anchor as DraculaAnchor } from 'dracula-ui'
 
-export type DocsAnchorProps = {
+export type AnchorProps = {
   size: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'xs'
   pb?: 'sm' | 'md' | 'lg' | 'xs' | 'none' | 'xxs'
   children: string
 }
 
-export default class DocsAnchor extends Component<DocsAnchorProps> {
+export default class Anchor extends Component<AnchorProps> {
   public static defaultProps = {
     size: 'xl',
   }
@@ -27,10 +25,10 @@ export default class DocsAnchor extends Component<DocsAnchorProps> {
     }
 
     return (
-      <Anchor hoverColor='pinkPurple' pb={this.props.pb} href={`#${id}`}>
+      <DraculaAnchor hoverColor='pinkPurple' pb={this.props.pb} href={`#${id}`}>
         <Text weight='bold' size='lg' color='purple'># </Text>
         <Text weight='bold' style={{ fontSize: size[this.props.size] }}>{this.props.children}</Text>
-      </Anchor>
+      </DraculaAnchor>
     )
   }
 }
