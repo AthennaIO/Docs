@@ -26,7 +26,10 @@ export default class Installation extends Component {
   public topics = [
     { 
       title: 'Your first Athenna project', 
-      childs: [{ title: 'Installing via package manager' }] 
+      childs: [
+        { title: 'Prerequisites' },
+        { title: 'Installing via package manager' }
+      ] 
     },
     {
       title: 'Initial configuration'
@@ -60,8 +63,12 @@ export default class Installation extends Component {
       <Box>
         <Topics showOverview={true} topics={this.topics}/>
         
-        <Box mt='md'>
+        <Box mt='lg'>
           <Anchor size='xl' pb='xs'>Your first Athenna project</Anchor>
+        </Box>
+
+        <Box mt='md'>
+          <Anchor size='lg' pb='xs'>Prerequisites</Anchor>
 
           <Paragraph> 
             First you need to install <CodeHighlight href='https://nodejs.org'>Node.js</CodeHighlight>.
