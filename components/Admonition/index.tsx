@@ -3,7 +3,7 @@ import styles from '#components/Admonition/index.module.css'
 import iconsEmojiMap from '#components/Admonition/icons.emoji'
 
 import { Component } from 'react'
-import { Box, Text, Heading, Paragraph } from 'dracula-ui'
+import { Box, Heading, Paragraph } from 'dracula-ui'
 
 export type AdmonitionProps = {
   type: 'warning' | 'important' | 'caution' | 'tip' | 'note' | 'question'
@@ -27,7 +27,7 @@ export default class Admonition extends Component<AdmonitionProps> {
 
   public render() {
     return (
-      <Box className={`${styles.admonition} ${styles['admonition' + this.getCapitalizedType()]}`}>
+      <Box mt='sm' mb='sm' className={`${styles.admonition} ${styles['admonition' + this.getCapitalizedType()]}`}>
         <Box className={styles.admonitionHeading}>
           <Heading as='h5' size='xs'>
              <Box className={styles.admonitionIcon}>{this.getIcon()}</Box>
@@ -39,18 +39,6 @@ export default class Admonition extends Component<AdmonitionProps> {
           </Box>
         </Box>
       </Box>
-
-      // <div className={`${styles.admonition} ${styles['admonition-' + this.props.type]}`}>
-      //   <div className={styles['admonition-heading']}>
-      //     <h5>
-      //       <div className={styles['admonition-icon']}>
-      //         {this.getIcon()}
-      //       </div>{' '}
-      //       {this.props.title || this.props.type}
-      //     </h5>
-      //   </div>
-      //   <div className='admonition-content'>{this.props.children}</div>
-      // </div>
     )
   }
 }
