@@ -14,7 +14,7 @@ export async function getStaticProps() {
       query: {
         title: 'Node script file',
         description: 
-          'The script file in your project root is a very simple ' + 
+          'The node script file in your project root is a very simple ' + 
           'script to run Node.js with predefined CLI arguments, ' + 
           'without this script, you would need to pass all the ' +
           'necessary arguments to run the application every time ' +
