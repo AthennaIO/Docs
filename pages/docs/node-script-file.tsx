@@ -2,11 +2,11 @@ import Docs from '#layouts/Docs'
 import Topic from '#components/Topic'
 import Topics from '#components/Topics'
 import CodeBox from '#components/CodeBox'
+import Admonition from '#components/Admonition'
 import CodeHighlight from '#components/CodeHighlight'
 
 import { Component } from 'react'
 import { Anchor, Box, Paragraph } from 'dracula-ui'
-import Admonition from '#components/Admonition'
 
 export async function getStaticProps() {
   return {

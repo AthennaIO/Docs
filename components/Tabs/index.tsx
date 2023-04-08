@@ -1,7 +1,7 @@
 import styles from '#components/Tabs/index.module.css'
 
 import { Component, ReactElement } from 'react'
-import { Box, Tabs as DraculaTabs, TabsProps as DraculaTabsProps } from 'dracula-ui'
+import { Box, Tabs as DraculaTabs } from 'dracula-ui'
 
 export type TabsProps = {
   sections: { label: string, content: string | ReactElement<any> }[]
