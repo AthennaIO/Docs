@@ -7,8 +7,16 @@ export interface TopicProps extends HeadingProps {
 }
 
 export default class Topic extends Component<TopicProps> {
+  public getTopicId(children: any): string {
+    if (typeof children !== 'string') {
+      return this.getTopicId(children.props.children)
+    }
+
+    return children.toLowerCase().replace(/ /g, '-')
+  }
+
   public render() {
-    const id = this.props.children.toLowerCase().replace(/ /g, '-')
+    const id = this.getTopicId(this.props.children)
 
     const size = {
       'xs': 'var(--font-sm)',

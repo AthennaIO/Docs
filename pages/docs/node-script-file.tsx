@@ -37,7 +37,7 @@ export default class NodeScriptFile extends Component {
   public render() {
     return (
       <Box>
-        <Topics showOverview={true} topics={this.topics}/>
+        <Topics topics={this.topics}/>
 
         <Box mt='md'>
           <Topic size='xl' pb='xs'>The --loader flag</Topic>
