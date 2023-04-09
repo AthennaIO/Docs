@@ -23,22 +23,16 @@ export default class Installation extends Component {
   public static Layout = Docs
 
   public topics = [
-    { 
-      title: 'Your first Athenna project', 
-      childs: [
-        { title: 'Prerequisites' },
-        { title: 'Installing via package manager' }
-      ] 
-    },
-    { 
-      title: 'Running your application',
-    },
+    { title: 'Your first Athenna project' },
+    { title: 'Prerequisites' },
+    { title: 'Installing via package manager' },
+    { title: 'Running your application' },
   ]
 
   public render() {
     return (
       <Box>
-        <Topics showOverview={true} topics={this.topics}/>
+        <Topics topics={this.topics}/>
         
         <Box mt='lg'>
           <Topic size='xl' pb='xs'>Your first Athenna project</Topic>
@@ -87,8 +81,8 @@ export default class Installation extends Component {
           <Topic size='md' pb='xs'>Application type</Topic>
           
           <List variant='unordered' color='purple'>
-            <li className='drac-text drac-text-white'><CodeHighlight>http</CodeHighlight> application is ideal for creating an API server using REST.</li>
-            <li className='drac-text drac-text-white'><CodeHighlight>cli</CodeHighlight> application is ideal for creating global CLI&apos;s to publish in some registry like npm.</li>
+            <li className='drac-text drac-text-white'><CodeHighlight>REST API</CodeHighlight> application is ideal for creating an API server using REST.</li>
+            <li className='drac-text drac-text-white'><CodeHighlight>CLI</CodeHighlight> application is ideal for creating global CLI&apos;s to publish in some registry like npm.</li>
           </List>
 
           <Topic size='md' pb='xs'>Laravel project structure</Topic>

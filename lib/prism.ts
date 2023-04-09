@@ -4,7 +4,6 @@
  * https://github.com/FormidableLabs/prism-react-renderer/blob/master/src/themes/dracula.js
  */
 
-// eslint-disable-next-line import/no-anonymous-default-export
 export default {
   plain: {
     color: "#F8F8F2",

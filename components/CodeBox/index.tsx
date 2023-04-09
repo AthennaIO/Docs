@@ -75,7 +75,7 @@ export default class CodeBox extends Component<CodeBoxProps> {
       >
         {({ style, tokens, getLineProps, getTokenProps }) => (
           <div>
-            <div style={{ position: 'relative' }}>
+            <div style={{ marginTop: '10px', marginBottom: '10px', position: 'relative' }}>
               {this.renderButton()}
               <pre className={styles.pre} style={style}>
                 {tokens.map((line, i) => (

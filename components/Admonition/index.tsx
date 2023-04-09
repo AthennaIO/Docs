@@ -3,7 +3,7 @@ import styles from '#components/Admonition/index.module.css'
 import iconsEmojiMap from '#components/Admonition/icons.emoji'
 
 import { Component } from 'react'
-import { Box, Heading, Paragraph } from 'dracula-ui'
+import { Box, Heading } from 'dracula-ui'
 
 export type AdmonitionProps = {
   type: 'warning' | 'important' | 'caution' | 'tip' | 'note' | 'question'
@@ -35,7 +35,7 @@ export default class Admonition extends Component<AdmonitionProps> {
              {this.props.title || this.props.type}
           </Heading>
           <Box className={styles.admonitionContent}>
-            <Paragraph align='justify' size='sm'>{this.props.children}</Paragraph>
+            {this.props.children}
           </Box>
         </Box>
       </Box>
