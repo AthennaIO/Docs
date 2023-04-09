@@ -178,7 +178,7 @@ export default class Configuration extends Component {
                     <td className="drac-text drac-text-yellow">true</td>
                   </tr>
                   <tr>
-                    <td className="drac-text drac-text-yellow">"true"</td>
+                    <td className="drac-text drac-text-yellow">&quot;true&quot;</td>
                     <td className="drac-text drac-text-yellow">true</td>
                   </tr>
                   <tr>
@@ -186,7 +186,7 @@ export default class Configuration extends Component {
                     <td className="drac-text drac-text-yellow">10</td>
                   </tr>
                   <tr>
-                    <td className="drac-text drac-text-yellow">"10"</td>
+                    <td className="drac-text drac-text-yellow">&quot;10&quot;</td>
                     <td className="drac-text drac-text-yellow">10</td>
                   </tr>
                   <tr>
@@ -194,16 +194,16 @@ export default class Configuration extends Component {
                     <td className="drac-text drac-text-yellow">10.090909</td>
                   </tr>
                   <tr>
-                    <td className="drac-text drac-text-yellow">"10.090909"</td>
+                    <td className="drac-text drac-text-yellow">&quot;10.090909&quot;</td>
                     <td className="drac-text drac-text-yellow">10.090909</td>
                   </tr>
                   <tr>
-                    <td className="drac-text drac-text-white">{'{'}"name":"Paulo"{'}'}</td>
-                    <td className="drac-text drac-text-yellow">{'{'} name: "Paulo" {'}'}</td>
+                    <td className="drac-text drac-text-white">{'{'}&quot;name&quot;:&quot;Paulo&quot;{'}'}</td>
+                    <td className="drac-text drac-text-yellow">{'{'} name: &quot;Paulo&quot; {'}'}</td>
                   </tr>
                   <tr>
-                    <td className="drac-text drac-text-yellow">"{'{'}"name":"Paulo"{'}'}"</td>
-                    <td className="drac-text drac-text-yellow">{'{'} name: "Paulo" {'}'}</td>
+                    <td className="drac-text drac-text-yellow">&quot;{'{'}&quot;name&quot;:&quot;Paulo&quot;{'}'}&quot;</td>
+                    <td className="drac-text drac-text-yellow">{'{'} name: &quot;Paulo&quot; {'}'}</td>
                   </tr>
                 </tbody>
               </Table>
@@ -224,7 +224,7 @@ export default class Configuration extends Component {
 
               <Paragraph align='justify'>
                 There will certainly have scenarios in your business rule where you explicitly need an environment variable with value
-                true, 10 or {'{'}"name":"Paulo"{'}'} to be a string. To solve this you can turn off the auto cast when using the <CodeHighlight>Env</CodeHighlight> function:
+                true, 10 or {'{'}&quot;name&quot;:&quot;Paulo&quot;{'}'} to be a string. To solve this you can turn off the auto cast when using the <CodeHighlight>Env</CodeHighlight> function:
               </Paragraph>
 
               <CodeBox language='typescript' code={
@@ -282,7 +282,7 @@ export default class Configuration extends Component {
 
             <Paragraph align='justify'>
               You may easily access your configuration values using the global <CodeHighlight>Config</CodeHighlight> helper
-              class. The configuration values may be accessed using <CodeHighlight>"dot (.)"</CodeHighlight> syntax, which
+              class. The configuration values may be accessed using <CodeHighlight>&quot;dot (.)&quot;</CodeHighlight> syntax, which
               includes the name of the file and option you wish to access. Let&apos;s cover some methods bellow:
             </Paragraph>
 
