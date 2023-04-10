@@ -612,6 +612,22 @@ export default class Configuration extends Component {
 
           <Box mt='md'>
             <Topic size='xl' pb='xs'>Debug mode</Topic>
+
+            <Paragraph align='justify'>
+              The debug option in your <CodeHighlight>config/app.ts</CodeHighlight> configuration file determines
+              how much information about your application is actually displayed to you and for who is going to
+              consume your application. By default, this option is set to respect the value of
+              the <CodeHighlight>APP_DEBUG</CodeHighlight> environment variable, which is stored in
+              your <CodeHighlight>.env</CodeHighlight> file.
+            </Paragraph>
+
+            <Paragraph align='justify'>
+              For local development, you should set the <CodeHighlight>APP_DEBUG</CodeHighlight> environment
+              variable to <CodeHighlight>true</CodeHighlight>. In your production and pipelines environment,
+              this value should always be <CodeHighlight>true</CodeHighlight>. If the variable is set
+              to <CodeHighlight>true</CodeHighlight> in production, you risk exposing sensitive configuration
+              values to your application's end users.
+            </Paragraph>
           </Box>
         </Box>
       </Box>

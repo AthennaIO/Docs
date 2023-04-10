@@ -3,6 +3,7 @@ import theme from '#lib/prism'
 import CopyToClipboard from 'clipboard'
 import styles from '#components/CodeBox/index.module.css'
 
+import { Paragraph } from 'dracula-ui'
 import { Component, createRef } from 'react'
 import Highlight, { defaultProps, Language } from 'prism-react-renderer'
 
