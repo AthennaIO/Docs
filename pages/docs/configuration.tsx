@@ -6,7 +6,7 @@ import Admonition from '#components/Admonition'
 import CodeHighlight from '#components/CodeHighlight'
 
 import { Component } from 'react'
-import { Box, Paragraph, Table } from 'dracula-ui'
+import { Box, OrderedList, Paragraph, Table } from 'dracula-ui'
 
 export async function getStaticProps() {
   return {
@@ -572,6 +572,42 @@ export default class Configuration extends Component {
 
           <Box mt='md'>
             <Topic size='lg' pb='xs'>Define my own configuration path</Topic>
+
+            <Paragraph align='justify'>
+              If you are using the <CodeHighlight href='/docs/installation#laravel-project-structure'>slim</CodeHighlight> project
+              template version or you are building your own project structure you are not going to have
+              the <CodeHighlight>config</CodeHighlight> directory in your project root path.
+            </Paragraph>
+
+            <Paragraph align='justify'>
+              You will have two options now:
+            </Paragraph>
+
+            <OrderedList color='purple'>
+              <li className='drac-text drac-text-white'>
+                Create the <CodeHighlight>config</CodeHighlight> directory in your project root path.
+              </li>
+              <li className='drac-text drac-text-white'>
+                Specify to Athenna a different path to your <CodeHighlight>config</CodeHighlight> directory.
+              </li>
+            </OrderedList>
+
+            <Paragraph align='justify'>
+              To do so, you can open the entrypoint of your application where you call <CodeHighlight>Ignite</CodeHighlight> class
+              to bootstrap your application. If you are using <CodeHighlight href='/docs/installation#laravel-project-structure'>slim</CodeHighlight> project
+              template version you can find it inside <CodeHighlight>bin/main.ts</CodeHighlight>. Just set the relative or absolute
+              path to your <CodeHighlight>config</CodeHighlight> directory in the options of <CodeHighlight>Ignite.load</CodeHighlight> method:
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+              `import { Ignite } from '@athenna/core'\n\n` +
+
+              `const ignite = await new Ignite().load(import.meta.url, {\n` +
+              `  configPath: './src/config'\n` +
+              `})\n\n` +
+
+              `...`
+            } />
           </Box>
 
           <Box mt='md'>
