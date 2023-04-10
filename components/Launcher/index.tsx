@@ -49,6 +49,11 @@ export default class Launcher extends Component<LauncherProps, LauncherState> {
         icon: 'gear-wide-connected',
         title: 'Configuration',
         handler: () => Router.push('/docs/configuration')
+      },
+      {
+        icon: 'folder-symlink-fill',
+        title: 'Directory Structure',
+        handler: () => Router.push('/docs/directory-structure')
       }
     ]
 

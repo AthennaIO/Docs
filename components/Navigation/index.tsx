@@ -23,6 +23,7 @@ export default class Navigation extends Component<NavigationProps> {
         'Installation',
         'Node script file',
         'Configuration',
+        'Directory Structure'
       ]
     },
   ]
