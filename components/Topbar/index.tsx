@@ -13,8 +13,7 @@ export default class Topbar extends Component<TopBarProps> {
     return <Box p="md" className={styles.topbar}>
       <Link style={{ textDecoration: 'none' }} href="/" passHref>
         <Anchor className={styles.title}>
-          <Text className={styles.text} color="cyanGreen">Athenna</Text>
-          <Text className={styles.text} color="purpleCyan"> Framework</Text>
+          <Text className={styles.text} color="purpleCyan">Athenna Framework</Text>
         </Anchor>
       </Link>
 
