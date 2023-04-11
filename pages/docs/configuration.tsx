@@ -160,15 +160,15 @@ export default class Configuration extends Component {
               } />
 
               <Paragraph align='justify'>
-                All environment variables in your <CodeHighlight>.env</CodeHighlight> file and inside <CodeHighlight>process.env</CodeHighlight>
-                object are always interpreted as strings. But when using the <CodeHighlight>Env</CodeHighlight> function, it will auto cast the
+                All environment variables in your <CodeHighlight>.env</CodeHighlight> file and inside <CodeHighlight>process.env</CodeHighlight> object
+                are always interpreted as strings. But when using the <CodeHighlight>Env</CodeHighlight> function, it will auto cast the
                 value for you. Check the comparison:
               </Paragraph>
 
               <Table>
                 <thead>
                   <tr>
-                    <td align='center' className="drac-text drac-text-white">Value in .env or process.env</td>
+                    <td align='center' className="drac-text drac-text-white">Value in .env</td>
                     <td align='center' className="drac-text drac-text-white">Value returned by Env function</td>
                   </tr>
                 </thead>
@@ -215,7 +215,7 @@ export default class Configuration extends Component {
               <CodeBox language='typescript' code={
                 "process.env.PORT = '3000'\n" +
                 "process.env.APP_DEBUG = 'true'\n" +
-                `process.env.APP_JSON = {"name":"Paulo"}\n\n` +
+                `process.env.APP_JSON = '{"name":"Paulo"}'\n\n` +
 
                 "console.log(Env('PORT')) // 3000 <- number\n" +
                 "console.log(Env('APP_DEBUG')) // true <- boolean\n" +
@@ -230,7 +230,7 @@ export default class Configuration extends Component {
               <CodeBox language='typescript' code={
                   "process.env.PORT = '3000'\n" +
                   "process.env.APP_DEBUG = 'true'\n" +
-                  `process.env.APP_JSON = {"name":"Paulo"}\n\n` +
+                  `process.env.APP_JSON = '{"name":"Paulo"}'\n\n` +
 
                   'const autoCast = false\n' +
                   'const defaultValue = undefined\n\n' +
@@ -397,7 +397,7 @@ export default class Configuration extends Component {
               <Paragraph align='justify'>
                 The <CodeHighlight>rewrite</CodeHighlight> method is very usefull for rewriting the configuration file. Very
                 usefull when you want to programmatically modify the configuration file source code. This method uses
-                the <CodeHighlight href='https://github.com/unjs/magicast'>magicast</CodeHighlight> under the hood to do that:
+                the <CodeHighlight href='https://github.com/unjs/magicast'>magicast</CodeHighlight> library under the hood to do that:
               </Paragraph>
 
               <CodeBox language='typescript' code={
@@ -411,7 +411,7 @@ export default class Configuration extends Component {
               <Admonition type='tip'>
                 <Paragraph align='justify' size='sm'>
                   Let&apos;s suppose that you want to set a function as value, you can use <CodeHighlight>builders.functionCall</CodeHighlight> function
-                  of <CodeHighlight href='https://github.com/unjs/magicast'>magicast</CodeHighlight> to do that:
+                  of <CodeHighlight href='https://github.com/unjs/magicast'>magicast</CodeHighlight> library to do that:
                 </Paragraph>
 
                 <CodeBox language='typescript' code={

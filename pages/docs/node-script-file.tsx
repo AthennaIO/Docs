@@ -1,4 +1,5 @@
 import Docs from '#layouts/Docs'
+import Link from '#components/Link'
 import Topic from '#components/Topic'
 import Topics from '#components/Topics'
 import CodeBox from '#components/CodeBox'
@@ -6,7 +7,7 @@ import Admonition from '#components/Admonition'
 import CodeHighlight from '#components/CodeHighlight'
 
 import { Component } from 'react'
-import { Anchor, Box, Paragraph } from 'dracula-ui'
+import { Box, Paragraph } from 'dracula-ui'
 
 export async function getStaticProps() {
   return {
@@ -143,13 +144,13 @@ export default class NodeScriptFile extends Component {
             will not be necessary to use the <CodeHighlight>import.meta.resolve</CodeHighlight> function. Also, in 
             future Node.js versions we might have a better support to TypeScript the same 
             way <CodeHighlight href='https://deno.com/'>Deno</CodeHighlight> and <CodeHighlight href='https://bun.sh/'>Bun</CodeHighlight> does
-            since a big part of the community is very committed in making this happen as you can <Anchor target='_blank' color='yellow' hoverColor='pink' href='https://github.com/nodejs/node/issues/43818'>see in this Github issue.</Anchor>
+            since a big part of the community is very committed in making this happen as you can <Link href='https://github.com/nodejs/node/issues/43818'>see in this Github issue.</Link>
           </Paragraph>
 
           <Paragraph align='justify'>
             So, in the future, you might be able to remove (if you want) the node script file from your project and
             simple use <CodeHighlight>node</CodeHighlight> to run your application. Also, if you have a good idea on 
-            how to implement a better solution to this problem, please feel free to <Anchor target='_blank' color='yellow' hoverColor='pink' href='https://github.com/AthennaIO/Core/issues/new/choose'>open an issue at @athenna/core repository</Anchor>,
+            how to implement a better solution to this problem, please feel free to <Link href='https://github.com/AthennaIO/Core/issues/new/choose'>open an issue at @athenna/core repository</Link>,
             it will be really cool to discuss a better implementation for this with you 😎.
           </Paragraph>
         </Box>

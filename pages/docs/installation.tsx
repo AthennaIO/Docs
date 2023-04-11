@@ -1,4 +1,5 @@
 import Docs from '#layouts/Docs'
+import Link from '#components/Link'
 import Topic from '#components/Topic'
 import Topics from '#components/Topics'
 import CodeBox from '#components/CodeBox'
@@ -6,7 +7,7 @@ import Blockquote from '#components/Blockquote'
 import CodeHighlight from '#components/CodeHighlight'
 
 import { Component } from 'react'
-import { Box, Paragraph, Anchor, List } from 'dracula-ui'
+import { Box, Paragraph, List } from 'dracula-ui'
 
 export async function getStaticProps() {
   return {
@@ -47,14 +48,9 @@ export default class Installation extends Component {
           </Paragraph>
 
           <Blockquote>
-            <Anchor 
-              color='yellow'
-              target='_blank'
-              hoverColor='pink'
-              href='https://github.com/nvm-sh/nvm#installing-and-updating'
-             >
+            <Link href='https://github.com/nvm-sh/nvm#installing-and-updating'>
               Click here to install nvm and get <CodeHighlight>npm</CodeHighlight> and <CodeHighlight>Node.js</CodeHighlight> running on your machine
-            </Anchor>
+            </Link>
           </Blockquote>
         </Box>
 
