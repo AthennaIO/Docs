@@ -626,7 +626,7 @@ export default class Configuration extends Component {
               variable to <CodeHighlight>true</CodeHighlight>. In your production and pipelines environment,
               this value should always be <CodeHighlight>true</CodeHighlight>. If the variable is set
               to <CodeHighlight>true</CodeHighlight> in production, you risk exposing sensitive configuration
-              values to your application's end users.
+              values to your application&apos;s end users.
             </Paragraph>
           </Box>
         </Box>
