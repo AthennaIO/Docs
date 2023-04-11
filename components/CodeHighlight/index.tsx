@@ -1,12 +1,14 @@
+import Link from '#components/Link'
+
 import { Component } from 'react'
-import { Anchor, Box, BoxProps } from 'dracula-ui'
+import { Box, BoxProps } from 'dracula-ui'
 
 export default class CodeHighlight extends Component<BoxProps> {
   public render() {
     if (this.props.href) {
       return (
         <Box {...this.props} as="code" className="drac-text-pink">
-          <Anchor hoverColor="pink" color="yellow" target="_blank" href={this.props.href}>{this.props.children}</Anchor>
+          <Link href={this.props.href}>{this.props.children}</Link>
         </Box>
       )
     }

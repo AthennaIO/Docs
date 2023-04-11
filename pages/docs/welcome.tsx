@@ -1,8 +1,9 @@
 import Docs from '#layouts/Docs'
+import Link from '#components/Link'
 import styles from '#pages/docs/welcome.module.css'
 
 import { Component } from 'react'
-import { Anchor, Box, Heading, List } from 'dracula-ui'
+import { Box, Heading, List } from 'dracula-ui'
 
 export async function getStaticProps() {
   return {
@@ -38,15 +39,15 @@ export default class Welcome extends Component {
         <Box mt='lg'>
           <Heading as='h2' size='xl'>Useful Links</Heading>
           <List variant='unordered' color='white' p='none' mb='sm'>
-            <li><Anchor href='https://github.com/AthennaIO'>Github</Anchor></li>
-            <li><Anchor href='https://discord.gg/vaZgRUkMsm'>Discord</Anchor></li>
-            <li><Anchor href='https://github.com/AthennaIO/Core/blob/main/LICENSE'>License</Anchor></li>
+            <li><Link href='https://github.com/AthennaIO'>Github</Link></li>
+            <li><Link href='https://discord.gg/vaZgRUkMsm'>Discord</Link></li>
+            <li><Link href='https://github.com/AthennaIO/Core/blob/main/LICENSE'>License</Link></li>
           </List>
 
           <List variant='unordered' color='white' p='none'>
-            <li><Anchor href='mailto:lenon@athenna.io'>Email</Anchor></li>
-            <li><Anchor href='https://github.com/AthennaIO/Core/issues'>Issues</Anchor></li>
-            <li><Anchor href='https://github.com/AthennaIO/Core/discussions'>Discussions</Anchor></li>
+            <li><Link href='mailto:lenon@athenna.io'>Email</Link></li>
+            <li><Link href='https://github.com/AthennaIO/Core/issues'>Issues</Link></li>
+            <li><Link href='https://github.com/AthennaIO/Core/discussions'>Discussions</Link></li>
           </List>
         </Box>
       </Box>
