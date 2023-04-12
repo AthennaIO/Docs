@@ -15,6 +15,7 @@ export default class Navigation extends Component<NavigationProps> {
       title: 'Introduction',
       pages: [
         'Welcome',
+        'Benchmarks',
       ]
     },
     {
