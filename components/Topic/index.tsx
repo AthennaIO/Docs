@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import { getChildsAsString } from '#lib/helpers'
 import { Text, Anchor, HeadingProps } from 'dracula-ui'
 
 export interface TopicProps extends HeadingProps {
@@ -8,11 +9,7 @@ export interface TopicProps extends HeadingProps {
 
 export default class Topic extends Component<TopicProps> {
   public getTopicId(children: any): string {
-    if (typeof children !== 'string') {
-      return this.getTopicId(children.props.children)
-    }
-
-    return children.toLowerCase().replace(/ /g, '-')
+    return getChildsAsString(children).toLowerCase().replace(/ /g, '-')
   }
 
   public render() {

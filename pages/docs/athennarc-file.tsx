@@ -3,8 +3,8 @@ import Topic from '#components/Topic'
 import Topics from '#components/Topics'
 import CodeHighlight from '#components/CodeHighlight'
 
-import { Component } from 'react'
 import { Box } from 'dracula-ui'
+import { Component } from 'react'
 
 export async function getStaticProps() {
     return {

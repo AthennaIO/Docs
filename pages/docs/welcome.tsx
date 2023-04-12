@@ -1,9 +1,8 @@
 import Docs from '#layouts/Docs'
 import Link from '#components/Link'
-import styles from '#pages/docs/welcome.module.css'
 
 import { Component } from 'react'
-import {Box, Heading, List, Paragraph} from 'dracula-ui'
+import { Box, Heading, List, Paragraph } from 'dracula-ui'
 
 export async function getStaticProps() {
   return {
@@ -25,7 +24,11 @@ export default class Welcome extends Component {
       <Box>
         <Box mt='lg'>
           <img
-            className={styles.banner}
+            style={{
+              maxWidth: '100%',
+              backgroundColor: '#282a36',
+              borderRadius: 'var(--rounded-md)'
+            }}
             src='/static/og.jpg'
             alt='Athenna Framework'
           />

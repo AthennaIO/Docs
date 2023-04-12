@@ -48,7 +48,7 @@ export default class NodeScriptFile extends Component {
         </Box>
 
         <Box mt='md'>
-          <Topic size='xl' pb='xs'>The --loader flag</Topic>
+          <Topic size='xl' pb='xs'>The <CodeHighlight>--loader</CodeHighlight> flag</Topic>
 
           <Paragraph align='justify'>
             The <CodeHighlight>--loader ts-node/esm</CodeHighlight> flag is required 
@@ -97,7 +97,7 @@ export default class NodeScriptFile extends Component {
         </Box>
 
         <Box mt='md'>
-          <Topic size='xl' pb='xs'>The --experimental-import-meta-resolve flag</Topic>
+          <Topic size='xl' pb='xs'>The <CodeHighlight>--experimental-import-meta-resolve</CodeHighlight> flag</Topic>
 
           <Paragraph align='justify'>
             The <CodeHighlight>--experimental-import-meta-resolve</CodeHighlight> is 

@@ -36,14 +36,24 @@ export default class Launcher extends Component<LauncherProps, LauncherState> {
         handler: () => Router.push('/docs/welcome')
       },
       {
+        icon: 'lightning-fill',
+        title: 'Benchmarks',
+        handler: () => Router.push('/docs/benchmarks')
+      },
+      {
         icon: 'cloud-arrow-down-fill',
         title: 'Installation',
         handler: () => Router.push('/docs/installation')
       },
       {
         icon: 'file-earmark-code-fill',
-        title: 'Node script file',
+        title: 'Node Script File',
         handler: () => Router.push('/docs/node-script-file')
+      },
+      {
+        icon: 'file-earmark-code-fill',
+        title: 'AthennaRC File',
+        handler: () => Router.push('/docs/athennarc-file')
       },
       {
         icon: 'gear-wide-connected',
