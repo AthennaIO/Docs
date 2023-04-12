@@ -3,7 +3,7 @@ import Link from '#components/Link'
 import styles from '#pages/docs/welcome.module.css'
 
 import { Component } from 'react'
-import { Box, Heading, List } from 'dracula-ui'
+import {Box, Heading, List, Paragraph} from 'dracula-ui'
 
 export async function getStaticProps() {
   return {
@@ -11,12 +11,7 @@ export async function getStaticProps() {
       query: {
         title: 'Welcome',
         description: 
-          'Athenna is the plug & play Node.js framework that focuses on ' +
-          'giving a very reliable foundation for the developer to build ' +
-          'many types of different applications, perfect for working with' +
-          ' micro-services architecture. All of this foundation was created' + 
-          ' based on Laravel, so expect an enjoyable, beautiful, ' +
-          'peaceful and productive experience.'
+          'The plug & play Node.js framework'
       }
     }
   }
@@ -34,6 +29,17 @@ export default class Welcome extends Component {
             src='/static/og.jpg'
             alt='Athenna Framework'
           />
+        </Box>
+
+        <Box mt='lg'>
+          <Heading as='h2' size='xl'>Introduction</Heading>
+
+          <Paragraph align='justify'>
+            Athenna is the plug & play Node.js framework that focuses on giving a very reliable
+            foundation for the developer to build many types of different applications, perfect
+            for working with micro-services architecture. All of this foundation was created based
+            on Laravel, so expect an enjoyable, beautiful, peaceful and productive experience.
+          </Paragraph>
         </Box>
 
         <Box mt='lg'>
