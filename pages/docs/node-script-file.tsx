@@ -13,13 +13,9 @@ export async function getStaticProps() {
   return {
     props: {
       query: {
-        title: 'Node script file',
+        title: 'Node Script File',
         description: 
-          'The node script file in your project root is a very simple ' + 
-          'script to run Node.js with predefined CLI arguments, ' + 
-          'without this script, you would need to pass all the ' +
-          'necessary arguments to run the application every time ' +
-          'in the terminal.'
+          'Understand what is the purpose of the node script file.'
       }
     }
   }
@@ -29,6 +25,7 @@ export default class NodeScriptFile extends Component {
   public static Layout = Docs
 
   public topics = [
+    { title: 'Introduction' },
     { title: 'The --loader flag' },
     { title: 'The --experimental-import-meta-resolve flag' },
     { title: 'Running artisan file as argument' },
@@ -39,6 +36,16 @@ export default class NodeScriptFile extends Component {
     return (
       <Box>
         <Topics topics={this.topics}/>
+
+        <Box mt='md'>
+          <Topic size='xl' pb='xs'>Introduction</Topic>
+
+          <Paragraph align='justify'>
+            The node script file in your project root is a very simple script to run Node.js
+            with predefined CLI arguments, without this script, you would need to pass all the
+            necessary arguments to run the application every time in the terminal.
+          </Paragraph>
+        </Box>
 
         <Box mt='md'>
           <Topic size='xl' pb='xs'>The --loader flag</Topic>

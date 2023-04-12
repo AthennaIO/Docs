@@ -21,8 +21,9 @@ export default class Navigation extends Component<NavigationProps> {
       title: 'Getting Started',
       pages: [
         'Installation',
-        'Node script file',
+        'Node Script File',
         'Configuration',
+        'AthennaRC File',
         'Directory Structure'
       ]
     },
