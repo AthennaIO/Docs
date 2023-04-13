@@ -33,37 +33,37 @@ export default class Launcher extends Component<LauncherProps, LauncherState> {
       {
         icon: 'house-check-fill',
         title: 'Welcome',
-        handler: () => Router.push('/docs/welcome')
+        handler: () => Router.push('/docs/introduction/welcome')
       },
       {
         icon: 'lightning-fill',
         title: 'Benchmarks',
-        handler: () => Router.push('/docs/benchmarks')
+        handler: () => Router.push('/docs/introduction/benchmarks')
       },
       {
         icon: 'cloud-arrow-down-fill',
         title: 'Installation',
-        handler: () => Router.push('/docs/installation')
+        handler: () => Router.push('/docs/getting-started/installation')
       },
       {
         icon: 'file-earmark-code-fill',
         title: 'Node Script File',
-        handler: () => Router.push('/docs/node-script-file')
+        handler: () => Router.push('/docs/getting-started/node-script-file')
       },
       {
         icon: 'file-earmark-code-fill',
         title: 'AthennaRC File',
-        handler: () => Router.push('/docs/athennarc-file')
+        handler: () => Router.push('/docs/getting-started/athennarc-file')
       },
       {
         icon: 'gear-wide-connected',
         title: 'Configuration',
-        handler: () => Router.push('/docs/configuration')
+        handler: () => Router.push('/docs/getting-started/configuration')
       },
       {
         icon: 'folder-symlink-fill',
         title: 'Directory Structure',
-        handler: () => Router.push('/docs/directory-structure')
+        handler: () => Router.push('/docs/getting-started/directory-structure')
       }
     ]
 

@@ -337,7 +337,7 @@ export default class Configuration extends Component {
               <Admonition type='warning'>
                 <Paragraph align='justify' size='sm'>
                   The <CodeHighlight>Config.set</CodeHighlight> method does not change the values in the configuration
-                  file, only in runtime. To do that you will need to use the <CodeHighlight href='/docs/configuration#config.rewrite'>Config.rewrite</CodeHighlight> method.
+                  file, only in runtime. To do that you will need to use the <CodeHighlight href='/docs/getting-started/configuration#config.rewrite'>Config.rewrite</CodeHighlight> method.
                 </Paragraph>
               </Admonition>
             </Box>
@@ -384,7 +384,7 @@ export default class Configuration extends Component {
                 <Paragraph align='justify' size='sm'>
                   Just like <CodeHighlight>Config.set</CodeHighlight> method, <CodeHighlight>Config.delete</CodeHighlight> does not change
                   the values in the configuration file, only in runtime. To do that you will need to use
-                  the <CodeHighlight href='/docs/configuration#config.rewrite'>Config.rewrite</CodeHighlight> method.
+                  the <CodeHighlight href='/docs/getting-started/configuration#config.rewrite'>Config.rewrite</CodeHighlight> method.
                 </Paragraph>
               </Admonition>
             </Box>
@@ -574,7 +574,7 @@ export default class Configuration extends Component {
             <Topic size='lg' pb='xs'>Define my own configuration path</Topic>
 
             <Paragraph align='justify'>
-              If you are using the <CodeHighlight href='/docs/installation#laravel-project-structure'>slim</CodeHighlight> project
+              If you are using the <CodeHighlight href='/docs/getting-started/installation#laravel-project-structure'>slim</CodeHighlight> project
               template version or you are building your own project structure you are not going to have
               the <CodeHighlight>config</CodeHighlight> directory in your project root path.
             </Paragraph>
@@ -594,7 +594,7 @@ export default class Configuration extends Component {
 
             <Paragraph align='justify'>
               To do so, you can open the entrypoint of your application where you call <CodeHighlight>Ignite</CodeHighlight> class
-              to bootstrap your application. If you are using <CodeHighlight href='/docs/installation#laravel-project-structure'>slim</CodeHighlight> project
+              to bootstrap your application. If you are using <CodeHighlight href='/docs/getting-started/installation#laravel-project-structure'>slim</CodeHighlight> project
               template version you can find it inside <CodeHighlight>bin/main.ts</CodeHighlight>. Just set the relative or absolute
               path to your <CodeHighlight>config</CodeHighlight> directory in the options of <CodeHighlight>Ignite.load</CodeHighlight> method:
             </Paragraph>
