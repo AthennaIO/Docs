@@ -37,7 +37,7 @@ export default class NodeScriptFile extends Component {
       <Box>
         <Topics topics={this.topics}/>
 
-        <Box mt='md'>
+        <Box mt='lg'>
           <Topic size='xl' pb='xs'>Introduction</Topic>
 
           <Paragraph align='justify'>
