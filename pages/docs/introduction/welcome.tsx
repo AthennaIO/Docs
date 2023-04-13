@@ -34,7 +34,7 @@ export default class Welcome extends Component {
           />
         </Box>
 
-        <Box mt='lg'>
+        <Box mt='md'>
           <Heading as='h2' size='xl'>Introduction</Heading>
 
           <Paragraph align='justify'>
