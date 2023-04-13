@@ -57,7 +57,7 @@ export default class AthennaRcFile extends Component {
                             The responsible of the RC file is configuring the workspace and certain runtime settings
                             to bootstrap your Athenna application properly. Also, when working
                             with <CodeHighlight>json</CodeHighlight> files is very easy to manipulate
-                            the values of it, making it possible to make changes on the file in runtime. Let's see
+                            the values of it, making it possible to make changes on the file in runtime. Let&apos;s see
                             an example where Athenna manipulates your RC file:
                         </Paragraph>
 
