@@ -369,7 +369,7 @@ export default class DirectoryStructure extends Component {
                             </li>
                             <li className='drac-text drac-text-white'>
                                 The <CodeHighlight>destination</CodeHighlight>. The value of this setting is used
-                                by <CodeHighlight>make</CodeHighlight> commands to determined the destination of generated files.
+                                by <CodeHighlight>make</CodeHighlight> commands to determine the destination of generated files.
                             </li>
                         </List>
 
@@ -391,7 +391,7 @@ export default class DirectoryStructure extends Component {
                         } />
 
                         <Paragraph align='justify'>
-                            You can change the destination path of all artisan commands with this approach. Now when executing the <CodeHighlight>./node artisan make:service HelloService</CodeHighlight> command in your terminal,
+                            You can change the destination path of all artisan <CodeHighlight>make</CodeHighlight> commands with this approach. Now when executing the <CodeHighlight>./node artisan make:service HelloService</CodeHighlight> command in your terminal,
                             the <CodeHighlight>HelloService.ts</CodeHighlight> will be saved inside <CodeHighlight>src/services</CodeHighlight> directory.
                         </Paragraph>
                     </Box>
