@@ -34,7 +34,7 @@ export default class Welcome extends Component {
           />
         </Box>
 
-        <Box mt='lg'>
+        <Box mt='md'>
           <Heading as='h2' size='xl'>Introduction</Heading>
 
           <Paragraph align='justify'>
@@ -45,7 +45,7 @@ export default class Welcome extends Component {
           </Paragraph>
         </Box>
 
-        <Box mt='lg'>
+        <Box mt='md'>
           <Heading as='h2' size='xl'>Useful Links</Heading>
           <List variant='unordered' color='white' p='none' mb='sm'>
             <li><Link href='https://github.com/AthennaIO'>Github</Link></li>

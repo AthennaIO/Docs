@@ -35,16 +35,18 @@ export default class DirectoryStructure extends Component {
             <Box>
                 <Topics topics={this.topics}/>
 
-                <Admonition type='important'>
-                    <Paragraph align='justify' size='sm'>
-                        We highly recommend you to use the <CodeHighlight>./node artisan make</CodeHighlight> command
-                        to generate the files of your application. If using this command, it will automatically generate
-                        the file and register it wherever is needed. Take as an example
-                        the <CodeHighlight>./node artisan make:command</CodeHighlight> command. First it will generate
-                        the file and then will register the command inside the <CodeHighlight>commands</CodeHighlight> map
-                        property of <CodeHighlight>.athennarc.json</CodeHighlight> file.
-                    </Paragraph>
-                </Admonition>
+                <Box mt='lg'>
+                    <Admonition type='important'>
+                        <Paragraph align='justify' size='sm'>
+                            We highly recommend you to use the <CodeHighlight>./node artisan make</CodeHighlight> command
+                            to generate the files of your application. If using this command, it will automatically generate
+                            the file and register it wherever is needed. Take as an example
+                            the <CodeHighlight>./node artisan make:command</CodeHighlight> command. First it will generate
+                            the file and then will register the command inside the <CodeHighlight>commands</CodeHighlight> map
+                            property of <CodeHighlight>.athennarc.json</CodeHighlight> file.
+                        </Paragraph>
+                    </Admonition>
+                </Box>
 
                 <Box mt='md'>
                     <Topic size='xl' pb='xs'>Laravel based structure</Topic>

@@ -49,40 +49,40 @@ export default class AthennaRcFile extends Component {
                         called <CodeHighlight>.athennarc.json</CodeHighlight> which is responsible for
                         configuring the workspace and certain runtime settings of your Athenna application.
                     </Paragraph>
-
-                    <Box mt='lg'>
-                        <Topic size='lg' pb='xs'>RC file vs Configurations</Topic>
-
-                        <Paragraph align='justify'>
-                            The responsible of the RC file is configuring the workspace and certain runtime settings
-                            to bootstrap your Athenna application properly. Also, when working
-                            with <CodeHighlight>json</CodeHighlight> files is very easy to manipulate
-                            the values of it, making it possible to make changes on the file in runtime. Let&apos;s see
-                            an example where Athenna manipulates your RC file:
-                        </Paragraph>
-
-                        <CodeBox  language='bash' code={
-                            `./node artisan make:service UserService`
-                        } />
-
-                        <Paragraph align='justify'>
-                            Athenna will create the service file in your project but also register
-                            it inside of your <CodeHighlight>.athennarc.json</CodeHighlight> file:
-                        </Paragraph>
-
-                        <CodeBox language='json' code={
-                            '{\n' +
-                            '  ...\n' +
-                            '  "services": [\n' +
-                            '    "#app/Services/UserService"\n' +
-                            '  ]\n' +
-                            '  ...\n' +
-                            '}'
-                        } />
-                    </Box>
                 </Box>
 
-                <Box mt='lg'>
+                <Box mt='md'>
+                    <Topic size='xl' pb='xs'>RC file vs Configurations</Topic>
+
+                    <Paragraph align='justify'>
+                        The responsible of the RC file is configuring the workspace and certain runtime settings
+                        to bootstrap your Athenna application properly. Also, when working
+                        with <CodeHighlight>json</CodeHighlight> files is very easy to manipulate
+                        the values of it, making it possible to make changes on the file in runtime. Let&apos;s see
+                        an example where Athenna manipulates your RC file:
+                    </Paragraph>
+
+                    <CodeBox  language='bash' code={
+                        `./node artisan make:service UserService`
+                    } />
+
+                    <Paragraph align='justify'>
+                        Athenna will create the service file in your project but also register
+                        it inside of your <CodeHighlight>.athennarc.json</CodeHighlight> file:
+                    </Paragraph>
+
+                    <CodeBox language='json' code={
+                        '{\n' +
+                        '  ...\n' +
+                        '  "services": [\n' +
+                        '    "#app/Services/UserService"\n' +
+                        '  ]\n' +
+                        '  ...\n' +
+                        '}'
+                    } />
+                </Box>
+
+                <Box mt='md'>
                     <Topic size='xl' pb='xs'>The <CodeHighlight>preloads</CodeHighlight> property</Topic>
 
                     <Paragraph align='justify'>
@@ -109,7 +109,7 @@ export default class AthennaRcFile extends Component {
                     } />
                 </Box>
 
-                <Box mt='lg'>
+                <Box mt='md'>
                     <Topic size='xl' pb='xs'>The <CodeHighlight>providers</CodeHighlight> property</Topic>
 
                     <Paragraph align='justify'>
@@ -130,7 +130,7 @@ export default class AthennaRcFile extends Component {
                     } />
                 </Box>
 
-                <Box mt='lg'>
+                <Box mt='md'>
                     <Topic size='xl' pb='xs'>The <CodeHighlight>services</CodeHighlight> property</Topic>
 
                     <Paragraph>
@@ -153,27 +153,27 @@ export default class AthennaRcFile extends Component {
                     } />
                 </Box>
 
-                <Box mt='lg'>
+                <Box mt='md'>
                     <Topic size='xl' pb='xs'>The <CodeHighlight>commands</CodeHighlight> property</Topic>
                 </Box>
 
-                <Box mt='lg'>
+                <Box mt='md'>
                     <Topic size='xl' pb='xs'>The <CodeHighlight>templates</CodeHighlight> property</Topic>
                 </Box>
 
-                <Box mt='lg'>
+                <Box mt='md'>
                     <Topic size='xl' pb='xs'>The <CodeHighlight>controllers</CodeHighlight> property</Topic>
                 </Box>
 
-                <Box mt='lg'>
+                <Box mt='md'>
                     <Topic size='xl' pb='xs'>The <CodeHighlight>middlewares</CodeHighlight> property</Topic>
                 </Box>
 
-                <Box mt='lg'>
+                <Box mt='md'>
                     <Topic size='xl' pb='xs'>The <CodeHighlight>interceptors</CodeHighlight> property</Topic>
                 </Box>
 
-                <Box mt='lg'>
+                <Box mt='md'>
                     <Topic size='xl' pb='xs'>The <CodeHighlight>terminators</CodeHighlight> property</Topic>
                 </Box>
             </Box>
