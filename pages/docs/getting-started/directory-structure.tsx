@@ -189,14 +189,14 @@ export default class DirectoryStructure extends Component {
                     <List variant='unordered' color='purple'>
                         <li className='drac-text drac-text-white'>
                             The <CodeHighlight>bin</CodeHighlight> directory is the same
-                            as <CodeHighlight href='/docs/directory-structure#the-bootstrap-directory'>boostrap</CodeHighlight>.
+                            as <CodeHighlight href='/docs/getting-started/directory-structure#the-bootstrap-directory'>boostrap</CodeHighlight>.
                         </li>
                         <li className='drac-text drac-text-white'>
                             The <CodeHighlight>src</CodeHighlight> directory is used to store all the source code files of your applications.
                         </li>
                         <li className='drac-text drac-text-white'>
                             The <CodeHighlight>tests</CodeHighlight> directory is the same
-                            as <CodeHighlight href='/docs/directory-structure#the-tests-directory'>tests</CodeHighlight>.
+                            as <CodeHighlight href='/docs/getting-started/directory-structure#the-tests-directory'>tests</CodeHighlight>.
                         </li>
                     </List>
                 </Box>
@@ -217,7 +217,7 @@ export default class DirectoryStructure extends Component {
                         <li className='drac-text drac-text-white'>
                             The <CodeHighlight>bootstrap/artisan.ts</CodeHighlight> file is the entry point of
                             the <CodeHighlight>./node artisan</CodeHighlight> script. You can check how this works
-                            in the <Link href='/docs/node-script-file'>node script file documentation section</Link>.
+                            in the <Link href='/docs/getting-started/node-script-file'>node script file documentation section</Link>.
                         </li>
                         <li className='drac-text drac-text-white'>
                             The <CodeHighlight>bootstrap/repl.ts</CodeHighlight> file is the entry point of

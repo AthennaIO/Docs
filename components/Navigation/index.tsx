@@ -57,7 +57,7 @@ export default class Navigation extends Component<NavigationProps> {
 
           <List variant="none">
             {item.pages.map(page => {
-              const path = `/docs/${page.toLowerCase().replace(/ /g, '-')}`
+              const path = `/docs/${item.title.toLowerCase().replace(/ /g, '-')}/${page.toLowerCase().replace(/ /g, '-')}`
 
               if (item.title.includes('Patterns')) {
                 return (
