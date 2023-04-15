@@ -7,6 +7,12 @@
   right: 80px;
 }
 
+@media (max-width: 1440px){
+    .docsOverview{
+        max-width: 30vh;
+    }
+}
+
 @media (max-width: 76rem){
   .docsOverview{
       width: 100%;
