@@ -384,7 +384,7 @@ export default class DirectoryStructure extends Component {
                             '    "make:service": {\n' +
                             '      "path": "@athenna/core/commands/MakeServiceCommand",\n' +
                             '      "destination": "./src/services" 👈\n' +
-                            '    },\n' +
+                            '    }\n' +
                             '  }\n' +
                             '  ...\n' +
                             '}'
