@@ -38,7 +38,7 @@
   background: var(--purple-transparent);
 }
 
-@media (max-width: 76rem) {
+@media (max-width: 84rem) {
   .nav {
     position: relative;
     height: auto;
