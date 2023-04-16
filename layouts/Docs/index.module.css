@@ -41,7 +41,7 @@
   margin: 0 -30px;
 }
 
-@media (max-width: 76rem) {
+@media (max-width: 84rem) {
   .container {
     display: block;
     min-height: auto;

@@ -40,7 +40,7 @@
   fill: var(--purple);
 }
 
-@media (max-width: 76rem) {
+@media (max-width: 84rem) {
   .menu {
     display: block;
   }

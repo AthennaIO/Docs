@@ -7,14 +7,27 @@
   right: 80px;
 }
 
-@media (max-width: 1440px){
-    .docsOverview{
+@media (max-width: 1700px) {
+    .docsOverview {
         max-width: 30vh;
     }
 }
 
-@media (max-width: 76rem){
-  .docsOverview{
+@media (max-width: 1440px) {
+    .docsOverview {
+        max-width: 30vh;
+    }
+}
+
+@media (max-width: 1420px) {
+    .docsOverview {
+        max-width: 18vh;
+    }
+}
+
+@media (max-width: 91rem) {
+  .docsOverview {
+      max-width: none;
       width: 100%;
       margin: 3.75rem 0 0 0;
       padding: 0;
