@@ -31,6 +31,7 @@ export default class AthennaRcFile extends Component {
         { title: 'The services property' },
         { title: 'The commands property' },
         { title: 'The templates property' },
+        { title: 'The directories property' },
         { title: 'The controllers property' },
         { title: 'The middlewares property' },
         { title: 'The namedMiddlewares property' },
@@ -74,11 +75,9 @@ export default class AthennaRcFile extends Component {
 
                     <CodeBox language='json' code={
                         '{\n' +
-                        '  ...\n' +
                         '  "services": [\n' +
                         '    "#app/Services/UserService"\n' +
                         '  ]\n' +
-                        '  ...\n' +
                         '}'
                     } />
                 </Box>
@@ -87,7 +86,7 @@ export default class AthennaRcFile extends Component {
                     <Topic size='xl' pb='xs'>The <CodeHighlight>preloads</CodeHighlight> property</Topic>
 
                     <Paragraph align='justify'>
-                        An array of files that will be loaded when your application is bootstraping. The
+                        An array of files that will be loaded when your application is bootstrapping. The
                         files are loaded after booting the service providers. You can do anything you want
                         in preload files. Check the example bellow:
                     </Paragraph>
@@ -101,11 +100,9 @@ export default class AthennaRcFile extends Component {
 
                     <CodeBox language='json' code={
                         '{\n' +
-                        '  ...\n' +
                         '  "preloads": [\n' +
                         '    "./bootstrap/preloads/say-hello.js"\n' +
                         '  ]\n' +
-                        '  ...\n' +
                         '}'
                     } />
                 </Box>
@@ -119,13 +116,11 @@ export default class AthennaRcFile extends Component {
 
                     <CodeBox language='json' code={
                         '{\n' +
-                        '  ...\n' +
                         '  "providers": [\n' +
                         '    "@athenna/core/providers/CoreProvider",\n' +
                         '    "@athenna/http/providers/HttpRouteProvider",\n' +
                         '    "@athenna/http/providers/HttpServerProvider"\n' +
                         '  ]\n' +
-                        '  ...\n' +
                         '}'
                     } />
 
@@ -150,12 +145,10 @@ export default class AthennaRcFile extends Component {
 
                     <CodeBox language='json' code={
                         '{\n' +
-                        '  ...\n' +
                         '  "services": [\n' +
                         '    "#app/Services/AppService",\n' +
                         '    "./app/Services/OtherService.js"\n' +
                         '  ]\n' +
-                        '  ...\n' +
                         '}'
                     } />
                 </Box>
@@ -166,12 +159,11 @@ export default class AthennaRcFile extends Component {
                     <Paragraph align='justify'>
                         An object that is responsible to register your application commands and their respective settings. The
                         key of the commands object needs to be exactly your command signature without any arguments, flags or spaces.
-                        Also, the value of it could be the command path or an object with the &quotpath&quot key inside:
+                        Also, the value of it could be the command path or an object with the &quot;path&quot; key inside:
                     </Paragraph>
 
                     <CodeBox language='json' code={
                         '{\n' +
-                        '  ...\n' +
                         '  "commands": {\n' +
                         '    "make:exception": "@athenna/core/commands/MakeExceptionCommand",\n' +
                         '    "make:facade": {\n' +
@@ -182,7 +174,6 @@ export default class AthennaRcFile extends Component {
                         '      "environments": ["console"]\n' +
                         '    }\n' +
                         '  }\n' +
-                        '  ...\n' +
                         '}'
                     } />
 
@@ -205,14 +196,75 @@ export default class AthennaRcFile extends Component {
 
                     <CodeBox language='json' code={
                         '{\n' +
-                        '  ...\n' +
                         '  "templates": {\n' +
                         '    "exception": "node_modules/@athenna/core/templates/exception.edge",\n'+
                         '    "facade": "node_modules/@athenna/core/templates/facade.edge",\n'+
                         '  }\n' +
-                        '  ...\n' +
                         '}'
                     } />
+                </Box>
+
+                <Box mt='md'>
+                    <Topic size='xl' pb='xs'>The <CodeHighlight>directories</CodeHighlight> property</Topic>
+
+                    <Paragraph align='justify'>
+                        Map your application directories with their respective base path. The directories mapped in this object
+                        will be used by your <CodeHighlight href='/docs/digging-deeper/helpers#path'>Path</CodeHighlight> class to resolve the paths of your application:
+                    </Paragraph>
+
+                    <CodeBox language='json' code={
+                        '{\n' +
+                        '  "directories": {\n' +
+                        '    "bin": "bin",\n' +
+                        '    "src": "src",\n' +
+                        '    "app": "app",\n' +
+                        '    "services": "app/Services",\n' +
+                        '    "exceptions": "app/Exceptions",\n' +
+                        '    "repositories": "app/Repositories",\n' +
+                        '    "console": "app/Console",\n' +
+                        '    "commands": "app/Console/Commands",\n' +
+                        '    "http": "app/Http",\n' +
+                        '    "controllers": "app/Http/Controllers",\n' +
+                        '    "middlewares": "app/Http/Middlewares",\n' +
+                        '    "interceptors": "app/Http/Interceptors",\n' +
+                        '    "terminators": "app/Http/Terminators",\n' +
+                        '    "bootstrap": "bootstrap",\n' +
+                        '    "config": "config",\n' +
+                        '    "database": "database",\n' +
+                        '    "seeders": "database/seeders",\n' +
+                        '    "migrations": "database/migrations",\n' +
+                        '    "lang": "lang",\n' +
+                        '    "resources": "resources",\n' +
+                        '    "views": "resources/views",\n' +
+                        '    "locales": "resources/locales",\n' +
+                        '    "nodeModules": "node_modules",\n' +
+                        '    "nodeModulesBin": "node_modules/.bin",\n' +
+                        '    "providers": "providers",\n' +
+                        '    "facades": "providers/facades",\n' +
+                        '    "public": "public",\n' +
+                        '    "static": "public/static",\n' +
+                        '    "assets": "public/assets",\n' +
+                        '    "routes": "routes",\n' +
+                        '    "storage": "storage",\n' +
+                        '    "logs": "storage/logs",\n' +
+                        '    "tests": "tests",\n' +
+                        '    "stubs": "tests/Stubs"\n' +
+                        '  }\n' +
+                        '}'
+                    } />
+
+                    <Paragraph align='justify'>
+                        The paths above are the default ones used by Athenna to resolve your application paths. 
+                        You can change one of then or many if you want, your directories defined 
+                        in <CodeHighlight>directories</CodeHighlight> property will always me merged with the defaults.
+                    </Paragraph>
+
+                    <Paragraph align='justify'>
+                        Athenna always rely in <CodeHighlight href='/docs/digging-deeper/helpers#path'>Path</CodeHighlight> class 
+                        methods to find files and directories that are used internally by the framework, like configurations file,
+                        route files, entry points and many others. Changing the <CodeHighlight>directories</CodeHighlight> property
+                        could be very useful when you are <Link href='/docs/getting-started/directory-structure#do-your-own-structure'>building your own project structure</Link>.
+                    </Paragraph>
                 </Box>
 
                 <Box mt='md'>
@@ -225,12 +277,10 @@ export default class AthennaRcFile extends Component {
 
                     <CodeBox language='json' code={
                         '{\n' +
-                        '  ...\n' +
                         '  "controllers": [\n' +
                         '    "#app/Http/Controllers/AppController",\n' +
                         '    "./app/Http/Controllers/OtherController.js"\n' +
                         '  ]\n' +
-                        '  ...\n' +
                         '}'
                     } />
 
@@ -252,12 +302,10 @@ export default class AthennaRcFile extends Component {
 
                     <CodeBox language='json' code={
                         '{\n' +
-                        '  ...\n' +
                         '  "middlewares": [\n' +
                         '    "#app/Http/Middlewares/AppMiddleware",\n' +
                         '    "./app/Http/Interceptors/AppInterceptor.js"\n' +
                         '  ]\n' +
-                        '  ...\n' +
                         '}'
                     } />
 
@@ -281,12 +329,10 @@ export default class AthennaRcFile extends Component {
 
                     <CodeBox language='json' code={
                         '{\n' +
-                        '  ...\n' +
                         '  "namedMiddlewares": {\n' +
                         '    "app": "#app/Http/Middlewares/AppMiddleware",\n' +
                         '    "intercept": "./app/Http/Interceptors/AppInterceptor.js"\n' +
                         '  }\n' +
-                        '  ...\n' +
                         '}'
                     } />
                 </Box>
@@ -298,17 +344,15 @@ export default class AthennaRcFile extends Component {
                         An array with the global middlewares of your application. Global middlewares could be configured using
                         the <CodeHighlight>@Middleware</CodeHighlight> annotation, but if you are not using TypeScript in your
                         application, you can use this object to map your named middlewares. Global middlewares are executed
-                        everytime in any request of your application:
+                        every time in any request of your application:
                     </Paragraph>
 
                     <CodeBox language='json' code={
                         '{\n' +
-                        '  ...\n' +
                         '  "globalMiddlewares": [\n' +
                         '    "#app/Http/Middlewares/AppMiddleware",\n' +
                         '    "./app/Http/Interceptors/AppInterceptor.js"\n' +
                         '  ]\n' +
-                        '  ...\n' +
                         '}'
                     } />
                 </Box>

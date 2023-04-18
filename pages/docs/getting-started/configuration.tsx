@@ -1,4 +1,5 @@
 import Docs from '#layouts/Docs'
+import Link from '#components/Link'
 import Topic from '#components/Topic'
 import Topics from '#components/Topics'
 import CodeBox from '#components/CodeBox'
@@ -119,7 +120,7 @@ export default class Configuration extends Component {
             <CodeBox language='bash' code={`NODE_ENV=local ./node artisan serve`}/>
 
             <Paragraph align='justify'>
-              Let&apos;s check some pratical examples. This is the default <CodeHighlight>.env</CodeHighlight> file that comes in Athenna project:
+              Let&apos;s check some practical examples. This is the default <CodeHighlight>.env</CodeHighlight> file that comes in Athenna project:
             </Paragraph>
 
             <CodeBox language='markdown' code={
@@ -154,7 +155,7 @@ export default class Configuration extends Component {
               <CodeBox language='typescript' code={
                   "import { Env } from '@athenna/config'\n\n" +
 
-                  "const defautValue = 'Athenna'\n\n" +
+                  "const defaultValue = 'Athenna'\n\n" +
 
                   "const appName = Env('APP_NAME', defaultValue)"
               } />
@@ -395,8 +396,8 @@ export default class Configuration extends Component {
               </Topic>
 
               <Paragraph align='justify'>
-                The <CodeHighlight>rewrite</CodeHighlight> method is very usefull for rewriting the configuration file. Very
-                usefull when you want to programmatically modify the configuration file source code. This method uses
+                The <CodeHighlight>rewrite</CodeHighlight> method is very useful for rewriting the configuration file. Very
+                useful when you want to programmatically modify the configuration file source code. This method uses
                 the <CodeHighlight href='https://github.com/unjs/magicast'>magicast</CodeHighlight> library under the hood to do that:
               </Paragraph>
 
@@ -575,7 +576,7 @@ export default class Configuration extends Component {
 
             <Paragraph align='justify'>
               If you are using the <CodeHighlight href='/docs/getting-started/installation#laravel-project-structure'>slim</CodeHighlight> project
-              template version or you are building your own project structure you are not going to have
+              structure or you are building your own project structure you are not going to have
               the <CodeHighlight>config</CodeHighlight> directory in your project root path.
             </Paragraph>
 
@@ -585,29 +586,79 @@ export default class Configuration extends Component {
 
             <OrderedList color='purple'>
               <li className='drac-text drac-text-white'>
-                Create the <CodeHighlight>config</CodeHighlight> directory in your project root path.
+                If you are using the <CodeHighlight href='/docs/getting-started/installation#laravel-project-structure'>slim</CodeHighlight> project 
+                structure you can create the <CodeHighlight>config</CodeHighlight> directory inside of your <CodeHighlight>src</CodeHighlight> folder.
               </li>
               <li className='drac-text drac-text-white'>
                 Specify to Athenna a different path to your <CodeHighlight>config</CodeHighlight> directory.
               </li>
             </OrderedList>
 
+            <Admonition type='note'>
+                <Paragraph align='justify' size='sm'>
+                  The <CodeHighlight href='/docs/getting-started/installation#laravel-project-structure'>slim</CodeHighlight> project 
+                  structure is using the second option above to specify to Athenna that the configurations files will be inside
+                  of <CodeHighlight>src/config</CodeHighlight> directory. Check the examples above how this implementation works.
+                </Paragraph>
+            </Admonition>
+
             <Paragraph align='justify'>
-              To do so, you can open the entrypoint of your application where you call <CodeHighlight>Ignite</CodeHighlight> class
-              to bootstrap your application. If you are using <CodeHighlight href='/docs/getting-started/installation#laravel-project-structure'>slim</CodeHighlight> project
-              template version you can find it inside <CodeHighlight>bin/main.ts</CodeHighlight>. Just set the relative or absolute
-              path to your <CodeHighlight>config</CodeHighlight> directory in the options of <CodeHighlight>Ignite.load</CodeHighlight> method:
+              To specify your application directories to Athenna you can open the <CodeHighlight>.athennarc.json</CodeHighlight> file and
+              add the <CodeHighlight>directories</CodeHighlight> property to it. If you are 
+              using <CodeHighlight href='/docs/getting-started/installation#laravel-project-structure'>slim</CodeHighlight> project
+              structure you will already have this property defined. 
+            </Paragraph>
+
+            <Paragraph align='justify'>
+              The <CodeHighlight>directories</CodeHighlight> property is an object that maps the directories 
+              base path that the <CodeHighlight href='/docs/digging-deeper/helpers#path'>Path</CodeHighlight> class 
+              will use to resolve your application paths:
             </Paragraph>
 
             <CodeBox language='typescript' code={
-              `import { Ignite } from '@athenna/core'\n\n` +
+              `import { Path } from '@athenna/common'\n\n` +
 
-              `const ignite = await new Ignite().load(import.meta.url, {\n` +
-              `  configPath: './src/config'\n` +
-              `})\n\n` +
-
-              `...`
+              `console.log(Path.config()) // /path/to/your/project/config`
             } />
+
+            <Paragraph align='justify'>
+              All the <CodeHighlight>directories</CodeHighlight> key names follows 
+              the <CodeHighlight href='/docs/digging-deeper/helpers#path'>Path</CodeHighlight> class 
+              methods names. This means that if you want to change 
+              what is returned by the <CodeHighlight>Path.config</CodeHighlight> directory, you will need to add 
+              the <CodeHighlight>config</CodeHighlight> key to the <CodeHighlight>directories</CodeHighlight> object:
+            </Paragraph>
+
+            <CodeBox language='json' code={
+              `{\n` +
+              `  "directories": {\n` +
+              `    "config": "src/config"\n` +
+              `  }\n` +
+              `}`
+            } />
+
+            <Paragraph align='justify'>
+              Now when calling the <CodeHighlight>Path.config</CodeHighlight> method, it will return a different path:
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+              `import { Path } from '@athenna/common'\n\n` +
+
+              `console.log(Path.config()) // /path/to/your/project/src/config 👈`
+            } />
+
+            <Paragraph align='justify'>
+              Athenna always rely in <CodeHighlight href='/docs/digging-deeper/helpers#path'>Path</CodeHighlight> class 
+              methods to find files and directories that are used internally by the framework, like configurations file,
+              route files, entry points and many others. 
+            </Paragraph>
+
+            <Paragraph align='justify'>
+              Check <Link href='/docs/getting-started/athennarc-file#the-directories-property'>the <b>&quot;directories property&quot;</b> documentation section</Link> for 
+              more information about the <CodeHighlight>directories</CodeHighlight> property. And 
+              check <Link href='/docs/getting-started/directory-structure#do-your-own-structure'>the <b>&quot;do your own structure&quot;</b> documentation section</Link> for
+              more information about how to create your own project structure.
+            </Paragraph>
           </Box>
 
           <Box mt='md'>
