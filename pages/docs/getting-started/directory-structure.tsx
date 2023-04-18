@@ -7,7 +7,7 @@ import Admonition from '#components/Admonition'
 import CodeHighlight from '#components/CodeHighlight'
 
 import { Component } from 'react'
-import { Box, List, Paragraph } from 'dracula-ui'
+import { Box, List, Paragraph, Table } from 'dracula-ui'
 
 export async function getStaticProps() {
     return {
@@ -191,7 +191,7 @@ export default class DirectoryStructure extends Component {
                     <List variant='unordered' color='purple'>
                         <li className='drac-text drac-text-white'>
                             The <CodeHighlight>bin</CodeHighlight> directory is the same
-                            as <CodeHighlight href='/docs/getting-started/directory-structure#the-bootstrap-directory'>boostrap</CodeHighlight>.
+                            as <CodeHighlight href='/docs/getting-started/directory-structure#the-bootstrap-directory'>bootstrap</CodeHighlight>.
                         </li>
                         <li className='drac-text drac-text-white'>
                             The <CodeHighlight>src</CodeHighlight> directory is used to store all the source code files of your applications.
@@ -213,7 +213,7 @@ export default class DirectoryStructure extends Component {
                     <List variant='unordered' color='purple'>
                         <li className='drac-text drac-text-white'>
                             The <CodeHighlight>bootstrap/main.ts</CodeHighlight> file is the entry point of
-                            the <CodeHighlight>./node artisan serve</CodeHighlight> command. Everytime that
+                            the <CodeHighlight>./node artisan serve</CodeHighlight> command. Every time that
                             you run this command, Athenna will use this file to run your application.
                         </li>
                         <li className='drac-text drac-text-white'>
@@ -223,13 +223,13 @@ export default class DirectoryStructure extends Component {
                         </li>
                         <li className='drac-text drac-text-white'>
                             The <CodeHighlight>bootstrap/repl.ts</CodeHighlight> file is the entry point of
-                            the <CodeHighlight>./node artisan repl</CodeHighlight> command. Everytime that
+                            the <CodeHighlight>./node artisan repl</CodeHighlight> command. Every time that
                             you run this command, Athenna will use this file to run
                             your <Link href='https://www.educative.io/answers/what-is-the-repl-session-in-nodejs'>REPL session</Link>.
                         </li>
                         <li className='drac-text drac-text-white'>
                             The <CodeHighlight>bootstrap/test.ts</CodeHighlight> file is the entry point of
-                            the <CodeHighlight>./node artisan test</CodeHighlight> command. Everytime that
+                            the <CodeHighlight>./node artisan test</CodeHighlight> command. Every time that
                             you run this command, Athenna will use this file to run your tests.
                         </li>
                     </List>
@@ -242,65 +242,58 @@ export default class DirectoryStructure extends Component {
 
                     <Paragraph align='justify'>
                         With that in mind, Athenna was built in a fully configurable way. You can create your files and folders anywhere, even the
-                        one that are crucial to keep in certain places. Let&apos;s refactor our project to instead of using <CodeHighlight>bootstrap</CodeHighlight> folder
+                        one that are crucial to keep in certain places. There are to ways to refactor our project to instead of using <CodeHighlight>bootstrap</CodeHighlight> folder
                         to save entry point files, start using <CodeHighlight>bin</CodeHighlight> folder:
                     </Paragraph>
+
+                    <Topic size='md'>First way changing directories</Topic>
 
                     <Paragraph align='justify'>
                         Let&apos;s start
                         with <CodeHighlight>test.ts</CodeHighlight> <CodeHighlight>repl.ts</CodeHighlight> and <CodeHighlight>main.ts</CodeHighlight> files.
-                        In your <CodeHighlight>.athennarc.json</CodeHighlight> file, you have
-                        the <CodeHighlight>commands</CodeHighlight> key where you can find the test, repl and serve commands.
-                        All you need to do is to add the <CodeHighlight>entrypoint</CodeHighlight> key to
-                        your commands object with the path to your new file:
+                        In your <CodeHighlight>.athennarc.json</CodeHighlight> file, we can add the <CodeHighlight>directories</CodeHighlight> property and
+                        map our <CodeHighlight>bootstrap</CodeHighlight> folder to <CodeHighlight>bin</CodeHighlight> folder:
                     </Paragraph>
 
                     <CodeBox language='json' code={
                         '{\n' +
-                        '  ...\n' +
+                        '  "directories": {\n' +
+                        '    "bootstrap": "bin"\n' +
+                        '  }\n' +
+                        '}'
+                    } />
+
+                    <Paragraph align='justify'>
+                        Now, when calling <CodeHighlight>Path.bootstrap</CodeHighlight> method, the value returned will be from the <CodeHighlight>bin</CodeHighlight> folder:
+                    </Paragraph>
+
+                    <CodeBox language='typescript' code={
+                        `import { Path } from '@athenna/common'\n\n` +
+                        
+                        `console.log(Path.bootstrap()) // /path/to/your/project/bin`
+                    } />
+
+                    <Paragraph align='justify'>
+                        Athenna relies on <CodeHighlight href='/docs/digging-deeper/helpers#path'>Path</CodeHighlight> class to resolve the paths
+                        of entry point files like <CodeHighlight>bootstrap/main.ts</CodeHighlight> and <CodeHighlight>bootstrap/test.ts</CodeHighlight>.
+                        Changing the return value of <CodeHighlight>Path.bootstrap</CodeHighlight> method to <CodeHighlight>bin</CodeHighlight> folder 
+                        means that Athenna will lookup for entry point files
+                        in <CodeHighlight>bin</CodeHighlight> folder when running commands like <CodeHighlight>serve</CodeHighlight> and <CodeHighlight>test</CodeHighlight>.
+                    </Paragraph>
+
+                    <Topic size='md'>Second way changing commands</Topic>
+
+                    <Paragraph align='justify'>
+                        You could also change how Athenna resolves the paths of entry point files by adding 
+                        the <CodeHighlight>entrypoint</CodeHighlight> property in commands object of your <CodeHighlight>.athennarc.json</CodeHighlight> file:
+                    </Paragraph>
+
+                    <CodeBox language='json' code={
+                        '{\n' +
                         '  "commands": {\n' +
                         '    "test": {\n' +
                         '      "path": "@athenna/core/commands/TestCommand",\n' +
                         '      "entrypoint": "./bin/test.js", 👈\n' +
-                        '      "stayAlive": true\n' +
-                        '    },\n' +
-                        '    "repl": {\n' +
-                        '      "path": "@athenna/core/commands/ReplCommand",\n' +
-                        '      "entrypoint": "./bin/repl.js", 👈\n' +
-                        '      "stayAlive": true\n' +
-                        '    },\n' +
-                        '    "serve": {\n' +
-                        '      "path": "@athenna/core/commands/ServeCommand",\n' +
-                        '      "entrypoint": "./bin/main.js", 👈\n' +
-                        '      "stayAlive": true\n' +
-                        '    }\n' +
-                        '  }\n' +
-                        '  ...\n' +
-                        '}'
-                    } />
-
-                    <Admonition type='caution'>
-                        <Paragraph align='justify' size='sm'>
-                            When setting a relative path for some module in your <CodeHighlight>.athennarc.json</CodeHighlight> file,
-                            always use <CodeHighlight>.js</CodeHighlight> extension, even if your file ends
-                            with <CodeHighlight>.ts</CodeHighlight> extension. If you use <CodeHighlight>.ts</CodeHighlight> extension,
-                            your compiled code will not work.
-                        </Paragraph>
-                    </Admonition>
-
-                    <Paragraph align='justify'>
-                        You can also use absolute paths, relative paths
-                        and <Link href='https://nodejs.org/api/packages.html#subpath-imports'>Node.js import aliases</Link>,
-                        but we highly recommend using the Node.js import aliases instead:
-                    </Paragraph>
-
-                    <CodeBox language='json' code={
-                        '{\n' +
-                        '  ...\n' +
-                        '  "commands": {\n' +
-                        '    "test": {\n' +
-                        '      "path": "@athenna/core/commands/TestCommand",\n' +
-                        '      "entrypoint": "#bin/test", 👈\n' +
                         '      "stayAlive": true\n' +
                         '    },\n' +
                         '    "repl": {\n' +
@@ -310,13 +303,27 @@ export default class DirectoryStructure extends Component {
                         '    },\n' +
                         '    "serve": {\n' +
                         '      "path": "@athenna/core/commands/ServeCommand",\n' +
-                        '      "entrypoint": "#bin/main", 👈\n' +
+                        '      "entrypoint": "/path/to/your/project/bin/main.js", 👈\n' +
                         '      "stayAlive": true\n' +
                         '    }\n' +
                         '  }\n' +
-                        '  ...\n' +
                         '}'
                     } />
+
+                    <Admonition type='caution'>
+                        <Paragraph align='justify' size='sm'>
+                            When setting a relative path or absolute path for some module in your <CodeHighlight>.athennarc.json</CodeHighlight> file,
+                            always use <CodeHighlight>.js</CodeHighlight> extension, even if your file ends
+                            with <CodeHighlight>.ts</CodeHighlight> extension. If you use <CodeHighlight>.ts</CodeHighlight> extension,
+                            your compiled code will not work.
+                        </Paragraph>
+
+                        <Paragraph align='justify' size='sm'>
+                            You can also use absolute paths, relative paths
+                            and <Link href='https://nodejs.org/api/packages.html#subpath-imports'>Node.js import aliases</Link>,
+                            but we highly recommend using the Node.js import aliases instead:
+                        </Paragraph>
+                    </Admonition>
 
                     <Paragraph align='justify'>
                         To change <CodeHighlight>artisan.ts</CodeHighlight> file we can simple change the <CodeHighlight>./node</CodeHighlight> script:
@@ -343,8 +350,9 @@ export default class DirectoryStructure extends Component {
                         <Topic size='lg' pb='xs'>Changing make commands directory</Topic>
 
                         <Paragraph align='justify'>
-                            All of the <CodeHighlight>./node artisan make ...</CodeHighlight> commands follows the Laravel project
-                            structure to save the files generated in some determined path. Check the example:
+                            All of the <CodeHighlight>./node artisan make ...</CodeHighlight> commands also follows 
+                            the <CodeHighlight href='/docs/digging-deeper/helpers#path'>Path</CodeHighlight> class 
+                            to save the files generated in some determined path. Check the example:
                         </Paragraph>
 
                         <CodeBox language='bash' code={
@@ -354,13 +362,65 @@ export default class DirectoryStructure extends Component {
                         <Paragraph align='justify'>
                             This command will generate the <CodeHighlight>HelloService.ts</CodeHighlight> file
                             inside <CodeHighlight>app/Services</CodeHighlight> directory when using Laravel project structure. If you
-                            are using the slim structure, it will be saved inside <CodeHighlight>src/services</CodeHighlight> directory.
+                            are using the slim structure, it will be saved inside <CodeHighlight>src/services</CodeHighlight> directory 
+                            because the value of <CodeHighlight>directories.services</CodeHighlight> in <CodeHighlight>.athennarc.json</CodeHighlight> file 
+                            is mapped to <CodeHighlight>src/services</CodeHighlight>.
+                        </Paragraph>
+
+                        <Topic size='md'>First way changing directories</Topic>
+
+                        <Paragraph align='justify'>
+                            So, following the same implementation of slim structure, to change the path of generated service files,
+                            let&apos;s add the value of <CodeHighlight>directories.services</CodeHighlight> in <CodeHighlight>.athennarc.json</CodeHighlight> file:
+                        </Paragraph>
+
+                        <CodeBox language='json' code={
+                            '{\n' +
+                            '  "directories": {\n' +
+                            '    "services": "src/services" 👈\n' +
+                            '  }\n' +
+                            '}'
+                        } />
+
+                        <Paragraph align='justify'>
+                            Now when executing 
+                            the <CodeHighlight>./node artisan make:service HelloService</CodeHighlight> command 
+                            in your terminal, the <CodeHighlight>HelloService.ts</CodeHighlight> will be saved 
+                            inside <CodeHighlight>src/services</CodeHighlight> directory.
                         </Paragraph>
 
                         <Paragraph align='justify'>
-                            To change this path you can simple transform the value of the command that you desire to change to an object in
-                            your <CodeHighlight>.athennarc.json</CodeHighlight> inside the <CodeHighlight>commands</CodeHighlight> object.
-                            You will need to add two new keys:
+                            In the example bellow you can check the default destination directories of all <CodeHighlight>make</CodeHighlight> commands:
+                        </Paragraph>
+                        
+                        <CodeBox language='json' code={
+                            '{\n' +
+                            '  "directories": {\n' +
+                            '    "exceptions": "app/Exceptions",          make:exception\n' +
+                            '    "facades": "providers/facades",          make:facade\n' +
+                            '    "providers": "providers",                make:provider\n' +
+                            '    "services": "app/Services",              make:service\n' +
+                            '    "tests": "tests",                        make:test\n' +
+                            '    "commands": "app/Console/Commands",      make:command\n' +
+                            '    "controllers": "app/Http/Controllers",   make:controller\n' +
+                            '    "middlewares": "app/Http/Middlewares",   make:middleware\n' +
+                            '    "interceptors": "app/Http/Interceptors", make:interceptor\n' +
+                            '    "terminators": "app/Http/Terminators"    make:terminator\n' +
+                            '}'
+                        } />
+
+                        <Paragraph>
+                            Check <Link href='/docs/getting-started/athennarc-file#the-directories-property'>the directories property documentation section</Link> to see all
+                            the available directories that you can change in your <CodeHighlight>directories</CodeHighlight> property.
+                        </Paragraph>
+
+                        <Topic size='md'>Second way changing commands</Topic>
+
+                        <Paragraph align='justify'>
+                            You can also change the destination folder of files generated by make 
+                            commands by transforming the value of the command that you desire to change 
+                            to an object in your <CodeHighlight>.athennarc.json</CodeHighlight> inside 
+                            the <CodeHighlight>commands</CodeHighlight> object. You will need to add two new keys:
                         </Paragraph>
 
                         <List variant='unordered' color='purple'>
@@ -379,14 +439,12 @@ export default class DirectoryStructure extends Component {
 
                         <CodeBox language='json' code={
                             '{\n' +
-                            '  ...\n' +
                             '  "commands": {\n' +
                             '    "make:service": {\n' +
                             '      "path": "@athenna/core/commands/MakeServiceCommand",\n' +
                             '      "destination": "./src/services" 👈\n' +
                             '    }\n' +
                             '  }\n' +
-                            '  ...\n' +
                             '}'
                         } />
 

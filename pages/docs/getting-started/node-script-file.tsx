@@ -53,8 +53,8 @@ export default class NodeScriptFile extends Component {
           <Paragraph align='justify'>
             The <CodeHighlight>--loader ts-node/esm</CodeHighlight> flag is required 
             to run your Athenna application in development mode with TypeScript. This
-            flag is resposible to set up a Node.js ESM loader that will first compile your
-            modules everytime that you ask to import them using the <CodeHighlight>import</CodeHighlight> statement.
+            flag is responsible to set up a Node.js ESM loader that will first compile your
+            modules every time that you ask to import them using the <CodeHighlight>import</CodeHighlight> statement.
           </Paragraph>
 
           <Paragraph align='justify'>

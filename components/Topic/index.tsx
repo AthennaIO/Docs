@@ -25,7 +25,7 @@ export default class Topic extends Component<TopicProps> {
     }
 
     return (
-      <Anchor id={id} href={`#${id}`} hoverColor='pinkPurple'>
+      <Anchor id={id} href={`#${id}`} hoverColor='pinkPurple' style={{ scrollMarginTop: '100px' }}>
         <Text weight='bold' size='lg' color='purple'># </Text>
         <Text weight='bold' style={{ fontSize: size[this.props.size] }}>{this.props.children}</Text>
       </Anchor>
