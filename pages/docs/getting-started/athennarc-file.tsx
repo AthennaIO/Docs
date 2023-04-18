@@ -166,7 +166,7 @@ export default class AthennaRcFile extends Component {
                     <Paragraph align='justify'>
                         An object that is responsible to register your application commands and their respective settings. The
                         key of the commands object needs to be exactly your command signature without any arguments, flags or spaces.
-                        Also, the value of it could be the command path or an object with the "path" key inside:
+                        Also, the value of it could be the command path or an object with the &quotpath&quot key inside:
                     </Paragraph>
 
                     <CodeBox language='json' code={
