@@ -28,6 +28,15 @@ export default class Navigation extends Component<NavigationProps> {
         'Directory Structure'
       ]
     },
+    {
+      title: 'Architecture Concepts',
+      pages: [
+        'Application Lifecycle',
+        'Service Container',
+        'Service Providers',
+        'Facades',
+      ]
+    },
   ]
 
   public state = {
