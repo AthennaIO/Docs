@@ -64,6 +64,26 @@ export default class Launcher extends Component<LauncherProps, LauncherState> {
         icon: 'folder-symlink-fill',
         title: 'Directory Structure',
         handler: () => Router.push('/docs/getting-started/directory-structure')
+      },
+      {
+        icon: 'arrow-counterclockwise',
+        title: 'Application Lifecycle',
+        handler: () => Router.push('/docs/architecture-concepts/application-lifecycle')
+      },
+      {
+        icon: 'boxes',
+        title: 'Service Container',
+        handler: () => Router.push('/docs/architecture-concepts/service-container')
+      },
+      {
+        icon: 'box-seam',
+        title: 'Service Providers',
+        handler: () => Router.push('/docs/architecture-concepts/service-providers')
+      },
+      {
+        icon: 'square-half',
+        title: 'Facades',
+        handler: () => Router.push('/docs/architecture-concepts/facades')
       }
     ]
 
