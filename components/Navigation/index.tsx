@@ -23,8 +23,8 @@ export default class Navigation extends Component<NavigationProps> {
       pages: [
         'Installation',
         'Node Script File',
-        'Configuration',
         'AthennaRC File',
+        'Configuration',
         'Directory Structure'
       ]
     },
