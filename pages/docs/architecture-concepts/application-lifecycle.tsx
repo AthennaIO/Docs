@@ -1,4 +1,5 @@
 import Docs from '#layouts/Docs'
+import Link from '#components/Link'
 import Topic from '#components/Topic'
 import Topics from '#components/Topics'
 import Admonition from '#components/Admonition'
@@ -6,7 +7,6 @@ import CodeHighlight from '#components/CodeHighlight'
 
 import { Component } from 'react'
 import { Box, List, OrderedList, Paragraph } from 'dracula-ui'
-import Link from '#components/Link'
 
 export async function getStaticProps() {
   return {
