@@ -7,6 +7,7 @@ import CodeHighlight from '#components/CodeHighlight'
 
 import { Component } from 'react'
 import { Box, List, OrderedList, Paragraph } from 'dracula-ui'
+import CodeBox from '#components/CodeBox'
 
 export async function getStaticProps() {
   return {
@@ -26,8 +27,8 @@ export default class ApplicationLifecycle extends Component {
   public topics = [
     { title: 'Introduction' },
     { title: 'Athenna foundation lifecycle' },
-    { title: 'Http request lifecycle' },
-    { title: 'Command lifecycle' },
+    { title: 'REST API lifecycle' },
+    { title: 'Cli and Commands lifecycle' },
   ]
 
   public render() {
@@ -197,7 +198,7 @@ export default class ApplicationLifecycle extends Component {
 
                 <List variant='unordered' color='purple'>
                   <li className='drac-text drac-text-justify drac-text-sm drac-text-white'>
-                    The <CodeHighlight>http</CodeHighlight> application needs to fire the foundation first because it depends on service providers to
+                    The <CodeHighlight>REST API</CodeHighlight> application needs to fire the foundation first because it depends on service providers to
                     register your controllers, services, middlewares, routes, etc.
                   </li>
                   <li className='drac-text drac-text-justify drac-text-sm drac-text-white'>
@@ -213,11 +214,118 @@ export default class ApplicationLifecycle extends Component {
         </Box>
 
         <Box mt='md'>
-          <Topic size='xl' pb='xs'>Http request lifecycle</Topic>
+          <Topic size='xl' pb='xs'>REST API lifecycle</Topic>
+
+          <Box mt='md'>
+            <Topic size='lg' pb='xs'>Kernel</Topic>
+
+            <Paragraph align='justify'>
+              The Kernel class is responsible by defining some bootstraps that will be run before reading your <CodeHighlight>routes/http.ts</CodeHighlight> file. 
+              These bootstraps configure error handling for requests, tracing and logging, detect the application environment, and perform other 
+              tasks that need to be done before the request is actually handled. Typically, these classes handle internal Athenna configuration 
+              that you do not need to worry about.
+            </Paragraph>
+
+            <Paragraph align='justify'>
+              The Kernel is also responsible by registering your middlewares and controllers defined in your <CodeHighlight>.athennarc.json</CodeHighlight> file.
+              By default, Athenna will always use the default implementation <CodeHighlight>HttpKernel</CodeHighlight> class imported from <CodeHighlight>@athenna/http</CodeHighlight> package.
+              If you prefer, you can create your custom Kernel implementation, extending the default <CodeHighlight>HttpKernel</CodeHighlight> class and registering it
+              in your <CodeHighlight>Ignite.httpServer</CodeHighlight> method call:
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+              `import { HttpKernel } from '@athenna/http'\n\n` +
+              
+              `export class CustomKernel extends HttpKernel {\n` +
+              `}`
+            } />
+
+            <Admonition type='note'>
+              <Paragraph align='justify' size='sm'>
+                You can check all the methods available for you to override in your custom kernel implementation taking
+                a look at <CodeHighlight href='https://github.com/AthennaIO/Http/blob/develop/src/Kernels/HttpKernel.ts'>HttpKernel</CodeHighlight> implementation code.
+              </Paragraph>
+            </Admonition>
+
+            <Paragraph align='justify'>
+              Then, you can register your <CodeHighlight>CustomKernel</CodeHighlight> in your <CodeHighlight>bootstrap/main.ts</CodeHighlight> file:
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+              `import { Ignite } from '@athenna/core'\n\n` +
+              
+              `const ignite = await new Ignite().load(import.meta.url)\n\n` +
+
+              `await ignite.httpServer({ kernelPath: '#app/Http/CustomKernel' })'`
+            } />
+          </Box>
+
+          <Box mt='md'>
+            <Topic size='lg' pb='xs'>Routes</Topic>
+
+            <Paragraph align='justify'>
+              The <CodeHighlight>routes/http.ts</CodeHighlight> file is the entrypoint for all your http requests. This file is responsible
+              to create a contract between your client and your application. Is in here that we define all ours routes and the handlers/controllers
+              who will handle the client request.
+            </Paragraph>
+
+            <Paragraph align='justify'>
+              One of the most important service providers in your application is the <CodeHighlight>HttpRouteProvider</CodeHighlight>. This service provider
+              adds in the container the <CodeHighlight>Route</CodeHighlight> class instance used inside <CodeHighlight>routes/http.ts</CodeHighlight> file.
+            </Paragraph>
+
+            <Paragraph align='justify'>
+              When the client request arrives, the server first execute all your global middlewares, then it will execute all your route middlewares.
+              Once it finish, it goes for your handler/controller. See the example:
+            </Paragraph>
+
+            <Box mt='md'>
+              <img
+                style={{ maxWidth: '100%' }}
+                src='/static/images/start-request.png'
+                alt='Start REST API request'
+              />
+            </Box>
+
+            <Paragraph align='justify'>
+              Once the controller/handler function returns a response, the response will travel back outward through 
+              each global interceptor, and then route&apos;s interceptor, giving the application a chance to modify 
+              or examine the outgoing response. See the example:
+            </Paragraph>
+
+            <Box mt='md'>
+              <img
+                style={{ maxWidth: '100%' }}
+                src='/static/images/finish-up-request.png'
+                alt='Finish up REST API request'
+              />
+            </Box>
+
+            <Paragraph align='justify'>
+              As you can see in the example the response content is sent to the client. The request finish for the 
+              client but not for the server. Now it&apos;s time to execute the global and route terminators. The 
+              terminators are executed when a response has been sent, so you will not be able to send more data to 
+              the client. It can however be useful for sending data to external services, for example, create metrics 
+              of the entire request. See the example:
+            </Paragraph>
+
+            <Box mt='md'>
+              <img
+                style={{ maxWidth: '100%' }}
+                src='/static/images/terminate-request.png'
+                alt='Terminate REST API request'
+              />
+            </Box>
+
+            <Paragraph align='justify'>
+              Finally, once all terminators are executed the request finish in the server. We&apos;ve finished our 
+              journey through the entire REST API lifecycle 🥳. 
+            </Paragraph>
+          </Box>
         </Box>
 
         <Box mt='md'>
-          <Topic size='xl' pb='xs'>Command lifecycle</Topic>
+          <Topic size='xl' pb='xs'>Cli and Commands lifecycle</Topic>
         </Box>
       </Box>
     )

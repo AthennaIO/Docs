@@ -393,7 +393,7 @@ export default class DirectoryStructure extends Component {
                         } />
 
                         <Paragraph align='justify'>
-                            Check <Link href='/docs/getting-started/athennarc-file#the-directories-property'>the &quot;directories property&quot; documentation section</Link> to see all
+                            Check <Link href='/docs/getting-started/athennarc-file#the-directories-property'>the directories property documentation section</Link> to see all
                             the available directories that you can change in your <CodeHighlight>directories</CodeHighlight> property.
                         </Paragraph>
                     </Box>
