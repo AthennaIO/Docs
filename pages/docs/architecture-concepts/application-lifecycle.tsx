@@ -2,12 +2,12 @@ import Docs from '#layouts/Docs'
 import Link from '#components/Link'
 import Topic from '#components/Topic'
 import Topics from '#components/Topics'
+import CodeBox from '#components/CodeBox'
 import Admonition from '#components/Admonition'
 import CodeHighlight from '#components/CodeHighlight'
 
 import { Component } from 'react'
 import { Box, List, OrderedList, Paragraph } from 'dracula-ui'
-import CodeBox from '#components/CodeBox'
 
 export async function getStaticProps() {
   return {
@@ -29,6 +29,7 @@ export default class ApplicationLifecycle extends Component {
     { title: 'Athenna foundation lifecycle' },
     { title: 'REST API lifecycle' },
     { title: 'Cli and Commands lifecycle' },
+    { title: 'Focus on service providers' }
   ]
 
   public render() {
@@ -287,45 +288,185 @@ export default class ApplicationLifecycle extends Component {
               />
             </Box>
 
-            <Paragraph align='justify'>
-              Once the controller/handler function returns a response, the response will travel back outward through 
-              each global interceptor, and then route&apos;s interceptor, giving the application a chance to modify 
-              or examine the outgoing response. See the example:
-            </Paragraph>
-
             <Box mt='md'>
-              <img
-                style={{ maxWidth: '100%' }}
-                src='/static/images/finish-up-request.png'
-                alt='Finish up REST API request'
-              />
-            </Box>
+              <Topic size='lg' pb='xs'>Finish up</Topic>
 
-            <Paragraph align='justify'>
-              As you can see in the example the response content is sent to the client. The request finish for the 
-              client but not for the server. Now it&apos;s time to execute the global and route terminators. The 
-              terminators are executed when a response has been sent, so you will not be able to send more data to 
-              the client. It can however be useful for sending data to external services, for example, create metrics 
-              of the entire request. See the example:
-            </Paragraph>
+              <Paragraph align='justify'>
+                Once the controller/handler function returns a response, the response will travel back outward through 
+                each global interceptor, and then route&apos;s interceptor, giving the application a chance to modify 
+                or examine the outgoing response. See the example:
+              </Paragraph>
 
-            <Box mt='md'>
-              <img
-                style={{ maxWidth: '100%' }}
-                src='/static/images/terminate-request.png'
-                alt='Terminate REST API request'
-              />
-            </Box>
+              <Box mt='md'>
+                <img
+                  style={{ maxWidth: '100%' }}
+                  src='/static/images/finish-up-request.png'
+                  alt='Finish up REST API request'
+                />
+              </Box>
 
-            <Paragraph align='justify'>
-              Finally, once all terminators are executed the request finish in the server. We&apos;ve finished our 
-              journey through the entire REST API lifecycle 🥳. 
-            </Paragraph>
+              <Paragraph align='justify'>
+                As you can see in the example the response content is sent to the client. The request finish for the 
+                client but not for the server. Now it&apos;s time to execute the global and route terminators. The 
+                terminators are executed when a response has been sent, so you will not be able to send more data to 
+                the client. It can however be useful for sending data to external services, for example, create metrics 
+                of the entire request. See the example:
+              </Paragraph>
+
+              <Box mt='md'>
+                <img
+                  style={{ maxWidth: '100%' }}
+                  src='/static/images/terminate-request.png'
+                  alt='Terminate REST API request'
+                />
+              </Box>
+
+              <Paragraph align='justify'>
+                Finally, once all terminators are executed the request finish in the server. We&apos;ve finished our 
+                journey through the entire REST API lifecycle 🥳. 
+              </Paragraph>
+            </Box>  
           </Box>
         </Box>
 
         <Box mt='md'>
           <Topic size='xl' pb='xs'>Cli and Commands lifecycle</Topic>
+
+          <Box mt='md'>
+            <Topic size='lg' pb='xs'>Kernel</Topic>
+
+            <Paragraph align='justify'>
+              The Kernel class is responsible by defining some bootstraps that will be run before registering your commands.
+              These bootstraps configure error handling for commands, detect the application environment, and perform other 
+              tasks that need to be done before the command is actually handled. Typically, these classes handle internal Athenna configuration 
+              that you do not need to worry about.
+            </Paragraph>
+
+            <Paragraph align='justify'>
+              The Kernel is also responsible by registering your commands defined in your <CodeHighlight>.athennarc.json</CodeHighlight> file.
+              By default, Athenna will always use the default implementation <CodeHighlight>ConsoleKernel</CodeHighlight> class imported from <CodeHighlight>@athenna/http</CodeHighlight> package.
+              If you prefer, you can create your custom Kernel implementation, extending the default <CodeHighlight>ConsoleKernel</CodeHighlight> class and registering it
+              in your <CodeHighlight>Ignite.artisan</CodeHighlight> method call:
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+              `import { ConsoleKernel } from '@athenna/http'\n\n` +
+              
+              `export class CustomKernel extends ConsoleKernel {\n` +
+              `}`
+            } />
+
+            <Admonition type='note'>
+              <Paragraph align='justify' size='sm'>
+                You can check all the methods available for you to override in your custom kernel implementation taking
+                a look at <CodeHighlight href='https://github.com/AthennaIO/Artisan/blob/develop/src/Kernels/ConsoleKernel.ts'>ConsoleKernel</CodeHighlight> implementation code.
+              </Paragraph>
+            </Admonition>
+
+            <Paragraph align='justify'>
+              Then, you can register your <CodeHighlight>CustomKernel</CodeHighlight> in your <CodeHighlight>bootstrap/main.ts</CodeHighlight> or <CodeHighlight>bootstrap/artisan.ts</CodeHighlight> file:
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+              `import { Ignite } from '@athenna/core'\n\n` +
+              
+              `const ignite = await new Ignite().load(import.meta.url, {\n` +
+              `  bootLogs: false\n` + 
+              `})\n\n` +
+
+              `await ignite.artisan({ kernelPath: '#app/Http/CustomKernel' })'`
+            } />
+          </Box>
+
+          <Box mt='md'>
+            <Topic size='lg' pb='xs'>Execution</Topic>
+
+            <Paragraph align='justify'>
+              The <CodeHighlight>routes/console.ts</CodeHighlight> and 
+              the <CodeHighlight>commands</CodeHighlight> property 
+              of <CodeHighlight>.athennarc.json</CodeHighlight> file is where that we define 
+              all ours commands and the handlers who will handle the terminal arguments.
+            </Paragraph>
+
+            <Paragraph align='justify'>
+              When the terminal arguments arrives, the application will be bootstrapped based in the command that you
+              are asking to execute. Let&apos;s suppose we have executed the <CodeHighlight>hello</CodeHighlight> command 
+              defined in our <CodeHighlight>.athennarc.json</CodeHighlight> file:
+            </Paragraph>
+
+            <CodeBox language='json' code={
+                '{\n' +
+                '  "commands": {\n' +
+                '    "hello": {\n' +
+                '      "path": "#app/Console/Commands/HelloCommand",\n' +
+                '      "loadApp": false,\n' +
+                '      "stayAlive": false\n' +
+                '      "loadAllCommands": false\n' +
+                '      "environments": ["console"]\n' +
+                '    }\n' +
+                '  }\n' +
+                '}'
+            } />
+
+            <Paragraph align='justify'>
+              Since <CodeHighlight>loadAllCommands</CodeHighlight> is set to false, the Kernel will load only
+              the <CodeHighlight>hello</CodeHighlight> command and execute it:
+            </Paragraph>
+
+            <Box mt='md'>
+              <img
+                style={{ maxWidth: '100%' }}
+                src='/static/images/command-execution.png'
+                alt='Execute the command'
+              />
+            </Box>
+
+            <Box mt='md'>
+              <Topic size='lg' pb='xs'>Finish up</Topic>
+
+              <Paragraph align='justify'>
+                Once the command handler function finish, Athenna will verify if the <CodeHighlight>stayAlive</CodeHighlight> setting 
+                is set to true, if so, the application will not be terminated, very useful when running commands like <CodeHighlight>repl</CodeHighlight> and <CodeHighlight>serve</CodeHighlight>.
+              </Paragraph>
+
+              <Box mt='md'>
+                <img
+                  style={{ maxWidth: '100%' }}
+                  src='/static/images/finish-up-command.png'
+                  alt='Finish up command'
+                />
+              </Box>
+
+              <Paragraph align='justify'>
+                We&apos;ve finished our journey through the entire command lifecycle 🥳. 
+              </Paragraph>
+            </Box>
+          </Box>
+        </Box>
+
+        <Box mt='md'>
+          <Topic size='xl' pb='xs'>Focus on service providers</Topic>
+
+          <Paragraph align='justify'>
+            Service providers are truly the key to bootstrapping an Athenna application. The application instance 
+            is created, the service providers are registered, and the request is handed to the bootstrapped 
+            application. It&apos;s really that simple!
+          </Paragraph>
+
+          <Paragraph align='justify'>
+            Having a firm grasp of how an Athenna application is built and bootstrapped via service providers is 
+            very valuable. Your application&apos;s default service providers are stored in the <CodeHighlight>providers</CodeHighlight> directory,
+            and you can create your own provider with the following command:
+          </Paragraph>
+
+          <CodeBox language='bash' code={
+            './node artisan make:provider AppProvider'
+          }/>
+
+          <Paragraph align='justify'>
+            With this new provider you can add your application&apos;s own bootstrapping and service container bindings. For large applications, 
+            you may wish to create several service providers, each with more granular bootstrapping for specific services used by your application.
+          </Paragraph>
         </Box>
       </Box>
     )
