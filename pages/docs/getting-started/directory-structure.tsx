@@ -175,7 +175,7 @@ export default class DirectoryStructure extends Component {
                             <Paragraph align='justify' size='sm'>
                                 If your test file name does not end with <CodeHighlight>Test</CodeHighlight>, it will be ignored
                                 and the test class will not run. But, you can customize this behavior in the <CodeHighlight>configure</CodeHighlight> function
-                                of <CodeHighlight href='https://japa.dev/docs'>Japa</CodeHighlight> inside your <CodeHighlight>bootstrap/test.ts</CodeHighlight> file.
+                                of <Link href='https://japa.dev/docs'>Japa</Link> inside your <CodeHighlight>bootstrap/test.ts</CodeHighlight> file.
                             </Paragraph>
                         </Admonition>
                     </Box>
