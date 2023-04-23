@@ -1,12 +1,18 @@
 import { Component } from 'react'
 import { AnchorProps, Anchor } from 'dracula-ui'
 
-export type LinkProps = AnchorProps
+export interface LinkProps extends AnchorProps {
+    noUnderline?: boolean
+}
 
 export default class Link extends Component<LinkProps> {
     public render() {
+        let { noUnderline, children, ...props } = this.props
+
         return (
-            <Anchor {...this.props} target='_blank' hoverColor='pink' color='yellow'>{this.props.children}</Anchor>
+            <Anchor {...props} target='_blank' hoverColor='pink' color='yellow'>
+                { noUnderline ? children : <u>{children}</u> }  
+            </Anchor>
         )
     }
 }

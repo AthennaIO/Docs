@@ -43,8 +43,8 @@ export default class Installation extends Component {
           <Topic size='lg' pb='xs'>Prerequisites</Topic>
 
           <Paragraph align='justify'> 
-            First you need to install <CodeHighlight href='https://nodejs.org'>Node.js</CodeHighlight>.
-            We recommend using <CodeHighlight href='https://github.com/nvm-sh/nvm'>nvm</CodeHighlight> to do that.
+            First you need to install <Link href='https://nodejs.org'>Node.js</Link>.
+            We recommend using <Link href='https://github.com/nvm-sh/nvm'>nvm</Link> to do that.
           </Paragraph>
 
           <Blockquote>

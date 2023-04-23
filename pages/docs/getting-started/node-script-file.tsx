@@ -150,7 +150,7 @@ export default class NodeScriptFile extends Component {
             But the good news is that in future Node.js versions, the <CodeHighlight>--experimental-import-meta-resolve</CodeHighlight> flag 
             will not be necessary to use the <CodeHighlight>import.meta.resolve</CodeHighlight> function. Also, in 
             future Node.js versions we might have a better support to TypeScript the same 
-            way <CodeHighlight href='https://deno.com/'>Deno</CodeHighlight> and <CodeHighlight href='https://bun.sh/'>Bun</CodeHighlight> does
+            way <Link href='https://deno.com/'>Deno</Link> and <Link href='https://bun.sh/'>Bun</Link> does
             since a big part of the community is very committed in making this happen as you can <Link href='https://github.com/nodejs/node/issues/43818'>see in this Github issue.</Link>
           </Paragraph>
 
