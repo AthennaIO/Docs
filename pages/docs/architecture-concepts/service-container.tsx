@@ -145,7 +145,50 @@ export default class ServiceContainer extends Component {
 
           <Box mt='md'>
             <Topic size='lg' pb='xs'>When to use the container</Topic>
+            
+            <Paragraph align='justify'>
+              Thanks to this simple configuration resolution, you will often just import your dependency on your routes, controllers,
+              and elsewhere without ever manually interacting with the container. For example, you might just import 
+              your <CodeHighlight>AppService</CodeHighlight> in your controller so that you can easily access the business logic wrote
+              in the service class. Even though we never have to interact wit the container to write this code, it is managing the injection
+              of there dependencies behind the scenes.
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+              `import { Context } from '@athenna/http'\n` +
+              `import { AppService } from '#app/Services/AppService'\n\n` +
+
+              `export class AppController {\n` +
+              `  public constructor(private appService: AppService) {}\n\n` +
+
+              `  public async show({ response }: Context) {\n` +
+              `    const data = await this.appService.getDate()\n\n` +
+
+              `    return response.status(200).send(data)\n` +
+              `  }\n` +
+              '}'
+            } />
+
+            <Paragraph align='justify'>
+              In many cases, thanks to automatic dependency injection 
+              and <Link href='/docs/architecture-concepts/facades'>facades</Link>, you can build Athenna 
+              applications without ever manually binding or resolving anything from the container. <b>So, 
+              when would you ever manually interact with the container?</b>
+            </Paragraph>
+
+            <Paragraph align='justify'>
+              If you are writing an Athenna package that you plan to share with other Athenna developers, you 
+              may need to bind your package&apos;s services into the container.
+            </Paragraph>
           </Box>
+        </Box>
+
+        <Box mt='md'>
+            <Topic size='xl' pb='xs'>Binding</Topic>
+        </Box>
+
+        <Box mt='md'>
+            <Topic size='xl' pb='xs'>Resolving</Topic>
         </Box>
       </Box>
     )
