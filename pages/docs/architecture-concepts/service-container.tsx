@@ -185,10 +185,177 @@ export default class ServiceContainer extends Component {
 
         <Box mt='md'>
             <Topic size='xl' pb='xs'>Binding</Topic>
+
+            <Paragraph align='justify'>
+              Almost all of your service container bindings will be registered within service providers, so most of
+              these examples will demonstrate using the container in that context.
+            </Paragraph>
+
+            <Paragraph align='justify'>
+              In your application you will always have access to the container via the <CodeHighlight>ioc</CodeHighlight> global
+              property. We can register a binding using the <CodeHighlight>bind</CodeHighlight> method, passing the alias name
+              that we wish to register along with our dependency:
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+                `import { StringNormalizer } from '#app/Helpers/StringNormalizer'\n\n` +
+
+                `ioc.bind('App/Helpers/StringNormalizer', StringNormalizer)`
+            } />
+
+            <Box mt='md'>
+              <Topic size='lg' pb='xs'>Binding transients</Topic>
+
+              <Paragraph align='justify'>
+                The <CodeHighlight>transient</CodeHighlight> method binds a class into the container that will resolve
+                different instances of it each time. Meaning that once a transient binding is resolved, a new object
+                instance will be returned on subsequent calls into the container:
+              </Paragraph>
+
+              <CodeBox language='typescript' code={
+                  `import { StringNormalizer } from '#app/Helpers/StringNormalizer'\n\n` +
+
+                  `ioc.transient('App/Helpers/StringNormalizer', StringNormalizer)`
+              } />
+
+              <Admonition type='note'>
+                <Paragraph align='justify' size='sm'>
+                  By default, the <CodeHighlight>bind</CodeHighlight> method will always register your dependencies
+                  as <CodeHighlight>transient</CodeHighlight>.
+                </Paragraph>
+              </Admonition>
+            </Box>
+
+            <Box mt='md'>
+              <Topic size='lg' pb='xs'>Binding a singleton</Topic>
+
+              <Paragraph align='justify'>
+                The <CodeHighlight>singleton</CodeHighlight> method binds a class into the container that should
+                only be resolved one time. Once a singleton binding is resolved, the same object instance will be returned on
+                subsequent calls into the container:
+              </Paragraph>
+
+              <CodeBox language='typescript' code={
+                  `import { StringNormalizer } from '#app/Helpers/StringNormalizer'\n\n` +
+
+                  `ioc.singleton('App/Helpers/StringNormalizer', StringNormalizer)`
+              } />
+            </Box>
+
+            <Box mt='md'>
+              <Topic size='lg' pb='xs'>Binding instances</Topic>
+
+              <Paragraph align='justify'>
+                You may also bind an existing object instance into the container using the <CodeHighlight>instance</CodeHighlight> method.
+                The given instance will always be returned on subsequent calls into the container:
+              </Paragraph>
+
+              <CodeBox language='typescript' code={
+                  `import { StringNormalizer } from '#app/Helpers/StringNormalizer'\n\n` +
+
+                  `ioc.instance('App/Helpers/StringNormalizer', new StringNormalizer())`
+              } />
+            </Box>
         </Box>
 
         <Box mt='md'>
             <Topic size='xl' pb='xs'>Resolving</Topic>
+
+            <Paragraph align='justify'>
+              You may use the <CodeHighlight>use</CodeHighlight> or <CodeHighlight>safeUse</CodeHighlight> methods from
+              the <CodeHighlight>ioc</CodeHighlight> global property to resolve a class instance from the container. The <CodeHighlight>use</CodeHighlight> method
+              accepts the alias of the dependency you wish to resolve:
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+                `import { StringNormalizer } from '#app/Helpers/StringNormalizer'\n\n` +
+
+                `const sn = ioc.use<StringNormalizer>('App/Helpers/StringNormalizer')`
+            } />
+
+            <Paragraph align='justify'>
+              If the dependency alias cannot be found in the container, <CodeHighlight>sn</CodeHighlight> const will be
+              set as <CodeHighlight>undefined</CodeHighlight>. To throw errors when the dependency does not exist, use
+              the <CodeHighlight>safeUse</CodeHighlight> method.
+            </Paragraph>
+
+          <Box mt='md'>
+            <Topic size='lg' pb='xs'>Automatic constructor injection</Topic>
+
+            <Paragraph align='justify'>
+              Alternatively, and importantly, you can use the constructor of a class that is resolved by the container,
+              including <Link href='/docs/the-basics/http/controllers'>controllers</Link>, <Link href='/docs/the-basics/http/services'>services</Link>, <Link href='/docs/the-basics/http/middlewares'>middlewares</Link>, and more.
+            </Paragraph>
+
+            <Paragraph align='justify'>
+              For example, you may add your provider name in camelCase in the controller&apos;s constructor. The service will automatically
+              be resolved and injected into the class:
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+                `import { Context } from '@athenna/http'\n` +
+                `import { AppService } from '#app/Services/AppService'\n\n` +
+
+                `export class AppController {\n` +
+                `  public constructor(private appService: AppService) {}\n\n` +
+
+                `  public async show({ response }: Context) {\n` +
+                `    const data = await this.appService.getData()\n\n` +
+
+                `    return response.status(200).send(data)\n` +
+                `  }\n` +
+                `}`
+            } />
+          </Box>
+
+          <Box mt='md'>
+            <Topic size='lg' pb='xs'>Using <CodeHighlight>@Inject</CodeHighlight> annotation</Topic>
+
+            <Paragraph align='justify'>
+              You can also use the <CodeHighlight>@Inject</CodeHighlight> annotation instead of the constructor. The annotation
+              follows the same logic of the constructor, you need to use the camelCase name of your dependency as the property name
+              to be resolved properly:
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+                `import { Inject } from '@athenna/ioc'\n` +
+                `import { Context } from '@athenna/http'\n` +
+                `import { AppService } from '#app/Services/AppService'\n\n` +
+
+                `export class AppController {\n` +
+                `  @Inject()\n` +
+                `  private appService: AppService\n\n` +
+
+                `  public async show({ response }: Context) {\n` +
+                `    const data = await this.appService.getData()\n\n` +
+
+                `    return response.status(200).send(data)\n` +
+                `  }\n` +
+                `}`
+            } />
+
+            <Paragraph align='justify'>
+              When using the <CodeHighlight>@Inject</CodeHighlight> annotation you could also passes as argument a
+              specific alias to be resolved in the container:
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+                `import { Inject } from '@athenna/ioc'\n` +
+                `import { Context } from '@athenna/http'\n` +
+                `import { AppService } from '#app/Services/AppService'\n\n` +
+
+                `export class AppController {\n` +
+                `  @Inject('App/Services/AppService')\n` +
+                `  private appService: AppService\n\n` +
+
+                `  public async show({ response }: Context) {\n` +
+                `    const data = await this.appService.getData()\n\n` +
+
+                `    return response.status(200).send(data)\n` +
+                `  }\n` +
+                `}`
+            } />
+          </Box>
         </Box>
       </Box>
     )
