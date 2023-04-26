@@ -654,9 +654,9 @@ export default class Configuration extends Component {
             </Paragraph>
 
             <Paragraph align='justify'>
-              Check <Link href='/docs/getting-started/athennarc-file#the-directories-property'>the &quot;directories property&quot; documentation section</Link> for 
+              Check <Link href='/docs/getting-started/athennarc-file#the-directories-property'>the directories property documentation section</Link> for
               more information about the <CodeHighlight>directories</CodeHighlight> property. And 
-              check <Link href='/docs/getting-started/directory-structure#do-your-own-structure'>the &quot;do your own structure&quot; documentation section</Link> for
+              check <Link href='/docs/getting-started/directory-structure#do-your-own-structure'>the do your own structure documentation section</Link> for
               more information about how to create your own project structure.
             </Paragraph>
           </Box>
