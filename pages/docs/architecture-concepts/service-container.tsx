@@ -51,9 +51,10 @@ export default class ServiceContainer extends Component {
           </Paragraph>
 
           <CodeBox language='typescript' code={
-            `import { Context } from '@athenna/http'\n` +
+            `import { Context, Controller } from '@athenna/http'\n` +
             `import { WelcomeService } from '#app/Services/WelcomeService'\n\n` +
 
+            `@Controller()\n` +
             `export class WelcomeController {\n` +
             `  private welcomeService: WelcomeService\n\n` +
 
@@ -155,9 +156,10 @@ export default class ServiceContainer extends Component {
             </Paragraph>
 
             <CodeBox language='typescript' code={
-              `import { Context } from '@athenna/http'\n` +
+              `import { Context, Controller } from '@athenna/http'\n` +
               `import { AppService } from '#app/Services/AppService'\n\n` +
 
+              `@Controller()\n` +
               `export class AppController {\n` +
               `  public constructor(private appService: AppService) {}\n\n` +
 
@@ -293,9 +295,10 @@ export default class ServiceContainer extends Component {
             </Paragraph>
 
             <CodeBox language='typescript' code={
-                `import { Context } from '@athenna/http'\n` +
+                `import { Context, Controller } from '@athenna/http'\n` +
                 `import { AppService } from '#app/Services/AppService'\n\n` +
 
+                `@Controller()\n` +
                 `export class AppController {\n` +
                 `  public constructor(private appService: AppService) {}\n\n` +
 
@@ -319,9 +322,10 @@ export default class ServiceContainer extends Component {
 
             <CodeBox language='typescript' code={
                 `import { Inject } from '@athenna/ioc'\n` +
-                `import { Context } from '@athenna/http'\n` +
+                `import { Context, Controller } from '@athenna/http'\n` +
                 `import { AppService } from '#app/Services/AppService'\n\n` +
 
+                `@Controller()\n` +
                 `export class AppController {\n` +
                 `  @Inject()\n` +
                 `  private appService: AppService\n\n` +
@@ -341,9 +345,10 @@ export default class ServiceContainer extends Component {
 
             <CodeBox language='typescript' code={
                 `import { Inject } from '@athenna/ioc'\n` +
-                `import { Context } from '@athenna/http'\n` +
+                `import { Context, Controller } from '@athenna/http'\n` +
                 `import { AppService } from '#app/Services/AppService'\n\n` +
 
+                `@Controller()\n` +
                 `export class AppController {\n` +
                 `  @Inject('App/Services/AppService')\n` +
                 `  private appService: AppService\n\n` +
