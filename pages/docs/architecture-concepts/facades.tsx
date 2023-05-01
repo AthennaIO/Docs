@@ -5,6 +5,8 @@ import Topics from '#components/Topics'
 import {Box, Paragraph} from 'dracula-ui'
 import { Component } from 'react'
 import Link from "#components/Link";
+import CodeBox from "#components/CodeBox";
+import CodeHighlight from "#components/CodeHighlight";
 
 export async function getStaticProps() {
   return {
@@ -51,6 +53,36 @@ export default class Facades extends Component {
                 flexibility than traditional static methods. It&apos;s perfectly fine if you don&apos;t totally
                 understand how facades work under the hood - just go with the flow and continue learning
                 about Athenna.
+            </Paragraph>
+
+            <Paragraph align='justify'>
+                All of Athenna facades are defined in their own packages. So, we can easily access a facade like so:
+            </Paragraph>
+
+            <CodeBox language='typescript' code={
+                `import { Log } from '@athenna/logger' // Log Facade\n` +
+                `import { Route } from '@athenna/http' // Route Facade\n\n` +
+
+                `Route.get('/welcome', ({ response }) => {\n` +
+                `  Log.channel('simple').success('New request received 😝')\n\n` +
+
+                `  return response.status(200).send({ message: 'ok' })\n` +
+                `})`
+            } />
+
+            <Paragraph align='justify'>
+                Throughout the Athenna documentation, many of the examples will use facades to demonstrate
+                various features of the framework.
+            </Paragraph>
+
+            <Topic size='lg' pb='xs'>Helpers</Topic>
+
+            <Paragraph align='justify'>
+                To complement facades, Athenna offers a variety of &quot;helper classes&quot; that
+                make it even easier to interact with common Athenna features. Some common helper
+                functions you may interact with are <CodeHighlight>Env</CodeHighlight>, <CodeHighlight>Config</CodeHighlight>, <CodeHighlight>Path</CodeHighlight>, and more.
+                Each helper function offered by Athenna is documented with their corresponding feature;
+                however, a complete list is available within <Link href='/docs/digging-deeper/helpers'>the dedicated helpers documentation</Link>.
             </Paragraph>
         </Box>
 
