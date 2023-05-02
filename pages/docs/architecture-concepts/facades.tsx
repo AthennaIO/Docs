@@ -88,6 +88,24 @@ export default class Facades extends Component {
 
         <Box mt='md'>
           <Topic size='xl' pb='xs'>When to use facades</Topic>
+
+            <Paragraph align='justify'>
+                Facades have many benefits. They provide a terse, memorable syntax
+                that allows you to use Athenna features without remembering long class
+                names that must be injected or configured manually.
+            </Paragraph>
+
+            <Paragraph align='justify'>
+                However, some care must be taken when using facades. The primary danger
+                of facades is class &quot;scope creep&quot;. Since facades are so easy to
+                use and do not require injection, it can be easy to let your classes
+                continue to grow and use many facades in a single class. Using dependency
+                injection, this potential is mitigated by the visual feedback a large
+                constructor gives you that your class is growing too large. So, when using
+                facades, pay special attention to the size of your class so that its scope
+                of responsibility stays narrow. If your class is getting too large, consider
+                splitting it into multiple smaller classes.
+            </Paragraph>
         </Box>
 
         <Box mt='md'>
