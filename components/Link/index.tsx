@@ -10,7 +10,7 @@ export default class Link extends Component<LinkProps> {
         let { noUnderline, children, ...props } = this.props
 
         return (
-            <Anchor {...props} target='_blank' hoverColor='pink' color='yellow'>
+            <Anchor target='_blank' hoverColor='pink' color='yellow' {...props}>
                 { noUnderline ? children : <u>{children}</u> }  
             </Anchor>
         )
