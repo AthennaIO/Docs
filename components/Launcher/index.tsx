@@ -76,7 +76,7 @@ export default class Launcher extends Component<LauncherProps, LauncherState> {
         handler: () => Router.push('/docs/architecture-concepts/service-container')
       },
       {
-        icon: 'box-seam',
+        icon: 'box-seam-fill',
         title: 'Service Providers',
         handler: () => Router.push('/docs/architecture-concepts/service-providers')
       },
@@ -84,6 +84,16 @@ export default class Launcher extends Component<LauncherProps, LauncherState> {
         icon: 'square-half',
         title: 'Facades',
         handler: () => Router.push('/docs/architecture-concepts/facades')
+      },
+      {
+        icon: 'zoom-in',
+        title: 'Logging',
+        handler: () => Router.push('/docs/the-basics/logging')
+      },
+      {
+        icon: 'x-octagon-fill',
+        title: 'Error Handling',
+        handler: () => Router.push('/docs/the-basics/error-handling')
       }
     ]
 
