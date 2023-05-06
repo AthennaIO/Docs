@@ -37,6 +37,13 @@ export default class Navigation extends Component<NavigationProps> {
         'Facades',
       ]
     },
+    {
+      title: 'The Basics',
+      pages: [
+        'Logging',
+        'Error Handling',
+      ]
+    },
   ]
 
   public state = {
