@@ -44,6 +44,23 @@ export default class Navigation extends Component<NavigationProps> {
         'Error Handling',
       ]
     },
+    {
+      title: 'Http Application',
+      pages: [
+        'Routing',
+        'Middlewares',
+        'Controllers',
+        'Request Context',
+      ]
+    },
+    {
+      title: 'Cli Application',
+      pages: [
+        'Commands',
+        'Running',
+        'Publishing',
+      ]
+    },
   ]
 
   public state = {
@@ -66,7 +83,6 @@ export default class Navigation extends Component<NavigationProps> {
           <Text
             size="sm"
             className={styles.navSectionTitle}
-            weight={item.title.includes('Patterns') ? 'semibold' : 'normal'}
           >
             {item.title}
           </Text>
@@ -74,16 +90,6 @@ export default class Navigation extends Component<NavigationProps> {
           <List variant="none">
             {item.pages.map(page => {
               const path = `/docs/${item.title.toLowerCase().replace(/ /g, '-')}/${page.toLowerCase().replace(/ /g, '-')}`
-
-              if (item.title.includes('Patterns')) {
-                return (
-                  <Box as="li" key={page}>
-                    <Anchor className={styles.navSectionPatterns}>
-                      {page}
-                    </Anchor>
-                  </Box>
-                )
-              }
 
               const isSelected = page === this.props.selected
               const anchorClass = isSelected ? styles.navSectionListActive : styles.navSectionList
