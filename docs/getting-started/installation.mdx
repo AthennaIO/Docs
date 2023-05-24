@@ -1,0 +1,77 @@
+---
+title: Installation
+sidebar_position: 1
+description: How to install and set up your first Athenna project.
+tags:
+  - Getting Started
+  - Installation
+---
+
+# Installation
+
+How to install and set up your first Athenna project.
+
+## Your first Athenna project
+
+### Prerequisites
+
+First, you need to install [Node.js](https://nodejs.org/). We
+recommend using [nvm](https://github.com/nvm-sh/nvm) to do
+that.
+
+> [Click here to install nvm and get npm and Node.js
+running on your machine.](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+### Installing via package manager
+
+We want it to be as easy as possible to get started with
+Athenna. With that in mind, we developed a CLI to assist
+in the creation of a new project.
+
+```bash
+npm install @athenna/cli -g
+```
+
+Then you can run this command to generate your project:
+
+```bash
+athenna new my-project-name
+```
+
+The installation process prompts for the following selections:
+
+#### Application type
+
+- `REST Api` application is ideal for creating a Http server
+using REST architecture.
+- `CLI` application is ideal for creating global CLI's to publish
+in some registry like npm.
+
+#### Laravel project structure
+
+The installation process will ask if you want to create your
+project following Laravel project structure. All the Athenna
+packages implementation assumes that you are using this project
+structure, but you will always be able to use your own project
+structure and configure the packages to work with it. If you
+set that you don't want to use Laravel project structure,
+Athenna will create a `slim` project version from the application
+type that you have selected.
+
+## Running your application
+
+To run your application you can simply use the node script in
+your project root. Don't worry about this file for now, we'll
+talk about it later.
+
+In your project root, run the following command:
+
+```bash
+./node --watch artisan serve
+```
+
+- The `watch` flag is meant to watch the file system for
+changes and restart your application automatically when
+doing some change on it.
+- The `serve` command will look up for your `bootstrap/main.js`
+file to bootstrap your application with predefined configurations.

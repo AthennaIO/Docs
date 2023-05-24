@@ -1,0 +1,285 @@
+---
+title: Service Container
+sidebar_position: 2
+description: Understand the purpose and how to use the Athenna service container.
+tags:
+  - Architecture Concepts
+  - Service Container
+---
+
+# Service Container
+
+Understand the purpose and how to use the Athenna service container.
+
+## Introduction
+
+The Athenna service container is a powerful tool for managing class dependencies
+and performing dependency injection. Dependency injection is a fancy phrase that
+essentially means this: class dependencies are "injected" into the class via the
+constructor or, in some cases, "setter" methods.
+
+Let's look at a simple example:
+
+```typescript
+import { Context, Controller } from '@athenna/http'
+import { WelcomeService } from '#app/Services/WelcomeService'
+
+@Controller()
+export class WelcomeController {
+  private welcomeService: WelcomeService
+
+  public constructor(welcomeService) {
+    this.welcomeService = welcomeService
+  }
+
+  public async show({ response }: Context) {
+    const data = await this.welcomeService.getWelcomeData()
+
+    return response.status(200).send(data)
+  }
+}
+```
+
+In this example, the `WelcomeController` needs to retrieve the welcome payload
+from a data source. So, we will inject a service that is able to retrieve the
+payload. In this context, our `WelcomeService`. Since the `WelcomeService` is
+injected, we are able to easily swap it out with another implementation. We are
+also able to easily 'mock', or create a dummy implementation of the
+`WelcomeService` when testing our application.
+
+A deep understanding of the Athenna service container is essential to building a
+powerful, large application, as well as for contributing to the Athenna core
+itself.
+
+## Simple resolution
+
+If you use the `@Service` annotation, you can instruct the container how he
+should resolve that class, or use the default resolution configurations of the
+annotation. For example, you may place the following code in your
+`routes/http.ts` file:
+
+```typescript
+import { Route } from '@athenna/http'
+import { Service } from '@athenna/core'
+
+@Service()
+export class AppService {
+  public ok() {
+    return { message: 'ok' }
+  }
+}
+
+Route.get('/', ({ response }) => {
+  const appService = ioc.use<AppService>('appService')
+  const body = appService.ok()
+
+  return response.status(200).send(body)
+})
+```
+
+In this example, when bootstrapping your application, Athenna will bind the
+`AppService` class inside the container. When hitting your application's / route,
+it will be resolved by using the `ioc` global variable. This is game changing. It
+means you can develop your application and take advantage of dependency
+injection without worrying about bloated configuration files.
+
+Thankfully, many of the classes you will be writing when building an Athenna
+application automatically receive their dependencies via the container,
+including [controllers](/docs/rest-api-application/controllers) and
+[middlewares](/docs/rest-api-application/middlewares). Once you taste the power of
+automatic and zero configuration dependency injection, it feels impossible to
+develop without it.
+
+:::important
+
+The example above is just to show that we can place our services anywhere in our
+application, without depending on configuration files or any other kind of
+setup. We recommend you placing your services in a specifics directory to save
+only your service classes and not inside your route file. A good place to put
+your services is `app/Services` directory, since `make:service` command will
+save your services there. But of course you can do whatever you want with
+Athenna 😎.
+
+:::
+
+## When to use the container
+
+Thanks to this simple configuration resolution, you will often just import your
+dependency on your routes, controllers, and elsewhere without ever manually
+interacting with the container. For example, you might just import your
+`AppService` in your controller so that you can easily access the business
+logic wrote in the service class. Even though we never have to interact with
+the container to write this code, it is managing the injection of their
+dependencies behind the scenes.
+
+```typescript
+import { Context, Controller } from '@athenna/http'
+import { AppService } from '#app/Services/AppService'
+
+@Controller()
+export class AppController {
+  public constructor(private appService: AppService) {}
+
+  public async show({ response }: Context) {
+    const data = await this.appService.getDate()
+
+    return response.status(200).send(data)
+  }
+}
+```
+
+In many cases, thanks to automatic dependency injection and
+[facades](/docs/architecture-concepts/facades), you can build Athenna applications
+without ever manually binding or resolving anything from the container. **So,
+when would you ever manually interact with the container?**
+
+If you are writing an Athenna package that you plan to share with other Athenna
+developers, you may need to bind your package's services into the container.
+
+## Binding
+
+Almost all of your service container bindings will be registered within
+service providers, so most of these examples will demonstrate using the
+container in that context.
+
+In your application you will always have access to the container via the `ioc`
+global property. We can register a binding using the `bind` method, passing the
+alias name that we wish to register along with our dependency:
+
+```typescript
+import { StringNormalizer } from '#app/Helpers/StringNormalizer'
+
+ioc.bind('App/Helpers/StringNormalizer', StringNormalizer)
+```
+
+### Binding transients
+
+The `transient` method binds a class into the container that will resolve
+different instances of it each time. Meaning that once a transient binding is
+resolved, a new object instance will be returned on subsequent calls into the
+container:
+
+```typescript
+import { StringNormalizer } from '#app/Helpers/StringNormalizer'
+
+ioc.transient('App/Helpers/StringNormalizer', StringNormalizer)
+```
+
+:::note
+
+By default, the `bind` method will always register your dependencies as
+`transient`.
+
+:::
+
+### Binding a singleton
+
+The `singleton` method binds a class into the container that should only be
+resolved one time. Once a singleton binding is resolved, the same object
+instance will be returned on subsequent calls into the container:
+
+```typescript
+import { StringNormalizer } from '#app/Helpers/StringNormalizer'
+
+ioc.singleton('App/Helpers/StringNormalizer', StringNormalizer)
+```
+
+### Binding instances
+
+You may also bind an existing object instance into the container using the
+`instance` method. The given instance will always be returned on subsequent
+calls into the container:
+
+```typescript
+import { StringNormalizer } from '#app/Helpers/StringNormalizer'
+
+ioc.instance('App/Helpers/StringNormalizer', new StringNormalizer())
+```
+
+## Resolving
+
+You may use the `use` or `safeUse` methods from the ioc global property to
+resolve a class instance from the container. The use method accepts the alias
+of the dependency you wish to resolve:
+
+```typescript
+import { StringNormalizer } from '#app/Helpers/StringNormalizer'
+
+const sn = ioc.use<StringNormalizer>('App/Helpers/StringNormalizer')
+```
+
+If the dependency alias cannot be found in the container, `sn` const will be
+set as `undefined`. To throw errors when the dependency does not exist, use
+the `safeUse` method.
+
+### Automatic constructor injection
+
+Alternatively, and importantly, you can use the constructor of a class that is
+resolved by the container, including
+[controllers](/docs/rest-api-application/controllers), [middlewares](/docs/rest-api-application/middlewares),
+and more.
+
+For example, you may add your provider name in camelCase in the controller's
+constructor. The service will automatically be resolved and injected into the
+class:
+
+```typescript
+import { Context, Controller } from '@athenna/http'
+import { AppService } from '#app/Services/AppService'
+
+@Controller()
+export class AppController {
+  public constructor(private appService: AppService) {}
+
+  public async show({ response }: Context) {
+    const data = await this.appService.getData()
+
+    return response.status(200).send(data)
+  }
+}
+```
+
+### Using `@Inject` annotation
+
+You can also use the `@Inject` annotation instead of the constructor. The
+annotation follows the same logic of the constructor, you need to use the
+camelCase name of your dependency as the property name to be resolved properly:
+
+```typescript
+import { Inject } from '@athenna/ioc'
+import { Context, Controller } from '@athenna/http'
+import { AppService } from '#app/Services/AppService'
+
+@Controller()
+export class AppController {
+  @Inject()
+  private appService: AppService
+
+  public async show({ response }: Context) {
+    const data = await this.appService.getData()
+
+    return response.status(200).send(data)
+  }
+}
+```
+
+When using the `@Inject` annotation you could also passes as argument a
+specific alias to be resolved in the container:
+
+```typescript
+import { Inject } from '@athenna/ioc'
+import { Context, Controller } from '@athenna/http'
+import { AppService } from '#app/Services/AppService'
+
+@Controller()
+export class AppController {
+  @Inject('App/Services/AppService')
+  private appService: AppService
+
+  public async show({ response }: Context) {
+    const data = await this.appService.getData()
+
+    return response.status(200).send(data)
+  }
+}
+```

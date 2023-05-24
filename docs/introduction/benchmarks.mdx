@@ -1,0 +1,41 @@
+---
+title: Benchmarks
+sidebar_position: 2
+description: See how Athenna performs in comparison to other frameworks.
+tags:
+  - Introduction
+  - Benchmarks
+---
+
+# Benchmarks
+
+See how Athenna performs in comparison to other frameworks.
+
+## Code
+
+All the code used in this benchmark is available in the
+[AthennaIO/Benchmarks](https://github.com/AthennaIO/Benchmarks) repository.
+
+## Environment
+
+The environment used to run the benchmarks:
+
+```shell title="npx envinfo --system --binaries"
+  System:
+    OS: macOS 13.3.1
+    CPU: (8) arm64 Apple M1 Pro
+    Memory: 107.38 MB / 16.00 GB
+    Shell: 5.9 - /opt/homebrew/bin/zsh
+  Binaries:    Node: 18.14.2 - ~/.nvm/versions/node/v18.14.2/bin/node
+    npm: 9.5.0 - ~/.nvm/versions/node/v18.14.2/bin/npm
+```
+
+## Results
+
+| Framework | Version | Requests/sec |
+|:----------|:-------:|-------------:|
+| Fastify   | 4.15.0  |      86891.2 |
+| Athenna   |  3.0.0  |      81830.4 |
+| AdonisJS  |  5.0.0  |      65539.2 |
+| Express   | 4.18.2  |      21491.6 |
+| NestJS    |  9.0.0  |      19875.2 |

@@ -1,0 +1,194 @@
+---
+title: Facades
+sidebar_position: 4
+description: Understand the purpose and how to use the Athenna facades.
+tags:
+  - Architecture Concepts
+  - Facades
+---
+
+# Facades
+
+Understand the purpose and how to use the Athenna facades.
+
+## Introduction
+
+Throughout the Athenna documentation, you will see examples of code that
+interacts with Athenna features via "facades". Facades provide a "static"
+interface to class that are available in the application's [service container](/docs/architecture-concepts/service-container).
+Athenna ships with many facades which provide access to almost all the Athenna
+features.
+
+Athenna facades serve as "static proxies" to underlying classes in the service
+container, providing the benefit of a terse, expressive syntax while maintaining
+more testability and flexibility than traditional static methods. It's perfectly
+fine if you don't totally understand how facades work under the hood—just go
+with the flow and continue learning about Athenna.
+
+All Athenna facades are defined in their own packages. So, we can easily access
+a facade like so:
+
+```typescript
+import { Log } from '@athenna/logger' // Log Facade
+import { Route } from '@athenna/http' // Route Facade
+
+Route.get('/welcome', ({ response }) => {
+  Log.channel('simple').success('New request received 😝')
+
+  return response.status(200).send({ message: 'ok' })
+})
+```
+
+Throughout the Athenna documentation, many of the examples will use facades to
+demonstrate various features of the framework.
+
+## Helpers
+
+To complement facades, Athenna offers a variety of "helper classes" that make it
+even easier to interact with common Athenna features. Some common helper
+functions you may interact with are `Env`, `Config`, `Path`, and more. Each helper
+function offered by Athenna is documented with their corresponding feature;
+however, a complete list is available within [the dedicated helpers' documentation](/docs/digging-deeper/helpers).
+
+## When to use facades
+
+Facades have many benefits. They provide a terse, memorable syntax that allows
+you to use Athenna features without remembering long class names that must be
+injected or configured manually.
+
+However, some care must be taken when using facades. The primary danger of
+facades is class "scope creep". Since facades are so easy to use and do not
+require injection, it can be easy to let your classes continue to grow and use
+many facades in a single class. Using dependency injection, this potential is
+mitigated by the visual feedback a large constructor gives you that your class
+is growing too large. So, when using facades, pay special attention to the size
+of your class so that its scope of responsibility stays narrow. If your class
+is getting too large, consider splitting it into multiple smaller classes.
+
+## How facades work
+
+In an Athenna application, a facade is a class that provides access to an
+object from the container. The machinery that makes this work is in the `Facade`
+class. Athenna facades, and any custom facades you create, will be created
+using the `Facade` class.
+
+The `Facade` class makes use of the [Proxy API](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy)
+to defer calls from your facade to an object resolved from the container. In the
+example below, a call is made to the Athenna log system. By glancing at this
+code, one might assume that the static `success()` method is being called on the
+`Log` class:
+
+```typescript
+import { Log } from '@athenna/logger'
+import { Context, Controller } from '@athenna/http'
+
+@Controller()
+export class AppController {
+  public async show({ response }: Context) {
+    Log.success('Welcome to Athenna 😝')
+
+    return response.status(200).send({ hello: 'world' })
+  }
+}
+```
+
+Notice that near the top of the file we are importing the `Log` facade. This
+facade serves as a proxy for accessing the underlying implementation of the
+`Logger` class from Athenna service container. Any calls we make using the
+facade will be passed to the underlying instance of Athenna logger class.
+
+If we look at the Log facade file implementation, you'll see that `Log` is
+just a constant that points to the alias `Athenna/Core/Logger` that is
+registered inside the service container:
+
+```typescript
+import { Facade } from '@athenna/ioc'
+import { Logger } from '#src/Logger/Logger'
+
+export const Log = Facade.createFor<Logger>('Athenna/Core/Logger')
+```
+
+The job of the `createFor()` method is to create a new proxy object that will
+have the same methods as the `Logger` class. So, when the user references any
+static method on the `Log` facade, Athenna will first resolve the
+`Athenna/Core/Logger` binding from the [service container](/docs/architecture-concepts/service-container)
+and them runs the requested method, (in the example above, the `success()`
+method) against that object.
+
+## Facades class reference
+
+Below you will find every facade and its underlying class. This is a useful
+tool for quickly digging into the API documentation for a given facade root.
+The service container binding key is also included where applicable.
+
+| Facade | Reference class | Binding alias |
+|:----------|:-------:|-------------:|
+| [Log](https://github.com/AthennaIO/Logger/blob/develop/src/Facades/Log.ts)   | [Logger](https://github.com/AthennaIO/Logger/blob/develop/src/Logger/Logger.ts)  |      Athenna/Core/Logger |
+| [Route](https://github.com/AthennaIO/Http/blob/develop/src/Facades/Route.ts)   | [Router](https://github.com/AthennaIO/Http/blob/develop/src/Router/Router.ts)  |      Athenna/Core/HttpRoute |
+| [Server](https://github.com/AthennaIO/Http/blob/develop/src/Facades/Server.ts)   | [ServerImpl](https://github.com/AthennaIO/Http/blob/develop/src/Server/ServerImpl.ts)  |      Athenna/Core/HttpServer |
+| [Mail](https://github.com/AthennaIO/Mail/blob/develop/src/Facades/Mail.ts)   | [MailImpl](https://github.com/AthennaIO/Mail/blob/develop/src/Mail/MailImpl.ts)  |      Athenna/Core/Mail |
+| [View](https://github.com/AthennaIO/View/blob/develop/src/Facades/View.ts)   | [ViewImpl](https://github.com/AthennaIO/View/blob/develop/src/Views/ViewImpl.ts)  |      Athenna/Core/View |
+| [Artisan](https://github.com/AthennaIO/Artisan/blob/develop/src/Facades/Artisan.ts)   | [ArtisanImpl](https://github.com/AthennaIO/Artisan/blob/develop/src/Artisan/ArtisanImpl.ts)  |      Athenna/Core/Artisan |
+| [Database](https://github.com/AthennaIO/Artisan/blob/develop/src/Facades/Artisan.ts)   | [DatabaseImpl](https://github.com/AthennaIO/Database/blob/develop/src/Database/DatabaseImpl.ts)  |      Athenna/Core/Database |
+
+## Writing facades
+
+First, let's use the following command to create a new [service provider](/docs/architecture-concepts/service-providers)
+to resolve our dependency inside the [service container](/docs/architecture-concepts/service-container):
+
+```shell
+./node artisan make:provider HelperProvider
+```
+
+Now let's register all of our helpers inside the `register()` method:
+
+```typescript
+import { File } from '#app/Helpers/File'
+import { String } from '#app/Helpers/String'
+import { ServiceProvider } from '@athenna/ioc'
+
+export class HelperProvider extends ServiceProvider {
+  public register() {
+    this.container.singleton('App/Helpers/File', File)
+    this.container.transient('App/Helpers/String', String)
+  }
+}
+```
+
+:::warning
+
+If you have not used `make:provider` command to create the provider, you
+will need to register it inside the `.athennarc.json` file, inside the
+`providers` array.
+
+:::
+
+Artisan can generate a new facade via the `make:facade` command:
+
+```shell
+./node artisan make:facade String
+```
+
+The facade file will be generated inside the `providers/facades` directory.
+Open this file and change the alias to your provider alias and set up the
+generic type:
+
+```typescript
+import { Facade } from '@athenna/ioc'
+import { String as StringImpl } from '#app/Helpers/String'
+
+export const String = Facade.createFor<StringImpl>('App/Helpers/String')
+```
+
+Now we can start using our new `String` facade:
+
+```typescript
+import { Route } from '@athenna/http' // Route Facade
+import { String } from '#providers/facades/String' // String Facade
+
+Route.get('/welcome', ({ response }) => {
+  return response
+    .status(200)
+    .send({ hello: String.toPascalCase('world') })
+})
+```

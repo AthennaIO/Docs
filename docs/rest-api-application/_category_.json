@@ -1,0 +1,10 @@
+{
+  "label": "REST API Application",
+  "position": 5,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "slug": "/rest-api-application",
+    "description": "Understand how to map your REST API application routes."
+  }
+}
