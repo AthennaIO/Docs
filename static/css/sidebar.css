@@ -1,3 +1,7 @@
+.thin-scrollbar::-webkit-scrollbar-track {
+    display: none;
+}
+
 .margin-top-bot {
     margin-top: 14px !important;
     margin-bottom: 14px !important;
