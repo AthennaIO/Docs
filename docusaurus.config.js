@@ -33,6 +33,7 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
+          sidebarCollapsed: true,
           sidebarPath: require.resolve('./src/sidebars.js'),
           editUrl: 'https://github.com/AthennaIO/Docs/tree/main/',
         },
@@ -102,6 +103,69 @@ const config = {
         theme: require('./lib/prism'),
       },
     }),
+  plugins: [
+    [
+      '@docusaurus/plugin-pwa',
+      {
+        debug: true,
+        offlineModeActivationStrategies: [
+          'appInstalled',
+          'standalone',
+          'queryString',
+        ],
+        pwaHead: [
+          {
+            tagName: 'link',
+            rel: 'icon',
+            href: 'img/logos/logo.png',
+          },
+          {
+            tagName: 'link',
+            rel: 'manifest',
+            href: 'manifest.json',
+          },
+          {
+            tagName: 'meta',
+            name: 'theme-color',
+            content: '#ffffff',
+            media: '(prefers-color-scheme: light)',
+          },
+          {
+            tagName: 'meta',
+            name: 'theme-color',
+            content: '#242526',
+            media: '(prefers-color-scheme: dark)',
+          },
+          {
+            tagName: 'meta',
+            name: 'apple-mobile-web-app-capable',
+            content: 'yes',
+          },
+          {
+            tagName: 'meta',
+            name: 'apple-mobile-web-app-status-bar-style',
+            content: '#000',
+          },
+          {
+            tagName: 'link',
+            rel: 'apple-touch-icon',
+            href: 'img/logos/logo.png',
+          },
+          {
+            tagName: 'link',
+            rel: 'mask-icon',
+            href: 'img/logos/logo.png',
+            color: 'rgb(80,27,134)',
+          },
+          {
+            tagName: 'meta',
+            name: 'msapplication-TileColor',
+            content: '#000',
+          },
+        ],
+      },
+    ],
+  ]
 };
 
 module.exports = config;
