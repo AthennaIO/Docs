@@ -17,6 +17,7 @@
 }
 
 :root {
+    --ifm-scrollbar-size: 5px !important;
     --ifm-font-size-base: 90% !important;
     --ifm-color-primary: #9580ff !important;
     --ifm-color-primary-dark: #755aff !important;
