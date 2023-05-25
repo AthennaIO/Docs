@@ -1,0 +1,34 @@
+.alert--info {
+    --ifm-alert-background-color: #ffff800e !important;
+    --ifm-alert-background-color-highlight: #ffffff1a !important;
+    --ifm-alert-foreground-color: var(--ifm-color-info-contrast-foreground) !important;
+    --ifm-alert-border-color: #ffff80 !important;
+}
+
+.alert--secondary {
+    --ifm-alert-background-color: #9580ff0e !important;
+    --ifm-alert-background-color-highlight: #ffffff1a !important;
+    --ifm-alert-foreground-color: var(--ifm-color-secondary-contrast-foreground) !important;
+    --ifm-alert-border-color: #9580ff !important;
+}
+
+.alert--success {
+    --ifm-alert-background-color: #8bff800e !important;
+    --ifm-alert-background-color-highlight: #ffffff1a !important;
+    --ifm-alert-foreground-color: var(--ifm-color-success-contrast-foreground) !important;
+    --ifm-alert-border-color: #8aff80 !important;
+}
+
+.alert--danger {
+    --ifm-alert-background-color: #ff95800e !important;
+    --ifm-alert-background-color-highlight: #ffffff1a !important;
+    --ifm-alert-foreground-color: var(--ifm-color-danger-contrast-foreground) !important;
+    --ifm-alert-border-color: #ff9580 !important;
+}
+
+.alert--warning {
+    --ifm-alert-background-color: #ffca800e !important;
+    --ifm-alert-background-color-highlight: #ffffff1a !important;
+    --ifm-alert-foreground-color: var(--ifm-color-danger-contrast-foreground) !important;
+    --ifm-alert-border-color: #ffca80 !important;
+}
