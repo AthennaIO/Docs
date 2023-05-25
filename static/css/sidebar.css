@@ -1,0 +1,17 @@
+.margin-top-bot {
+    margin-top: 14px !important;
+    margin-bottom: 14px !important;
+}
+
+.menu {
+    background-color: #fff !important;
+    padding: 2rem !important;
+}
+
+[data-theme='dark'] .menu {
+    background-color: #1d1e26 !important;
+}
+
+.menu__link {
+    padding: 10px !important;
+}

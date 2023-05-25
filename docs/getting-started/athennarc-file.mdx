@@ -1,0 +1,286 @@
+---
+title: AthennaRC File
+sidebar_position: 3
+description: Understand what is the purpose of the .athennarc.json file.
+tags:
+  - Getting Started
+  - AthennaRC File
+---
+
+# AthennaRC File
+
+Understand what is the purpose of the .athennarc.json file.
+
+## Introduction
+
+Inside the root directory of your project, there is a file
+called `.athennarc.json` which is responsible for configuring
+the workspace and certain runtime settings of your Athenna
+application.
+
+## RC file vs Configurations
+
+The responsible for the RC file is configuring the workspace
+and certain runtime settings to bootstrap your Athenna
+application properly. Also, when working with `.json` files is
+very easy to manipulate the values of it, making it possible
+to make changes on the file in runtime. Let's see an example
+where Athenna manipulates your RC file:
+
+```bash
+./node artisan make:service UserService
+```
+
+Athenna will create the service file in your project but
+also register it inside your `.athennarc.json` file:
+
+```json
+{
+  "services": [
+    "#app/Services/UserService"
+  ]
+}
+```
+
+## The `preloads` property
+
+An array of files that will be loaded when your application
+is bootstrapping. The files are loaded after booting the
+service providers. You can do anything you want in preload
+files. Check the example bellow:
+
+```typescript filename="say-hello.js"
+import { Log } from '@athenna/logger'
+import { Config } from '@athenna/core'
+
+Log.info(`Hello from ${Config.get('app.name')} application!`)
+```
+```json
+{
+  "preloads": [
+    "./bootstrap/preloads/say-hello.js"
+  ]
+}
+```
+
+## The `providers` property
+
+An array of service providers to load when the application
+is bootstrapping:
+
+```json
+{
+  "providers": [
+    "@athenna/core/providers/CoreProvider",
+    "@athenna/http/providers/HttpRouteProvider",
+    "@athenna/http/providers/HttpServerProvider"
+  ]
+}
+```
+
+:::tip
+
+More information about service providers could be found at
+[service providers documentation section](https://athenna.io/docs/the-basics/http/controllers).
+
+:::
+
+## The `services` property
+
+This property is responsible to register your application
+services or from some library inside the service container.
+In most cases, it is better to simply instantiate your services,
+but in others you might have different implementations for
+some interface, using [inversion of control](https://www.educative.io/answers/what-is-inversion-of-control)
+in these cases could be an exceptional idea to register your
+services in the container:
+
+```json
+{
+  "services": [
+    "#app/Services/AppService",
+    "./app/Services/OtherService.js"
+  ]
+}
+```
+
+## The `commands` property
+
+An object that is responsible to register your application
+commands and their respective settings. The key of the
+commands object needs to be exactly your command signature
+without any arguments, flags or spaces. Also, the value
+of it could be the command path or an object with the
+"path" key inside:
+
+```json
+{
+  "commands": {
+    "make:exception": "@athenna/core/commands/MakeExceptionCommand",
+    "make:facade": {
+      "path": "@athenna/core/commands/MakeFacadeCommand",
+      "destination": "./src/providers/facades",
+      "loadApp": false,
+      "stayAlive": false,
+      "environments": ["console"]
+    }
+  }
+}
+```
+
+:::tip
+
+More information about commands could be found at
+[cli commands documentation section](https://athenna.io/docs/the-basics/cli/commands).
+
+:::
+
+## The `templates` property
+
+Map your application commands templates with their respective
+path. The templates mapped in this object will be used by your
+`make` commands to generate the resource with some specific
+code template:
+
+```json
+{
+  "templates": {
+    "exception": "node_modules/@athenna/core/templates/exception.edge",
+    "facade": "node_modules/@athenna/core/templates/facade.edge",
+  }
+}
+```
+
+## The `directories` property
+
+Map your application directories with their respective
+base path. The [`Path`](https://athenna.io/docs/digging-deeper/helpers#path)
+class will use the directories mapped in this object to
+resolve the paths of your application:
+
+```json
+{
+  "directories": {
+    "bin": "bin",
+    "src": "src",
+    "app": "app",
+    "services": "app/Services",
+    "exceptions": "app/Exceptions",
+    "repositories": "app/Repositories",
+    "console": "app/Console",
+    "commands": "app/Console/Commands",
+    "http": "app/Http",
+    "controllers": "app/Http/Controllers",
+    "middlewares": "app/Http/Middlewares",
+    "interceptors": "app/Http/Interceptors",
+    "terminators": "app/Http/Terminators",
+    "bootstrap": "bootstrap",
+    "config": "config",
+    "database": "database",
+    "seeders": "database/seeders",
+    "migrations": "database/migrations",
+    "lang": "lang",
+    "resources": "resources",
+    "views": "resources/views",
+    "locales": "resources/locales",
+    "nodeModules": "node_modules",
+    "nodeModulesBin": "node_modules/.bin",
+    "providers": "providers",
+    "facades": "providers/facades",
+    "public": "public",
+    "static": "public/static",
+    "assets": "public/assets",
+    "routes": "routes",
+    "storage": "storage",
+    "logs": "storage/logs",
+    "tests": "tests",
+    "stubs": "tests/Stubs"
+  }
+}
+```
+
+The paths above are the default ones used by Athenna to resolve
+your application paths. You can change one of then or many
+if you want, your directories defined in `directories` property
+will always be merged with the defaults.
+
+Athenna always rely on [`Path`](https://athenna.io/docs/digging-deeper/helpers#path)
+class methods to find files and directories that are used
+internally by the framework, like configuration file, route
+files, entry points and many others. Changing the `directories` property
+could be very useful when you are building your own project structure.
+
+## The `controllers` property
+
+An array with the controllers of your application. The
+controllers registered in this array will be registered
+in the service container to be accessed easily by your
+Route facade:
+
+```json
+{
+  "controllers": [
+    "#app/Http/Controllers/AppController",
+    "./app/Http/Controllers/OtherController.js"
+  ]
+}
+```
+
+## The `middlewares` property
+
+An array with the middlewares of your application. The
+middlewares registered in this array will be registered
+in the service container to be accessed easily by your
+Route facade:
+
+```json
+{
+  "middlewares": [
+    "#app/Http/Middlewares/AppMiddleware",
+    "./app/Http/Interceptors/AppInterceptor.js"
+  ]
+}
+```
+
+:::tip
+
+More information about commands could be found at
+[http middlewares documentation section](https://athenna.io/docs/rest-api-application/middlewares).
+
+:::
+
+## The `namedMiddlewares` property
+
+Map the named middlewares of your application. Named
+middlewares could be configured using the `@Middleware`
+annotation, but if you are not using TypeScript in your
+application, you can use this object to map your named
+middlewares. Named middlewares are very useful to be used
+in your route declaration:
+
+```json
+{
+  "namedMiddlewares": {
+    "app": "#app/Http/Middlewares/AppMiddleware",
+    "intercept": "./app/Http/Interceptors/AppInterceptor.js"
+  }
+}
+```
+
+## The `globalMiddlewares` property
+
+An array with the global middlewares of your application.
+Global middlewares could be configured using the `@Middleware`
+annotation, but if you are not using TypeScript in your
+application, you can use this object to map your named
+middlewares. Global middlewares are executed every time
+in any request of your application:
+
+```json
+{
+  "globalMiddlewares": [
+    "#app/Http/Middlewares/AppMiddleware",
+    "./app/Http/Interceptors/AppInterceptor.js"
+  ]
+}
+```

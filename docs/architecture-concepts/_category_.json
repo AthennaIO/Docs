@@ -1,0 +1,10 @@
+{
+  "label": "Architecture Concepts",
+  "position": 3,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "slug": "/architecture-concepts",
+    "description": "Understand how Athenna Framework works under the hood."
+  }
+}

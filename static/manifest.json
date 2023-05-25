@@ -1,0 +1,20 @@
+{
+  "name": "Athenna Framework",
+  "short_name": "Athenna",
+  "display": "standalone",
+  "scope": "./",
+  "start_url": "./index.html",
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://docusaurus.io/manifest.json"
+    }
+  ],
+  "icons": [
+    {
+      "src": "img/logos/logo.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    }
+  ]
+}

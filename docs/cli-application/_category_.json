@@ -1,0 +1,10 @@
+{
+  "label": "CLI Application",
+  "position": 6,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "slug": "/cli-application",
+    "description": "Understand how to map your CLI application routes."
+  }
+}

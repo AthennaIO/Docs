@@ -1,0 +1,531 @@
+---
+title: Configuration
+sidebar_position: 4
+description: Understand the initial configurations of your project.
+tags:
+  - Getting Started
+  - Configuration
+---
+
+# Configuration
+
+Understand the initial configurations of your project.
+
+## Environment configuration
+
+It is often helpful to have different configuration values
+based on the environment where the application is running.
+For example, you may wish to use a different storage driver
+locally than you do on your production server.
+
+To make this a cinch, Athenna utilizes the [dotenv](https://www.npmjs.com/package/dotenv)
+Node.js library. In a fresh Athenna installation, the root
+directory of your application will contain a `.env.example` file
+that defines many common environment variables. During the
+Athenna installation process, this file will automatically
+be copied to `.env` and `.env.test`.
+
+:::note
+
+If you are not using the Laravel project template, you can
+simply create a `.env` file in the root path of your
+application and Athenna will automatically resolve it for
+you.
+
+:::
+
+Athenna default `.env` file contains some common configuration
+values that may differ based on whether your application is
+running locally or on a production. These values are then
+retrieved from various Athenna configuration files within the
+`config` directory using Athenna `Env()` function.
+
+If you are developing with a team, you may wish to continue
+including a `.env.example` file with your application. By
+putting placeholder values in the example configuration file,
+other developers on your team can clearly see which environment
+variables are needed to run your application.
+
+:::tip
+
+Any variable in your `.env` file can be overridden by
+external environment variables such as server-level or
+system-level environment variables. But off course you
+can turn off this behavior setting the `OVERRIDE_ENV=true`
+variable before running your application, if this variable
+is set to true, all environment variables set in `.env`
+will override the externals.
+
+:::
+
+:::caution
+
+Your `.env` file should not be committed to your application
+source control, since each developer/server using your
+application could require a different environment configuration.
+Furthermore, this would be a security risk in the event an
+intruder gains access to your source control repository,
+since any sensitive credentials would get exposed.
+
+:::
+
+### Determining the current environment
+
+Before loading your application's environment variables,
+Athenna determines if either the `NODE_ENV` environment
+variable has been externally provided or if the `--env` Artisan
+flag has been specified. If so, Athenna will attempt to load
+the `.env.${NODE_ENV}` file if it exists. If it does not exist,
+Athenna will try to find the `NODE_ENV` value inside the `.env` file,
+if it exists, Athenna will save its value and repeat the process
+above. Finally, if the `NODE_ENV` is not present in the file,
+Athenna will load the `.env` file by default if it exists.
+
+Running providing `--env` flag in Artisan:
+
+```bash
+./node artisan serve --env=local
+```
+
+Running providing NODE_ENV externally:
+
+```bash
+NODE_ENV=local ./node artisan serve
+```
+
+Let's check some practical examples. This is the default
+`.env` file that comes in Athenna project:
+
+```dotenv
+HOST=localhost
+PORT=1335
+NODE_ENV=local
+
+APP_NAME=Athenna
+APP_DEBUG=true
+APP_URL=http://${HOST}:${PORT}
+APP_DOMAIN=${HOST}
+APP_DOCUMENTATION=${APP_URL}
+APP_SOURCE=https://github.com/AthennaIO
+
+LOG_HTTP=true
+LOG_CHANNEL=application
+```
+
+In the `.env` file above, you can see that we have the
+`NODE_ENV=local`. This means that if you create a new
+`.env.local` file in your project root path, Athenna
+will load it instead of `.env` if running your application
+without a predefined environment.
+
+### Get an environment variable value
+
+You can get environment variables using the `Env()` function:
+
+```typescript
+import { Env } from '@athenna/config'
+
+const defaultValue = 'Athenna'
+
+const appName = Env('APP_NAME', defaultValue)
+```
+
+All environment variables in your .env file and inside
+`process.env` object are always interpreted as strings.
+But when using the `Env()` function, it will auto cast the
+value for you. Check the comparison:
+
+| Value in .env                   | 	Value returned by Env function |
+|:--------------------------------|--------------------------------:|
+| true **(boolean)**              |             	true **(boolean)** |
+| "true" **(string)**             |             	true **(boolean)** |
+| 10 **(number)**                 |                	10 **(number)** |
+| "10" **(string)**               |                	10 **(number)** |
+| 10.090909 **(float)**           |          	10.090909 **(float)** |
+| "10.090909" **(string)**        |          	10.090909 **(float)** |
+| {"name":"Paulo"} **(json)**     | 	{ name: "Paulo" } **(Object)** |
+| "{"name":"Paulo"}" **(string)** | 	{ name: "Paulo" } **(Object)** |
+
+Let's see a more practical example of it:
+
+```typescript
+process.env.PORT = '3000'
+process.env.APP_DEBUG = 'true'
+process.env.APP_JSON = '{"name":"Paulo"}'
+
+console.log(Env('PORT')) // 3000 <- number
+console.log(Env('APP_DEBUG')) // true <- boolean
+console.log(Env('APP_JSON')) // { name: "Paulo" } <- object
+```
+
+There will certainly have scenarios in your business rule
+where you explicitly need an environment variable with value
+`true`, `10` or `{"name":"Paulo"}` to be a string. To solve
+this, you can turn off the auto cast when using the `Env()` function:
+
+```typescript
+process.env.PORT = '3000'
+process.env.APP_DEBUG = 'true'
+process.env.APP_JSON = '{"name":"Paulo"}'
+
+const autoCast = false
+const defaultValue = undefined
+
+console.log(Env('PORT', defaultValue, autoCast)) // 3000 <- string
+console.log(Env('APP_DEBUG', defaultValue, autoCast)) // true <- string
+console.log(Env('APP_JSON', defaultValue, autoCast)) // {"name":"Paulo"} <- string
+```
+
+Environment variables can parse other environment variables
+too. See the example above:
+
+```dotenv
+HOST=localhost
+PORT=3000
+
+APP_URL=http://${HOST}:${PORT}
+```
+```typescript
+console.log(Env('APP_URL')) // "http://localhost:3000"
+```
+
+## Configuration files
+
+All the configuration files for the Athenna framework are
+stored in the `config` directory if you are using Laravel
+based project template. Each option is documented, so feel
+free to look through the files and get familiar with the
+options available to you.
+
+Athenna needs almost no additional configuration out of
+the box. You are free to get started developing! Each
+option is documented, so feel free to look through the
+files and get familiar with the options available to you.
+It contains several options such as debug, environment and
+locale that you may wish to change, according to your
+application.
+
+### Manipulating configuration values
+
+You may easily access your configuration values using the
+global `Config` helper class. The configuration values may
+be accessed using `"dot (.)"` syntax, which includes the
+name of the file and option you wish to access. Let's cover
+some methods bellow:
+
+#### `Config.get()`
+
+The `get()` method will return the value of your configuration.
+You can also set a default value as second parameter that will
+be returned if the configuration option does not exist:
+
+```typescript
+import { Config } from '@athenna/config'
+
+const defaultValue = 'Athenna'
+const name = Config.get('app.name', defaultValue)
+
+console.log(name) // MyAppName
+```
+
+:::tip
+
+You can get all the configuration values using `get()` method
+without any key:
+
+```typescript
+console.log(Config.get()) // { app: {...}, http: {...}, ... }
+```
+
+:::
+
+#### `Config.set()`
+
+The `set()` method is very useful to set or change the value
+of some configuration in runtime:
+
+```typescript
+import { Config } from '@athenna/config'
+
+Config.set('app.name', 'Athenna Framework')
+
+console.log(Config.get('app.name')) // Athenna Framework
+```
+
+:::warning
+
+The `Config.set()` method does not change the values in
+the configuration file, only in runtime. To do that, you
+will need to use the [Config.rewrite()](https://athenna.io/docs/getting-started/configuration#configrewrite)
+method.
+
+:::
+
+#### `Config.safeSet()`
+
+If you are not sure if some configuration value is already
+set of not, you can use the `safeSet()` method instead to
+not overwrite something that was already defined:
+
+```typescript
+import { Config } from '@athenna/config'
+
+console.log(Config.get('app.name')) // MyAppName
+
+Config.safeSet('app.name', 'Athenna Framework')
+
+console.log(Config.get('app.name')) // MyAppName
+```
+
+#### `Config.delete()`
+
+The `delete()` method could be used to delete some configuration
+value:
+
+```typescript
+import { Config } from '@athenna/config'
+
+Config.delete('app.name')
+
+console.log(Config.get('app.name')) // undefined
+```
+
+:::warning
+
+Just like `Config.set()` method, `Config.delete()` does
+not change the values in the configuration file, only
+in runtime. To do that you will need to use the
+`Config.rewrite()` method.
+
+:::
+
+#### `Config.rewrite()`
+
+The `rewrite()` method is very useful for rewriting the
+configuration file. Very useful when you want to
+programmatically modify the configuration file source code.
+This method uses the [magicast](https://github.com/unjs/magicast)
+library under the hood to do that:
+
+```typescript
+import { Config } from '@athenna/config'
+
+Config.set('app.name', 'Athenna Framework')
+
+await Config.rewrite('app')
+```
+
+:::warning
+
+Let's suppose that you want to set a function as a value,
+you can use builders.functionCall function of [magicast](https://github.com/unjs/magicast)
+library to do that:
+
+```typescript
+import { builders } from 'magicast'
+import { Config } from '@athenna/config'
+
+Config.set('app.name', builders.functionCall('Env', ['MY_APP_NAME']))
+
+await Config.rewrite('app')
+```
+
+The example above will produce the following code in `config/app.ts`:
+
+```typescript
+export default {
+    name: Env('MY_APP_NAME')
+    ...
+}
+```
+
+:::
+
+#### `Config.is()`
+
+The `is()` method could be used to validate if your
+configuration value matches some other value:
+
+```typescript
+import { Config } from '@athenna/config'
+
+if (Config.is('app.name', 'Athenna')) {
+  // do something
+}
+```
+
+You can set an array as second parameter to `is()` method.
+If any value in the array matches the configuration value,
+the method will return true:
+
+```typescript
+import { Config } from '@athenna/config'
+
+if (Config.is('app.name', ['Athenna', 'MyAppName'])) {
+  // do something
+}
+```
+
+:::tip
+
+You can use the `isNot()` method to do the negated validation.
+
+:::
+
+#### `Config.existsAll()`
+
+The `existsAll()` method could be used to validate if an
+array of configuration keys exists or not:
+
+```typescript
+import { Config } from '@athenna/config'
+
+if (Config.existsAll(['app.name', 'app.version'])) {
+  // do something
+}
+```
+
+:::tip
+
+You can use the `notExistsAll()` method to do the negate
+validation.
+
+:::
+
+#### `Config.clear()`
+
+The `clear()` method could be used to clear all the configuration
+values:
+
+```typescript
+import { Config } from '@athenna/config'
+
+Config.clear()
+
+console.log(Config.get()) // {}
+```
+
+#### `Config.load()`
+
+The `load()` method could be used to load some configuration
+file path:
+
+```typescript
+import { Path } from '@athenna/common'
+import { Config } from '@athenna/config'
+
+await Config.load(Path.stubs('config/test.ts'))
+
+console.log(Config.get('test')) // { ... }
+```
+
+#### `Config.safeLoad()`
+
+The `safeLoad()` method will only load the file path if it
+is not defined:
+
+```typescript
+import { Path } from '@athenna/common'
+import { Config } from '@athenna/config'
+
+await Config.safeLoad(Path.stubs('config/app.ts'))
+```
+
+#### `Config.loadAll()`
+
+The `loadAll` method will load all files found inside some
+configuration path:
+
+```typescript
+import { Path } from '@athenna/common'
+import { Config } from '@athenna/config'
+
+await Config.loadAll(Path.stubs('config'))
+```
+
+### Define my own configuration path
+
+If you are using the [slim](https://athenna.io/docs/getting-started/installation#laravel-project-structure)
+project structure, or you are building your own project
+structure, you are not going to have the config directory
+in your project root path.
+
+You will have two options now:
+
+1. If you are using the [slim](https://athenna.io/docs/getting-started/installation#laravel-project-structure)
+project structure, you can create the `config` directory inside your `src` folder.
+2. Specify to Athenna a different path to your `config` directory.
+
+:::note
+
+The [slim](https://athenna.io/docs/getting-started/installation#laravel-project-structure)
+project structure is using the second option above to
+specify to Athenna that the configuration files will
+be inside of `src/config` directory. Check the examples
+above how this implementation works.
+
+:::
+
+To specify your application directories to Athenna, you can
+open the `.athennarc.json` file and add the `directories`
+property to it. If you are using [slim](https://athenna.io/docs/getting-started/installation#laravel-project-structure)
+project structure, you will already have this property
+defined.
+
+The `directories` property is an object that maps the directory
+base path that the [`Path`](https://athenna.io/docs/digging-deeper/helpers#path)
+class will use to resolve your application paths:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.config()) // /path/to/your/project/config
+```
+
+All the `directories` key names follow the [`Path`](https://athenna.io/docs/digging-deeper/helpers#path)
+class methods names. This means that if you want to change
+what is returned by the `Path.config()` method, you will
+need to add the `config` key to the `directories` object:
+
+```json
+{
+  "directories": {
+    "config": "src/config"
+  }
+}
+```
+
+Now when calling the `Path.config()` method, it will return
+a different path:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.config()) // /path/to/your/project/src/config 👈
+```
+
+Athenna always rely on [`Path`](https://athenna.io/docs/digging-deeper/helpers#path)
+class methods to find files and directories that are used
+internally by the framework, like configuration file, route
+files, entry points and many others.
+
+Check [the directories property documentation section](https://athenna.io/docs/getting-started/athennarc-file#the-directories-property)
+for more information about the `directories` property. And
+check [the do your own structure documentation section](https://athenna.io/docs/getting-started/directory-structure#do-your-own-structure)
+for more information about how to create your own project
+structure.
+
+## Debug mode
+
+The `debug` option in your `config/app.ts` configuration
+file determines how much information about your application
+is actually displayed to you and for who is going to consume
+your application. By default, this option is set to respect
+the value of the `APP_DEBUG` environment variable, which is
+stored in your `.env` file.
+
+For local development, you should set the `APP_DEBUG`
+environment variable to `true`. In your production environment,
+this value should always be `false`, if the variable is
+set to `true` in production, you risk exposing sensitive
+configuration values to your application's end users.

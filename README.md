@@ -1,6 +1,6 @@
 # Docs 📜
 
-> Athenna documentation website using Next.js. A fork from [Dracula UI website](https://ui.draculatheme.com/).
+> Athenna documentation website using [Docusaurus](https://docusaurus.io/).
 
 [![GitHub followers](https://img.shields.io/github/followers/athennaio.svg?style=social&label=Follow&maxAge=2592000)](https://github.com/athennaio?tab=followers)
 [![GitHub stars](https://img.shields.io/github/stars/athennaio/ioc.svg?style=social&label=Star&maxAge=2592000)](https://github.com/athennaio/ioc/stargazers/)

@@ -1,0 +1,10 @@
+{
+  "label": "Introduction",
+  "position": 1,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "slug": "/introduction",
+    "description": "Introduction to Athenna Framework."
+  }
+}
