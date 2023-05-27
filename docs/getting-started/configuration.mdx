@@ -161,7 +161,8 @@ console.log(Env('APP_JSON')) // { name: "Paulo" } <- object
 There will certainly have scenarios in your business rule
 where you explicitly need an environment variable with value
 `true`, `10` or `{"name":"Paulo"}` to be a string. To solve
-this, you can turn off the auto cast when using the `Env()` function:
+this, you can turn off the auto cast when using the `Env()`
+function:
 
 ```typescript
 process.env.PORT = '3000'
