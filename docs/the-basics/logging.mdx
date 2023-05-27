@@ -13,4 +13,278 @@ Understand how you can use the Athenna logging API.
 
 ## Introduction
 
+To help you learn more about what's happening within your
+application, Athenna provides robust logging services that
+allow you to log messages to file, console, buckets and even
+to Slack to notify your entire team.
+
+Athenna logging is based on "channels". Each channel represents
+a specific way of writing log information. For example,
+the `application` channel writes log of your application when
+bootstrapping, while the `request` channel writes log of
+the http requests that your application receives.
+
+## Configuration
+
+All the configuration options for your application's logging
+behavior are housed in the `config/logging.ts` configuration
+file. This file allows you to configure your application's
+log channels, so be sure to review each of the available
+channels and their options. We'll review a few common options
+below.
+
+## Available channel drivers
+
+Each log channel is powered by a "driver". The driver determines
+how and where the log message is actually transported. The
+following log channel drivers are available in every Athenna
+application. An entry for most of these drivers is already
+present in your application's `config/logging.ts` configuration
+file, so be sure to review this file to become familiar with
+its contents:
+
+| Driver name |                                                      Description |
+|:------------|-----------------------------------------------------------------:|
+| `stack`     |        A wrapper to facilitate creating "multi-channel" channels |
+| `console`   | Transports the log directly to the terminal with `stdout/stderr` |
+| `file`      |                                     Transports the log to a file |
+| `null`      |                                        Discards all log messages |
+| `slack`     |                    Transports the log message to a Slack channel |
+| `discord`   |                  Transports the log message to a Discord channel |
+| `telegram`  |                    Transports the log message to a Telegram chat |
+
+### Channel prerequisites
+
+Almost all channels doesn't need any additional configuration to
+work. But some of than need a couple of changes in
+`config/logging.ts` file to be able to use. They are `slack`,
+`discord` and `telegram`.
+
+#### Configuring the Slack channel
+
+The `slack` channel only requires the `url` property inside
+options. This URL should match a URL for an [`incoming webhook`](https://api.slack.com/messaging/webhooks)
+that you have configured for your Slack team.
+
+```typescript
+slack: {
+  driver: 'slack',
+  level: 'fatal',
+  url: 'your-slack-webhook-url', 👈
+
+  formatter: 'message',
+  formatterConfig: {}
+}
+```
+
+#### Configuring the Discord channel
+
+The `discord` channel requires the `url` and `username`
+properties inside options. The URL should match a URL for an
+[`incoming webhook`](https://www.digitalocean.com/community/tutorials/how-to-use-discord-webhooks-to-get-notifications-for-your-website-status-on-ubuntu-18-04)
+that you have configured for your Discord server. And the
+username is just the name of the bot that will deliver the
+message.
+
+```typescript
+discord: {
+  driver: 'discord',
+  level: 'fatal',
+  username: 'Athenna', 👈
+  url: 'your-discord-webhook-url', 👈
+
+  formatter: 'message',
+  formatterConfig: {}
+}
+```
+
+#### Configuring the Telegram channel
+
+The `telegram` channel requires the `token` and `chatId`
+properties inside options. The token should match a
+[`Telegram bot token`](https://core.telegram.org/bots)
+that you have created talking with `Bot Father`. And the
+chatId is just the id of the chat that the bot will deliver
+the message.
+
+```typescript
+telegram: {
+  driver: 'telegram',
+  level: 'fatal',
+  chatId: 0, 👈
+  parseMode: 'HTML',
+  token: 'your-telegram-bot-token', 👈
+
+  formatter: 'message',
+  formatterConfig: {}
+}
+```
+
+## Writing log messages
+
+You may write information to the logs using the `Log`
+[`facade`](/docs/architecture-concepts/facades). The logger
+provides the seven logging levels:
+
+```typescript
+import { Log } from '@athenna/logger'
+
+const message = 'Hello Athenna!'
+
+Log.trace(message)
+Log.debug(message)
+Log.info(message)
+Log.success(message)
+Log.warn(message)
+Log.error(message)
+Log.fatal(message)
+```
+
+You may call any of these methods to log a message for the
+corresponding level. By default, the message will be written
+to the default log channel as configured by your
+`config/logging.ts` configuration file:
+
+```typescript
+import { WelcomeService } from '#app/Services/WelcomeService'
+
+export class WelcomeController {
+  @Inject()
+  private welcomeService: WelcomeService
+
+  public async show({ request, response }) {
+    const data = await this.welcomeService.findOne()
+
+    Log.info(`Showing the welcome message for ip: ${request.ip}`)
+
+    return response.status(200).send(data)
+  }
+}
+```
+
+### Writing to specific channels
+
+Sometimes you may wish to log a message to a channel other
+than your application's default channel. You may use the
+`channel` method on the `Log` facade to retrieve and log to
+any channel defined in your configuration file:
+
+```typescript
+Log.channel('slack').info('Hello from Athenna!')
+```
+
+### Building log stacks
+
+As mentioned previously, the `stack` driver allows you to
+combine multiple channels into a single log channel for
+convenience.
+To illustrate how to use log stacks, let's take a look at an
+example configuration that you might see in a production
+application:
+
+Take note of the `level` configuration option present in
+`slack` channel of your `config/logging.ts` file:
+
+```typescript
+channels: {
+    stack: {
+      driver: 'stack',
+      channels: ['application', 'slack']
+    },
+
+    application: {
+      driver: 'console',
+      level: 'trace',
+
+      formatter: 'simple'
+    },
+
+    slack: {
+      driver: 'slack',
+      level: 'error',
+      url: 'your-slack-webhook-url',
+
+      formatter: 'message'
+    }
+}
+```
+
+Let's dissect this configuration. First, notice our `stack`
+channel aggregates two other channels via its channel option:
+`application` and `slack`. So, when logging messages, both of
+these channels will have the opportunity to log the message.
+However, as we will see below, whether these channels
+actually log the message may be determined by the message's
+severity / "level".
+
+#### Log levels {#id-log-levels}
+
+Take note of the `level` configuration option present on the
+`application` and `slack` channel configurations in the
+example above.
+This option determines the minimum "level" a message must be
+in order to be logged by the channel. In descending order of
+severity, these log levels are: **fatal, error, warn, success,
+info, debug** and **trace**.
+
+So, imagine we log a message using the `debug` method:
+
+```typescript
+Log.debug('An informational message.')
+```
+
+Given our configuration, the `application` channel will write
+the message to the system log; however, since the error
+message is
+not `error` or above, it will not be sent to Slack. However,
+if we log an `fatal` message, it will be sent to both the
+system
+log and Slack since the `fatal` level is above our minimum
+level threshold for both channels:
+
+```typescript
+Log.fatal('The application is down!')
+```
+
+### Writing styled log messages
+
+When using the `Log` facade you have the power to add style to
+your log messages:
+
+```typescript
+Log.info('({yellow, bold} Hello) ({green, italic} World)!')
+```
+
+Athenna uses [chalk](https://www.npmjs.com/package/chalk) API
+under the hood to parse the methods inside the brackets
+(`({...chalkMethods} yourLogString)`), the example above could
+also be done using [chalk](https://www.npmjs.com/package/chalk) directly:
+
+```typescript
+import chalk from 'chalk'
+
+Log.info(`${chalk.yellow.bold('Hello')} ${chalk.green.italic('World')}!`)
+```
+
+### Runtime configurations
+
+It is also possible to set runtime configurations when using the
+`Log` facade. This way you will never be total dependent
+from `config/logging.ts` configuration file. To accomplish this,
+you may pass a configuration object to the `config` method
+of Log facade and then call the `channel` method again to set
+up the configurations for the specified driver:
+
+```typescript
+const config = { url: 'other-slack-webhook-url' }
+
+// GOOD!! Configuration is now set for drivers.
+Log.config(config).channel('slack').info('Hello from Athenna!')
+
+// BAD!! Configuration is not going to be set for drivers.
+Log.config(config).info('Hello from Athenna!')
+```
+
+## Formatters
+
 Coming soon
