@@ -120,6 +120,56 @@ telegram: {
 }
 ```
 
+### Implementing your own driver
+
+You can implement your own `Log` driver using the
+`DriverFactory` class, but your class needs to implement
+the `transport` method and extends `Driver` class:
+
+```typescript
+import { Driver } from '@athenna/logger'
+
+export class ConsoleLogDriver extends Driver {
+  public transport(level: string, message: any) {
+   /**
+    * Verify if this log could be transported based on the level.
+    */
+    if (!this.couldBeTransported(level)) {
+      return
+    }
+
+    let formatted = this.format(level, message)
+
+    if (this.driverConfig.addBar) {
+        formatted = formatted.concat('- BAR')
+    }
+
+    console.log(formatted)
+  }
+}
+```
+
+Now we just need to use the `DriverFactory` to register our new driver and set a name for him:
+
+```typescript
+import { DriverFactory } from '@athenna/logger'
+
+DriverFactory.createDriver('consoleLog', ConsoleLogDriver)
+```
+
+Finally, we can start using our new driver in channels of `config/logging.js`:
+
+```typescript
+channels: {
+    consoleLogChannel: {
+        driver: 'consoleLog',
+        addBar: true,
+
+        formatter: 'simple'
+    }
+}
+```
+
 ## Writing log messages
 
 You may write information to the logs using the `Log`
@@ -285,6 +335,88 @@ Log.config(config).channel('slack').info('Hello from Athenna!')
 Log.config(config).info('Hello from Athenna!')
 ```
 
-## Formatters
+## Available channel formatters
 
-Coming soon
+Each log channel is powered by a "formatter". The formatter
+determines how the log message is actually formatted.
+The following log channel formatters are available in every
+Athenna application. An entry for most of these formatters is
+already present in your application's `config/logging.ts`
+configuration file, so be sure to review this file to become
+familiar with its contents:
+
+| Formatter name |                                                                                             Description |
+|:---------------|--------------------------------------------------------------------------------------------------------:|
+| `cli`          |                                                                  Simple very useful when building CLI's |
+| `json`         |                                     Format the entire data provided by the log message to a JSON string |
+| `simple`       |                                      Format the log message to show the level, date, message and the MS |
+| `request`      |                   Focus in formatting the log message with common fields that shows up in http requests |
+| `message`      | Format the log message with an emoji of it respective level, useful for using with drivers like Discord |
+
+### Writing using specific formatter
+
+It is also possible to set `formatter` and `formatterConfig`
+in runtime configurations when using the `Log` facade:
+
+```typescript
+import chalk from 'chalk'
+
+const config = {
+    formatter: 'simple',
+    formatterConfig: { chalk: chalk.green }
+}
+
+Log.config(config).channel('slack').info('Hello from Athenna!')
+```
+
+### Implementing your own formatter
+
+You can implement your own `Log` formatter using the
+`FormatterFactory` class, but your class needs to implement
+the `format` method and extends `Formatter` class:
+
+```typescript
+import { Formatter } from '@athenna/logger'
+
+export class ConsoleLogFormatter extends Formatter {
+  public format(message: string): string {
+    const level = this.simpleLevel()
+
+    let messageFormatted = this.clean(
+      `${level} - ${this.timestamp()} - (${this.pid()}) ${this.applyColors(
+        message,
+      )}`,
+    )
+
+    if (this.configs.addFoo) {
+        messageFormatted = messageFormatted.concat('- FOO')
+    }
+
+    return messageFormatted
+  }
+}
+```
+
+Now we just need to use the `FormatterFactory` to register our new formatter and set a name for him:
+
+```typescript
+import { FormatterFactory } from '@athenna/logger'
+
+FormatterFactory.createFormatter('consoleLog', ConsoleLogFormatter)
+```
+
+Finally, we can start using our new formatter in channels of `config/logging.js`:
+
+```typescript
+channels: {
+    consoleLogChannel: {
+        driver: 'consoleLog',
+        addBar: true,
+
+        formatter: 'consoleLog',
+        formatterConfig: {
+            addFoo: true
+        }
+    }
+}
+```
