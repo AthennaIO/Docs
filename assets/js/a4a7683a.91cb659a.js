@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[6935],{8567:s=>{s.exports=JSON.parse('{"label":"Views","permalink":"/docs/tags/views","allTagsPath":"/docs/tags","count":1,"items":[{"id":"the-basics/views","title":"Views","description":"Understand how you can use the Athenna view API.","permalink":"/docs/the-basics/views"}]}')}}]);
