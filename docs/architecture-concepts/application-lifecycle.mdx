@@ -195,16 +195,17 @@ When the client request arrives, the server first executes all your
 global middlewares, then it will execute all your route middlewares.
 Once it finishes, it goes for your handler/controller. See the example:
 
-<div className='text--center'>
-    <ThemedImage
-        alt='Start request image'
-        width='500px'
-        sources={{
-            light: '/img/diagrams/request-lifecycle/start-request-light.png',
-            dark: '/img/diagrams/request-lifecycle/start-request-dark.png',
-        }}
-    />
-</div>
+```mermaid
+flowchart LR
+    clientRequest(("Client Request"))
+    globalMiddlewares{"Global Middlewares"}
+    routeMiddlewares{"Route Middlewares"}
+    controller("Controller")
+
+    clientRequest --> globalMiddlewares
+    globalMiddlewares --> routeMiddlewares
+    routeMiddlewares --> controller
+```
 
 ### Finish up
 
@@ -213,16 +214,17 @@ travel back outward through each global interceptor, and then route's
 interceptor, giving the application a chance to modify or examine the
 outgoing response. See the example:
 
-<div className='text--center'>
-    <ThemedImage
-        alt='Finish up request image'
-        width='500px'
-        sources={{
-            light: '/img/diagrams/request-lifecycle/finish-up-request-light.png',
-            dark: '/img/diagrams/request-lifecycle/finish-up-request-dark.png',
-        }}
-    />
-</div>
+```mermaid
+flowchart LR
+    clientRequest(("Client Request"))
+    globalInterceptors{"Global Interceptors"}
+    routeInterceptors{"Route Interceptors"}
+    controller("Controller")
+
+    controller --> globalInterceptors
+    globalInterceptors --> routeInterceptors
+    routeInterceptors --> clientRequest
+```
 
 As you can see in the example, the response content is sent to the client. The
 request finishes for the client but not for the server. Now it's time to
@@ -231,16 +233,13 @@ response has been sent, so you will not be able to send more data to the
 client. It can, however, be useful for sending data to external services, for
 example, create metrics of the entire request. See the example:
 
-<div className='text--center'>
-    <ThemedImage
-        alt='Terminate request image'
-        width='500px'
-        sources={{
-            light: '/img/diagrams/request-lifecycle/terminate-request-light.png',
-            dark: '/img/diagrams/request-lifecycle/terminate-request-dark.png',
-        }}
-    />
-</div>
+```mermaid
+flowchart LR
+    globalTerminators{"Global Terminators"}
+    routeTerminators{"Route Terminators"}
+
+    globalTerminators --> routeTerminators
+```
 
 Finally, once all terminators are executed, the request finishes in the
 server. We've finished our journey through the entire REST API lifecycle 🥳.
@@ -317,16 +316,23 @@ executed the `hello` command defined in our `.athennarc.json` file:
 Since `loadAllCommands` is set to false, the Kernel will load only the `hello`
 command and execute it:
 
-<div className='text--center'>
-    <ThemedImage
-        alt='Execute command image'
-        width='500px'
-        sources={{
-            light: '/img/diagrams/command-lifecycle/execute-command-light.png',
-            dark: '/img/diagrams/command-lifecycle/execute-command-dark.png',
-        }}
-    />
-</div>
+```mermaid
+flowchart LR
+    terminalCommand(("Terminal Command"))
+    igniteLoad{"Ignite.load()"}
+    consoleKernel{"ConsoleKernel"}
+    loadAppEqualsTrue{"loadApp === true"}
+    igniteFire{"Ignite.fire()"}
+    defineArgsAndFlags{"Define arguments and flags"}
+    commandHandler("Command Handler")
+
+    terminalCommand --> igniteLoad
+    igniteLoad --> consoleKernel
+    consoleKernel --> loadAppEqualsTrue
+    loadAppEqualsTrue -- true --> igniteFire
+    loadAppEqualsTrue --> defineArgsAndFlags
+    defineArgsAndFlags --> commandHandler
+```
 
 ### Finish up
 
@@ -334,16 +340,17 @@ Once the command handler function finish, Athenna will verify if the `stayAlive`
 setting is set to true, if so, the application will not be terminated, very
 useful when running command like `repl` and `serve`.
 
-<div className='text--center'>
-    <ThemedImage
-        alt='Finish up command image'
-        width='500px'
-        sources={{
-            light: '/img/diagrams/command-lifecycle/finish-up-command-light.png',
-            dark: '/img/diagrams/command-lifecycle/finish-up-command-dark.png',
-        }}
-    />
-</div>
+```mermaid
+flowchart LR
+    commandHandler("Command Handler")
+    stayAliveEqualsTrue{"stayAlive === true"}
+    leaveAppRunning("Leave application running")
+    processExit("process.exit()")
+
+    commandHandler --> stayAliveEqualsTrue
+    stayAliveEqualsTrue -- true --> leaveAppRunning
+    stayAliveEqualsTrue -- false --> processExit
+```
 
 We've finished our journey through the entire command lifecycle 🥳.
 
