@@ -1,7 +1,7 @@
 {
   "label": "The Basics",
   "position": 4,
-  "collapsed": false,
+  "collapsed": true,
   "link": {
     "type": "generated-index",
     "slug": "/the-basics",

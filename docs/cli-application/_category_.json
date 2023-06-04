@@ -1,7 +1,7 @@
 {
   "label": "CLI Application",
   "position": 6,
-  "collapsed": false,
+  "collapsed": true,
   "link": {
     "type": "generated-index",
     "slug": "/cli-application",

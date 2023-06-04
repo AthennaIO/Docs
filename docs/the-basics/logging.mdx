@@ -308,7 +308,8 @@ Log.info('({yellow, bold} Hello) ({green, italic} World)!')
 Athenna uses [chalk](https://www.npmjs.com/package/chalk) API
 under the hood to parse the methods inside the brackets
 (`({...chalkMethods} yourLogString)`), the example above could
-also be done using [chalk](https://www.npmjs.com/package/chalk) directly:
+also be done using [chalk](https://www.npmjs.com/package/chalk)
+directly:
 
 ```typescript
 import chalk from 'chalk'
@@ -318,12 +319,13 @@ Log.info(`${chalk.yellow.bold('Hello')} ${chalk.green.italic('World')}!`)
 
 ### Runtime configurations
 
-It is also possible to set runtime configurations when using the
-`Log` facade. This way you will never be total dependent
-from `config/logging.ts` configuration file. To accomplish this,
-you may pass a configuration object to the `config` method
-of Log facade and then call the `channel` method again to set
-up the configurations for the specified driver:
+It is also possible to set runtime configurations when using
+the `Log` facade. This way you will never be total
+dependent from `config/logging.ts` configuration file. To
+accomplish this, you may pass a configuration object to the
+`config` method of Log facade and then call the `channel`
+method again to set up the configurations for the specified
+driver:
 
 ```typescript
 const config = { url: 'other-slack-webhook-url' }
@@ -397,7 +399,8 @@ export class ConsoleLogFormatter extends Formatter {
 }
 ```
 
-Now we just need to use the `FormatterFactory` to register our new formatter and set a name for him:
+Now we just need to use the `FormatterFactory` to register
+our new formatter and set a name for him:
 
 ```typescript
 import { FormatterFactory } from '@athenna/logger'
@@ -405,7 +408,8 @@ import { FormatterFactory } from '@athenna/logger'
 FormatterFactory.createFormatter('consoleLog', ConsoleLogFormatter)
 ```
 
-Finally, we can start using our new formatter in channels of `config/logging.js`:
+Finally, we can start using our new formatter in channels
+of `config/logging.ts`:
 
 ```typescript
 channels: {

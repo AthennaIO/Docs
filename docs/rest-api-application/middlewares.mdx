@@ -9,8 +9,247 @@ tags:
 
 # Middlewares
 
-Understand how you can set up middlewares in your REST API application.
+Understand how you can set up middlewares in your REST
+API application.
 
 ## Introduction
 
-Coming soon
+Middleware provides a convenient mechanism for inspecting
+and filtering HTTP requests entering your application.
+For example, Athenna includes a middleware that verifies
+the user of your application is authenticated. If the user
+is not authenticated, the middleware will throw an
+unauthorized error. However, if the user is authenticated,
+the middleware will allow the request to proceed further
+into the application.
+
+Additional middleware can be written to perform a variety
+of tasks besides authentication. For example, a logging
+middleware might log all incoming requests to your
+application.
+
+## Defining middleware
+
+To create a new middleware, use the `make:middleware`
+command:
+
+```shell
+./node artisan make:middleware EnsureApiKeyIsValid
+```
+
+This command will place a new `EnsureApiKeyIsValid` class
+within your `app/Http/Middlewares` directory. In this
+middleware, we will only allow access to the route if the
+supplied api key input matches a specified value. Otherwise,
+we will throw an unauthorized exception:
+
+```typescript
+import { Context, Middleware, MiddlewareContract } from '@athenna/http'
+
+@Middleware()
+export class EnsureApiKeyIsValid implements MiddlewareContract {
+    public async handle(ctx: Context): Promise<void> {
+        if (queries.apiKey !== 'my-api-key') {
+            throw new UnauthorizedException('Your api key does not match with application api key.')
+        }
+    }
+}
+```
+
+As you can see, if the given `apiKey` does not match our
+application api key, the middleware will return an
+unauthorized exception to the client; otherwise, the
+request will be passed further into the application.
+
+It's best to envision middleware as a series of "layers"
+HTTP requests must pass through before they hit your
+application. Each layer can examine the request and even
+reject it entirely.
+
+:::tip
+
+All middleware is resolved via the [`service container`](/docs/architecture-concepts/container),
+so you can use any dependencies you need within a
+middlewares constructor.
+
+:::
+
+## Registering middleware
+
+If you are using `make:middleware` command to register your
+middlewares, Athenna will auto register your middlewares
+inside the `middlewares` property of your `.athennarc.json`
+file:
+
+```json
+{
+  "middlewares": [
+    "#app/Http/Middlewares/EnsureApiKeyIsValid"
+  ]
+}
+```
+
+:::warning
+
+Remember that if you have not created your middleware using
+`make:middleware` command, you will need to manually add it
+to `middlewares` array. If you don't do that, Athenna will
+not register your middleware in the [service container](/docs/architecture-concepts/service-container)
+and you will not be able to use it.
+
+:::
+
+### Global middleware
+
+If you want a middleware to run during every HTTP request
+to your application, you can set the `isGlobal` value to
+true in the `@Middleware` annotation:
+
+```typescript
+import { Context, Middleware, MiddlewareContract } from '@athenna/http'
+
+@Middleware({ isGlobal: true })
+export class EnsureApiKeyIsValid implements MiddlewareContract {
+    public async handle(ctx: Context): Promise<void> {
+        if (queries.apiKey !== 'my-api-key') {
+            throw new UnauthorizedException('Your api key does not match with application api key.')
+        }
+    }
+}
+```
+
+If you are not using TypeScript you can use the
+`globalMiddlewares` array in your `.athennarc.json` file:
+
+```json
+{
+  "globalMiddlewares": [
+    "#app/Http/Middlewares/EnsureApiKeyIsValid"
+  ]
+}
+```
+
+### Assigning middleware to routes
+
+If you would like to assign middleware to specific routes,
+you can use the name of your middleware class in camelCase
+(`ensureApiKeyIsValid`). But we recommend you to assign a
+custom name to your middleware using the `@Middleware`
+annotation:
+
+```typescript
+import { Context, Middleware, MiddlewareContract } from '@athenna/http'
+
+@Middleware({ name: 'auth' })
+export class EnsureApiKeyIsValid implements MiddlewareContract {
+    public async handle(ctx: Context): Promise<void> {
+        if (queries.apiKey !== 'my-api-key') {
+            throw new UnauthorizedException('Your api key does not match with application api key.')
+        }
+    }
+}
+```
+
+If you are not using TypeScript you can use the
+`namedMiddlewares` object in your `.athennarc.json` file:
+
+```json
+{
+  "namedMiddlewares": {
+    "auth": "#app/Http/Middlewares/EnsureApiKeyIsValid"
+  }
+}
+```
+
+Once the middleware name has been defined, you may use the
+`Route.middleware()` method to assign middleware to a route:
+
+```typescript
+Route.get('/welcome', () => {
+    //
+}).middleware('auth')
+```
+
+## Intercept middleware
+
+Sometimes a middleware may need to do some work **before**
+the HTTP response has been sent to the client. For this
+ purpose, you can use the Athenna interceptor middleware.
+To create one, you can use the following command:
+
+```shell
+./node artisan make:interceptor InterceptMiddleware
+```
+
+Just like `make:middleware`, Athenna will auto register the
+middleware if using `make:interceptor` command. The above
+command will produce the following content at
+`app/Http/Interceptors/InterceptMiddleware.ts` file:
+
+```typescript
+import { Interceptor, InterceptContext, InterceptorContract } from '@athenna/http'
+
+@Interceptor()
+export class InterceptMiddleware implements InterceptorContract {
+    public async intercept(ctx: InterceptContext): Promise<unknown> {
+      return ctx.body
+    }
+}
+```
+
+The registration process of Athenna interceptors is the
+same of [middlewares](/docs/rest-api-application/middlewares#registering-middleware).
+
+To assign your interceptor to a route, you can use the
+`Route.interceptor()` method:
+
+```typescript
+Route.get('/welcome', () => {
+    //
+}).interceptor('interceptMiddleware')
+```
+
+## Terminate middleware
+
+Sometimes a middleware may need to do some work **after**
+the HTTP response has been sent to the client. For this
+ purpose, you can use the Athenna interceptor middleware.
+To create one, you can use the following command:
+
+```shell
+./node artisan make:terminator TerminateMiddleware
+```
+
+Just like `make:middleware`, Athenna will auto register the
+middleware if using `make:terminator` command. The above
+command will produce the following content at
+`app/Http/Terminators/TerminateMiddleware.ts` file:
+
+```typescript
+import { Terminator, TerminateContext, TerminatorContract } from '@athenna/http'
+
+@Terminator()
+export class TerminateMiddleware implements TerminatorContract {
+    public async terminate(ctx: TerminateContext): Promise<void> {}
+}
+```
+
+The registration process of Athenna terminators is the
+same of [middlewares](/docs/rest-api-application/middlewares#registering-middleware).
+
+To assign your terminator to a route, you can use the
+`Route.terminator()` method:
+
+```typescript
+Route.get('/welcome', () => {
+    //
+}).terminator('terminateMiddleware')
+```
+
+:::info
+
+The requests log created by Athenna when the `logger`
+property is true in your `config/http.ts` file are handled
+by a terminator middleware! You can see the code [here](https://github.com/AthennaIO/Http/blob/develop/src/Kernels/HttpKernel.ts#L93).
+
+:::

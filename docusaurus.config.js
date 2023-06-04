@@ -35,7 +35,6 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          sidebarCollapsed: true,
           sidebarPath: require.resolve('./src/sidebars.js'),
           editUrl: 'https://github.com/AthennaIO/Docs/tree/main/',
         },
