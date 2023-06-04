@@ -13,4 +13,199 @@ Understand how you can use the Athenna view API.
 
 ## Introduction
 
-Coming soon
+Athenna's view API is specifically for email templates and
+templates used by Artisan commands to generate your
+application files. Our focus at the moment is to be a focused
+framework for development of backend applications, using
+microservices or not. You can still use this API for creating
+monolith application in Athenna, but it will require a little
+bit more of configuration. Nothing prevents us from adding
+support for writing monolithic applications in the future,
+adding useful methods for working with views in your REST API
+for example.
+
+If you think this is an interesting feature, and think you
+can contribute to the project with it, feel free to open a
+[discussion](https://github.com/orgs/AthennaIO/discussions)
+at Athenna organization, any contribution is welcome!
+
+## Creating & rendering views
+
+You may create a view by placing a file with the `.edge`
+extension in any directory of your application's, we recommend
+the `resources/views` directory.
+The `.edge` extension informs the framework that the file
+contains an [Edge template](https://github.com/edge-js/edge).
+Edge templates contain HTML as well as Edge directives that
+allow you to easily log values, create "if" statements,
+iterate over data, and more.
+
+Once you have created a view file, eg: `resources/views/welcome.edge`,
+you may register your view disk inside `config/view.ts` file:
+
+```typescript
+import { Path } from '@athenna/common'
+
+export default {
+  disks: {
+    disk: Path.views(),
+  },
+}
+```
+
+Now you may render it using the `View.render()` or
+`View.renderSync()` methods from `View` facade:
+
+```typescript
+import { View } from '@athenna/view'
+
+await View.render('disk::welcome', { greeting: 'Hello world' })
+```
+
+As you can see, the first argument passed to the
+`View.render()` method corresponds to the name of the view
+disk following the name of the file in the `resources/views`
+directory. The second argument is an object of data that
+should be made available to the view. In this case, we are
+passing the `greeting` variable, which is displayed in the
+view using Edge syntax.
+
+### Nested view disks
+
+View disks may also be nested within subdirectories. "Slash"
+notation may be used to reference nested view disks. For
+example, if your view is stored at
+`resources/views/admin/profile.edge`, you may like so:
+
+```typescript
+import { View } from '@athenna/view'
+
+await View.render('disk::admin/profile', { name: 'Jacob Smith' })
+```
+
+### Rendering raw string
+
+You can render raw template string values using the
+`View.renderRaw()` or `View.renderRawSync()` methods:
+
+```typescript
+await View.renderRaw('<p>Hello {{ name }}</p>', {
+    name: 'Jacob Smith'
+})
+```
+
+:::note
+
+Raw strings do not enjoy the benefits of [template caching](/docs/the-basics/views#optimizing-views)
+as there are not associated with a unique path.
+
+:::
+
+### In-memory views
+
+You can register in-memory views without creating any file
+on the disk. You can find it useful whenever you want
+to split a large template file into several smaller ones
+or also if you want to provide some templates as part of
+a npm package:
+
+```typescript
+import { View } from '@athenna/view'
+
+View.createComponent('myuikit/button', '<button {{ $props.serializeExcept(["title"]) }}>{{ title }}</button>')
+```
+
+You can render the template directly or use it as a
+component with the exact name given to the
+`View.createComponent()` method:
+
+```edge
+@!component('myuikit/button', {
+  title: 'Signup',
+  class: ['btn', 'btn-primary'],
+  id: 'signup'
+})
+```
+
+:::tip
+
+You can also use the `View.createTemplate()` method to
+register templates. The only difference between them is
+that `View.createTemplate()` does not throws errors if
+some template name already exists, instead the old template
+will be replaced.
+
+:::
+
+## Passing data to views
+
+As you saw in the previous examples, you may pass an object of
+data to views to make that data available to the view:
+
+```typescript
+import { View } from '@athenna/view'
+
+await View.render('disk::welcome', { name: 'Jacob Smith' })
+```
+
+When passing information in this manner, the data should be
+an object with key / value pairs. After providing data to a
+view, you can then access each value within your view like so:
+
+```edge
+<p>Welcome {{ name }}!</p>
+```
+
+### Sharing data with all views
+
+Occasionally, you may need to share data with all views that
+are rendered by your application. You may do so using the
+`View` facade's `addProperty()` method. Typically, you should
+place calls to the `View.addProperty()` method within a
+service provider's `boot()` method. You are free to add them
+to the `providers/AppProvider` class or generate a separate
+service provider to house them:
+
+```typescript
+import { View } from '@athenna/view'
+import { ServiceProvider } from '@athenna/ioc'
+
+export default class AppProvider extends ServiceProvider {
+    public async boot() {
+        View.addProperty('key', 'value')
+    }
+}
+```
+
+## Optimizing views
+
+Compiling a template to a JavaScript function is a
+time-consuming process, and hence it is recommended to cache
+the compiled templates in production.
+
+You can control the template caching using the `edge.cache`
+property inside `config/view.ts` file. Just make sure to set
+the value to `true` in the production environment:
+
+```typescript
+import { Path } from '@athenna/common'
+
+export default {
+  disks: {
+    disk: Path.views(),
+  },
+
+  edge: {
+    // Set to `true` in production only
+    cache: true
+  }
+}
+```
+
+All the templates are cached within the memory. Currently,
+we do not have any plans to support on-disk caching since
+the value provided for the efforts is too low.
+
+The raw text does not take up too much space, and even
+keeping thousands of pre-compiled templates in memory should
+not be a problem.
