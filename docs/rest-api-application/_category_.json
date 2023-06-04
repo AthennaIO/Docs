@@ -1,7 +1,7 @@
 {
   "label": "REST API Application",
   "position": 5,
-  "collapsed": false,
+  "collapsed": true,
   "link": {
     "type": "generated-index",
     "slug": "/rest-api-application",

@@ -9,8 +9,177 @@ tags:
 
 # Routing
 
-Understand how you can set up routes for your REST API application.
+Understand how you can set up routes for your REST API
+application.
 
-## Introduction
+## Basic routing
 
-Coming soon
+The most basic Athenna routes accept an url and a closure,
+providing a basic and expressive method of defining routes
+and behavior without complicated routing configuration
+files:
+
+```typescript
+import { Route } from '@athenna/http' // Route Facade
+
+Route.get('/welcome', ({ response }) => {
+    return response.status(200).send({ hello: 'world' })
+})
+```
+
+### Available Router Methods
+
+The router allows you to register routes that respond to
+any HTTP verb:
+
+```typescript
+Route.get(url, callback)
+Route.post(url, callback)
+Route.put(url, callback)
+Route.patch(url, callback)
+Route.delete(url, callback)
+Route.options(url, callback)
+```
+
+Sometimes you may need to register a route that responds to
+multiple HTTP verbs. You may do so using the `any` method
+to respond to all HTTP verbs:
+
+```typescript
+Route.any('/', () => {
+    //
+})
+```
+
+:::tip
+
+When defining multiple routes that share the same `url`,
+routes using the `get`, `post`, `put`, `patch`, `delete`,
+and `options` methods should be defined before routes
+using the `any` and `redirect` methods. This ensures the
+incoming request is matched with the correct route.
+
+:::
+
+## Redirect routes
+
+If you are defining a route that redirects to another
+`url`, you may use the `Route.redirect` method. This
+method provides a convenient shortcut so that you do not
+have to define a full route or controller for performing
+a simple redirect:
+
+```typescript
+Route.redirect('/here', '/there')
+```
+
+By default, `Route.redirect` returns a `302` status code.
+You may customize the status code using the optional
+third parameter:
+
+```typescript
+Route.redirect('/here', '/there', 301)
+```
+
+## The route list
+
+The `route:list` command can easily provide an overview of all the routes that are defined by your application:
+
+```shell
+./node artisan route:list
+```
+
+By default, the route middleware that are assigned to each
+route will not be displayed in the `route:list` output;
+however, you can instruct Athenna to display the route
+middleware by adding the `-m, --middleware` option to the
+command:
+
+```shell
+./node artisan route:list --middleware
+```
+
+## Route parameters
+
+Sometimes you will need to capture segments of the URL
+within your route. For example, you may need to capture
+a user's ID from the URL. You may do so by defining route
+parameters:
+
+```typescript
+Route.get('/user/:id', ({ response, params }) => {
+    return response.send({ user: `User ${params.id}` })
+})
+```
+
+You may define as many route parameters as required by
+your route:
+
+```typescript
+Route.get('/posts/:postId/comments/:commentId', ({ response, params }) => {
+    return response.send({ params })
+})
+```
+
+## Route groups
+
+Route groups allow you to share route attributes, such as
+middleware, across a large number of routes without
+needing to define those attributes on each route.
+
+### Middleware
+
+To assign [`middlewares`](/docs/the-basics/http/middlewares)
+to all routes within a group, you may use the `middleware`
+method before defining the group. Middleware is executed
+in the order they are listed in the array:
+
+```typescript
+Route.group(() => {
+    Route.get('/', () => {
+        // Uses first & second middleware...
+    })
+
+    Route.get('/user/profile', () => {
+        // Uses first & second middleware...
+    })
+}).middleware(['first', 'second'])
+```
+
+### Route prefixes
+
+The prefix method may be used to prefix each route in the
+group with a given URL. For example, you may want to prefix
+all route URLs within the group with `admin`:
+
+```typescript
+Route.group(() => {
+    Route.get('/users', () => {
+        // Matches only the "/admin/users" URL
+    })
+}).prefix('admin')
+```
+
+## Cross-origin resource sharing (CORS)
+
+Cross-Origin Resource Sharing (CORS) is an HTTP-header
+based mechanism that allows a server to indicate any
+origins (domain, scheme, or port) other than its own from
+which a browser should permit loading resources.
+
+Athenna uses the [`@fastify/cors`](https://github.com/fastify/fastify-cors)
+plugin inside `HttpKernel`. All the configurations that
+`@fastify/cors` supports can be set inside `config/http.ts`
+file in the `cors` object.
+
+Cors plugin is registered in your http application by
+default, but you can remove it uninstalling `@fastify/cors`
+from your application, or removing the `cors` object key
+from your `config/http.ts` file.
+
+:::tip
+
+For more information on CORS and CORS headers, please
+consult the [MDN web documentation on CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
+
+:::
