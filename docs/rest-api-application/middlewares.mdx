@@ -108,7 +108,7 @@ true in the `@Middleware` annotation:
 ```typescript
 import { Context, Middleware, MiddlewareContract } from '@athenna/http'
 
-@Middleware({ isGlobal: true })
+@Middleware({ isGlobal: true }) 👈
 export class EnsureApiKeyIsValid implements MiddlewareContract {
     public async handle(ctx: Context): Promise<void> {
         if (queries.apiKey !== 'my-api-key') {
@@ -140,7 +140,7 @@ annotation:
 ```typescript
 import { Context, Middleware, MiddlewareContract } from '@athenna/http'
 
-@Middleware({ name: 'auth' })
+@Middleware({ name: 'auth' }) 👈
 export class EnsureApiKeyIsValid implements MiddlewareContract {
     public async handle(ctx: Context): Promise<void> {
         if (queries.apiKey !== 'my-api-key') {
@@ -167,7 +167,7 @@ Once the middleware name has been defined, you may use the
 ```typescript
 Route.get('/welcome', () => {
     //
-}).middleware('auth')
+}).middleware('auth') 👈
 ```
 
 ## Intercept middleware
@@ -206,7 +206,7 @@ To assign your interceptor to a route, you can use the
 ```typescript
 Route.get('/welcome', () => {
     //
-}).interceptor('interceptMiddleware')
+}).interceptor('interceptMiddleware') 👈
 ```
 
 ## Terminate middleware
@@ -243,7 +243,7 @@ To assign your terminator to a route, you can use the
 ```typescript
 Route.get('/welcome', () => {
     //
-}).terminator('terminateMiddleware')
+}).terminator('terminateMiddleware') 👈
 ```
 
 :::info
