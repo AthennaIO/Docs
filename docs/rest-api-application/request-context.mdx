@@ -13,4 +13,434 @@ Understand the purpose of the request context object.
 
 ## Introduction
 
-Coming soon
+Athenna provides an object inside all Http handlers called
+`ctx`. This property is implemented by the `Context`
+interface imported from `@athenna/http` package.
+
+## The context object
+
+In Athenna as you can see in the previous documentation page
+of [`Middlewares`](/docs/the-basics/http/middlewares) and
+[`Controllers`](/docs/the-basics/http/controllers) we are
+always destructuring the `ctx` property and using like this:
+
+```typescript
+Route.get('/welcome', ({ response }) => {
+    response.status(200).send({ hello: 'world' })
+})
+```
+
+But is the same of doing this:
+
+```typescript
+Route.get('/welcome', (ctx) => {
+    ctx.response.status(200).send({ hello: 'world' })
+})
+```
+
+The `ctx` object is little different for each type of
+handlers, and we will see all the differences previous in
+this documentation page.
+
+### The request object
+
+Athenna `Request` class provides an object-oriented way to
+interact with the current HTTP request being handled by your
+application as well as retrieve the ip, headers, body, and
+files that were submitted with the request.
+
+#### The `ip` getter
+
+With this getter, you will be able to get the ip from where
+the requests were executed:
+
+```typescript
+Route.get('/welcome', ({ request }) => {
+    console.log(request.ip) // 192.168.0.1
+
+    /*....*/
+})
+```
+
+#### The `method` getter
+
+With this getter, you will be able to get the
+[`REST`](https://restfulapi.net/) method of your request:
+
+```typescript
+Route.get('/welcome', ({ request }) => {
+    console.log(request.method) // GET
+
+    /*....*/
+})
+```
+
+#### The `hostUrl` getter
+
+With this getter, you will be able to get the host url of
+the request concatenating the host:port of your application
+and the [`originalUrl`](/docs/the-basics/http/context#id-the-originalUrl-getter)
+of the request:
+
+```typescript
+Route.get('/welcome', ({ request }) => {
+    console.log(request.hostUrl) // http://localhost:1335/welcome
+
+    /*....*/
+})
+```
+
+#### The `baseUrl` getter
+
+With this getter, you will be able to get the url of the
+route without the query params:
+
+```typescript
+Route.get('/welcome', ({ request }) => {
+    console.log(request.baseUrl) // /welcome
+
+    /*....*/
+})
+```
+
+#### The `originalUrl` getter
+
+With this getter, you will be able to get the original url
+with the query params:
+
+```typescript
+Route.get('/welcome', ({ request }) => {
+    console.log(request.originalUrl) // /welcome?hello=world
+
+    /*....*/
+})
+```
+
+#### The `body`, `params`, `queries` and `headers` getters
+
+With these getters, you will be able to retrieve all the
+data inside each one of then:
+
+```typescript
+Route.post('/welcome/:id', ({ request }) => {
+    console.log(request.body) // { hello: 'world' }
+    console.log(request.params) // { id: '1' }
+    console.log(request.queries) // { world: 'hello' }
+    console.log(request.headers) // { 'content-type': 'application/json' }
+
+    /*....*/
+})
+```
+
+#### The `input` and `payload` methods
+
+With these methods you will be able to retrieve only one
+value per call from the request body:
+
+```typescript
+Route.post('/welcome/:id', ({ request }) => {
+    const defaultValue = 'defaultValue'
+
+    console.log(request.input('hello'), 'found') // 'world'
+    console.log(request.input('not-found'), defaultValue) // 'defaultValue'
+
+    console.log(request.payload('hello'), defaultValue) // 'world'
+    console.log(request.payload('not-found'), defaultValue) // 'defaultValue'
+
+    /*....*/
+})
+```
+
+:::tip
+
+As you can see, you can use the second argument of this type
+of methods to set the default value if the key has not been
+found in your request.
+
+:::
+
+You may even use "dot" syntax to retrieve values that are
+nested within JSON arrays / objects:
+
+```typescript
+const name = request.input('user.name')
+```
+
+#### The `only` and `except` methods
+
+If you need to retrieve a subset of the input data, you may
+use the `only` and `except` methods. Both of these methods
+accept a single array or a dynamic list of arguments:
+
+```typescript
+const input = request.only('username', 'password')
+const input = request.only(['username', 'password'])
+
+const input = request.except('credit_card')
+const input = request.except(['credit_card'])
+```
+
+:::warning
+
+The `only` method returns all the key / value pairs that you
+request; however, it will not return key / value pairs that
+are not present on the request body.
+
+:::
+
+#### The `param`, `query` and `header` methods
+
+With these methods you will be able to retrieve only one
+value per call from the above methods. You can also set a
+second parameter that will set the default value if the
+first argument key doesn't exist:
+
+```typescript
+Route.post('/welcome/:id', ({ request }) => {
+    const defaultValue = 'defaultValue'
+
+    console.log(request.param('id'), defaultValue) // '1'
+    console.log(request.param('not-found'), defaultValue) // 'defaultValue'
+
+    console.log(request.query('world'), defaultValue) // 'hello'
+    console.log(request.query('not-found'), defaultValue) // 'defaultValue'
+
+    console.log(request.header('content-type'), defaultValue) // 'application/json'
+    console.log(request.header('not-found'), defaultValue) // 'defaultValue'
+
+    /*....*/
+})
+```
+
+#### The `getFastifyRequest` method
+
+With this method, you will be able to retrieve the vanilla
+Fastify request object to use more advanced getters and
+methods from Fastify:
+
+```typescript
+Route.get('/welcome', ({ request }) => {
+    const fastifyRequest = request.getFastifyRequest()
+
+    /*....*/
+})
+```
+
+### The response object
+
+Athenna `Response` class provides an object-oriented way to
+interact with the current HTTP response being handled by
+your application as well set a status code and return the
+response to the client.
+
+#### The `send` method
+
+With this method, you are going to terminate the request
+sending a response body to the client:
+
+```typescript
+Route.get('/welcome', ({ response }) => {
+    response.send({ hello: 'world' })
+})
+```
+
+#### The `helmet` method
+
+With this method you are going to apply all the
+[`Helmet`](https://www.npmjs.com/package/helmet) response
+headers in your response:
+
+```typescript
+Route.get('/welcome', async ({ response }) => {
+    if (condition) {
+      // we apply the default options
+      await response.helmet()
+    } else {
+      // we apply customized options
+      await response.helmet({ frameguard: false })
+    }
+})
+```
+
+#### The `status` method
+
+With this method you are going to apply the status code of
+your response:
+
+```typescript
+Route.get('/welcome', async ({ response }) => {
+    response.status(200).send({ hello: 'World' })
+})
+```
+
+#### The `header`, `safeHeader` and `removeHeader` methods
+
+With these methods you can set custom header for your
+response, the `header` method will subscribe the already
+set headers, the `safeHeader` will only register the header
+if the header is not yet registered and the `removeHeader`
+will remove a header from the response:
+
+```typescript
+Route.get('/welcome', async ({ response }) => {
+    response.header('content-type', 'application/json')
+    response.safeHeader('content-type', 'application/json')
+    response.removeHeader('content-type')
+})
+```
+
+#### The `redirectTo` method
+
+With this method, you can redirect your response to another
+url and with a different status code:
+
+```typescript
+Route.get('/hello', ctx => ctx.response.status(200))
+
+Route.get('/welcome', async ({ response }) => {
+    response.redirectTo('/hello', 200)
+})
+```
+
+#### The `sent` getter
+
+With this getter, you can verify if your response has already
+been sent to client, useful to be used in
+[interceptors](/docs/rest-api-application/middlewares#intercept-middleware):
+
+```typescript
+Route.get('/welcome', async ({ response }) => {
+    response.send({ status: 'ok' })
+}).interceptor(({ response }) => {
+    if (response.sent) {
+        // do something
+    }
+})
+```
+
+#### The `body`, `statusCode` and `headers` getters
+
+With these getters, you can get the content of the response
+body, status code and headers if it exists. These values will
+be available before you use `response.send()`,
+`response.status()` and `response.headers()` methods somewhere.
+These getters are useful when using
+[interceptors](/docs/rest-api-application/middlewares#intercept-middleware) and
+[terminators](/docs/rest-api-application/middlewares#terminate-middleware):
+
+```typescript
+Route.get('/welcome', async ({ response }) => {
+    response.send({ status: 'ok' })
+}).terminator(({ response }) => {
+    if (response.statusCode !== 200) {
+        // do something
+    }
+
+    if (response.body.status === 'ok') {
+        // do something
+    }
+
+    if (response.headers['Content-Type'] !== 'application/json') {
+        // do something
+    }
+})
+```
+
+#### The `responseTime` getter
+
+With this getter, you will be able to get how much time your
+request has taken until it finish and turn back to client.
+This value will only be available in [terminators](/docs/rest-api-application/middlewares#terminate-middleware):
+
+```typescript
+Route.get('/welcome', async ({ response }) => {
+    response.send({ status: 'ok' })
+}).terminator(({ response }) => {
+    console.log('Request has taken: ', response.responseTime, 'ms', ' to finish.')
+})
+```
+
+#### The `getFastifyResponse` method
+
+With this method, you will be able to retrieve the vanilla
+Fastify response object to use more advanced getters and
+methods from Fastify:
+
+```typescript
+Route.get('/welcome', ({ response }) => {
+    const fastifyResponse = response.getFastifyResponse()
+
+    /*....*/
+})
+```
+
+### The params object
+
+Athenna `params` is just a simple object that contains the
+actual HTTP params of the request that is being handled by
+your application.
+
+### The queries object
+
+Athenna `queries` is just a simple object that contains the
+actual HTTP queries of the request that is being handled by
+your application.
+
+### The data object
+
+Athenna `data` is just a simple object that you can use to
+set data inside to transfer between middlewares. This is
+really useful for some cases. Let's see an example setting
+default pagination values if client has not sent page and
+limit:
+
+```typescript
+import { Config } from '@athenna/config'
+import { Context, Middleware } from '@athenna/http'
+
+@Middleware()
+export class PaginationMiddleware {
+  public async handle({ request, data }: Context) {
+    const page = request.queries.page ? parseInt(request.queries.page) : 0
+    const limit = request.queries.limit ? parseInt(request.queries.limit) : 10
+    const resourceUrl = `${Config.get('http.domain')}${request.baseUrl}`
+
+    data.pagination = {
+      page,
+      limit,
+      resourceUrl,
+    }
+  }
+}
+```
+
+And now is very simple to get this `pagination` object
+inside your handler:
+
+```typescript
+Route.get('/products', ({ response, data }) => {
+    return response.send({ paginationObj: data.pagination })
+}).middleware('PaginationMiddleware')
+```
+
+## The context object in middlewares
+
+### Middleware context
+
+The context of a [middleware](/docs/rest-api-application/middlewares)
+is the same of a Controller. It uses the same `Context`
+interface from `@athenna/http` package.
+
+### Interceptor context
+
+In [interceptors](/docs/rest-api-application/middlewares#intercept-middleware)
+Athenna uses the `InterceptContext`. This context is quite
+the same of `Context`, but it has additional properties
+`body` and `status`.
+
+### Terminate middleware context {#id-terminate-middleware}
+
+In [terminators](/docs/rest-api-application/middlewares#terminate-middleware)
+Athenna set the `TerminateContext`. This context is quite
+the same of `Context`, but it has additional properties
+`body`, `status` and `responseTime`.

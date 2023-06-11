@@ -192,10 +192,19 @@ import { Interceptor, InterceptContext, InterceptorContract } from '@athenna/htt
 @Interceptor()
 export class InterceptMiddleware implements InterceptorContract {
     public async intercept(ctx: InterceptContext): Promise<unknown> {
+      ctx.body.intercepted = true
+
       return ctx.body
     }
 }
 ```
+
+:::warning
+
+As you can see in the example above, you should always
+return the intercepted response body in interceptors.
+
+:::
 
 The registration process of Athenna interceptors is the
 same of [middlewares](/docs/rest-api-application/middlewares#registering-middleware).
