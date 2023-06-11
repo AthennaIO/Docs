@@ -13,4 +13,288 @@ See how to create and configure your CLI commands.
 
 ## Introduction
 
-Coming soon
+In Athenna you are able to create your own CLI application
+creating your own commands by extending the abstract class
+`Command` and implement its methods.
+
+## Writing commands
+
+In addition to the commands provided with Artisan, you may
+build your own custom commands. Commands are typically stored
+in the `app/Console/Commands` directory; however, you are
+free to choose your own storage location as long as your
+commands can be imported.
+
+### Generating commands
+
+To create a new command, you may use the `make:command`
+Artisan command. This command will create a new command
+class in the `app/Console/Commands` directory and register
+it inside `commands` object of `.athennarc.json` file.
+Don't worry if this directory does not exist in your
+application—it will be created the first time you run the
+`make:command` Artisan command:
+
+```shell
+./node artisan make:command SendEmails
+```
+
+### Commands structure
+
+After generating your command, you should define
+appropriate values for the `signature` and `description`
+static properties of the class. These properties will be
+used when displaying your command on the list screen. The
+`handle` method will be called when your command is executed.
+You may place your command logic in this method.
+
+Athenna commands do not bootstrap the entire Athenna
+application, meaning that all your services will not be
+registered in the [service container](/docs/architecture-concepts/service-container).
+when running your commands. To do so, you need to set the
+`"loadApp": true` in your command settings inside
+`.athennarc.json` file. By default, Athenna commands
+generated with `make:artisan` command, will
+already define `"loadApp": true` for you:
+
+```json
+{
+  "commands": {
+    "sendEmails": {
+      "path": "#app/Console/Commands/SendEmails",
+      "loadApp": true
+    }
+  }
+}
+```
+
+Now we are able to request any dependencies we need using
+the `@Inject()` annotation:
+
+```typescript
+import { Inject } from '@athenna/ioc'
+import { BaseCommand } from '@athenna/artisan'
+import { MailgunService } from '#app/Services/MailgunService'
+
+export class SendEmails extends BaseCommand {
+  public static signature(): string {
+      return 'mail:send'
+  }
+
+  public static description(): string {
+      return 'Send an email.'
+  }
+
+  @Inject()
+  private mailgunService: MailgunService 👈
+
+  public async handle(): Promise<void> {
+    //
+  }
+}
+```
+
+:::warning
+
+The application is bootstrapped only after your command is
+already registered, meaning that you can't use the
+automatic constructor injection with commands to resolve
+your dependencies.
+
+:::
+
+:::tip
+
+For greater code reuse, it is good practice keeping your
+console commands light and let them defer to application
+services to accomplish their tasks. In the example above,
+note that we inject a service class to do the "heavy
+lifting" of sending the e-mails.
+
+:::
+
+### Defining input expectations
+
+When writing console commands, it is common to gather
+input from the user through arguments or options. Athenna
+makes it very convenient to define the input you expect
+from the user using the `@Argument()` and `@Option()`
+annotations on your commands. See the example:
+
+```typescript
+import { Inject } from '@athenna/ioc'
+import { MailgunService } from '#app/Services/MailgunService'
+import { Option, Argument, BaseCommand } from '@athenna/artisan'
+
+export class SendEmails extends BaseCommand {
+  public static signature(): string {
+      return 'mail:send'
+  }
+
+  public static description(): string {
+      return 'Send an email.'
+  }
+
+  @Argument()
+  private email: string
+
+  @Option({
+    signature: '-s, --subject <subject>',
+    default: 'Athenna',
+    description: 'Set the subject of the email.',
+  })
+  private subject: string
+
+  @Inject()
+  private mailgunService: MailgunService
+
+  public async handle(): Promise<void> {
+    const message = 'Hello from Athenna!'
+
+    await this.mailgunService.send(this.email, {
+      message,
+      subject: this.subject,
+    })
+  }
+}
+```
+
+## Registering commands
+
+All of your console commands are registered within your
+application's `.athennarc.json` file. If you have created
+your command using `make:command` your command will already
+be registered for you in `commands` object, but we still
+recommend you to do some adjustments before using your
+command.
+
+In the example above we have changed the signature of
+`SendEmails` command to `send:email`, we should always
+use the command `signature` as key when registering our
+commands in `commands` object:
+
+```json
+{
+  "commands": {
+    "send:email": { 👈
+      "path": "#app/Console/Commands/SendEmails",
+      "loadApp": true
+    }
+  }
+}
+```
+
+If you do so, Athenna will always import and load only that
+specific command that you want to execute, meaning that if
+you execute the following command:
+
+```shell
+./node artisan send:email lenon@athenna.io
+```
+
+Athenna will only import and load `SendEmails` class and
+execute your command. If you change the key name to any
+value different from the command `signature` (`send:email`)
+Athenna will load all your commands defined in `commands`
+object:
+
+```json
+{
+  "commands": {
+    "sendEmails": { 👈 // All commands will be loaded
+      "path": "#app/Console/Commands/SendEmails",
+      "loadApp": true
+    }
+  }
+}
+```
+
+Loading all commands might be useful sometimes when your
+command wants to [execute other commands in runtime](#calling-commands-in-runtime)
+inside your command:
+
+```typescript
+import { Inject } from '@athenna/ioc'
+import { MailgunService } from '#app/Services/MailgunService'
+import { Option, Artisan, Argument, BaseCommand } from '@athenna/artisan'
+
+export class SendEmails extends BaseCommand {
+  public static signature(): string {
+      return 'mail:send'
+  }
+
+  public static description(): string {
+      return 'Send an email.'
+  }
+
+  @Argument()
+  private email: string
+
+  @Option({
+    signature: '-s, --subject <subject>',
+    default: 'Athenna',
+    description: 'Set the subject of the email.',
+  })
+  private subject: string
+
+  @Inject()
+  private mailgunService: MailgunService
+
+  public async handle(): Promise<void> {
+    const message = 'Hello from Athenna!'
+
+    await this.mailgunService.send(this.email, {
+      message,
+      subject: this.subject,
+    })
+
+    await Artisan.call(`save:email ${this.email}`)
+  }
+}
+```
+
+:::tip
+
+Even for this purpose, we recommend you to let the key
+of your command the same of your command `signature`.
+To load all your commands, use the `loadAllCommands`
+setting in your command:
+
+```json
+{
+  "commands": {
+    "send:email": {
+      "path": "#app/Console/Commands/SendEmails",
+      "loadApp": true,
+      "loadAllCommands": true 👈 // All commands will be loaded
+    }
+  }
+}
+```
+
+:::
+
+## Calling commands in runtime
+
+Sometimes you may wish to call other commands from an
+existing Artisan command or from any other part of your
+application. You may do so using the `call()` method from
+Artisan. This method accepts the command string with its
+arguments and options:
+
+```typescript
+import { Artisan } from '@athenna/artisan'
+
+await Artisan.call('make:controller TestController')
+```
+
+If you want to verify if your command has generated some
+output in `stdout` or `stderr` you can use the
+`callInChild()` method:
+
+```typescript
+const { stdout, stderr } = await Artisan.callInChild('make:controller TestController')
+
+assert.isTrue(stdout.includes('[ MAKING CONTROLLER ]'))
+assert.isUndefined(stderr)
+```
