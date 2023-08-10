@@ -21,7 +21,7 @@ related request handling logic into a single class. For
 example, a `UserController` class might handle all incoming
 requests related to users, including showing, creating,
 updating, and deleting users. By default, controllers are
-stored in the `app/Http/Controllers` directory.
+stored in the `app/http/controllers` directory.
 
 ## Writing controllers
 
@@ -74,7 +74,7 @@ these actions:
 ```
 
 This command will generate a controller at
-`app/Http/Controllers/PhotoController`. The controller will
+`app/http/controllers/PhotoController`. The controller will
 contain a method for each of the available resource
 operations. Next, you may register a resource route that
 points to the controller:
@@ -132,9 +132,9 @@ and injected into the controller instance:
 
 ```typescript
 import { Inject } from '@athenna/ioc'
-import { Context, Controller } from '@athenna/http'
-import { UserService } from '#app/Services/UserService'
-import { ProfileService } from '#app/Services/ProfileService'
+import { Controller, type Context } from '@athenna/http'
+import { UserService } from '#app/services/UserService'
+import { ProfileService } from '#app/services/ProfileService'
 
 @Controller()
 export class UserController {

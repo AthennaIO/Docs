@@ -63,7 +63,7 @@ which provides access to the service container:
 
 ```typescript
 import { ServiceProvider } from '@athenna/ioc'
-import { AppHelper } from '#app/Helpers/AppHelper'
+import { AppHelper } from '#app/helpers/AppHelper'
 
 export default class AppProvider extends ServiceProvider {
    public register() {
@@ -86,7 +86,7 @@ the framework:
 
 ```typescript
 import { ServiceProvider } from '@athenna/ioc'
-import { AppHelper } from '#app/Helpers/AppHelper'
+import { AppHelper } from '#app/helpers/AppHelper'
 
 export default class AppProvider extends ServiceProvider {
    public boot() {
