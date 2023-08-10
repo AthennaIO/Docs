@@ -21,8 +21,8 @@ constructor or, in some cases, "setter" methods.
 Let's look at a simple example:
 
 ```typescript
-import { Context, Controller } from '@athenna/http'
-import { WelcomeService } from '#app/Services/WelcomeService'
+import { Controller, type Context } from '@athenna/http'
+import { WelcomeService } from '#app/services/WelcomeService'
 
 @Controller()
 export class WelcomeController {
@@ -60,7 +60,7 @@ annotation. For example, you may place the following code in your
 
 ```typescript
 import { Route } from '@athenna/http'
-import { Service } from '@athenna/core'
+import { Service } from '@athenna/ioc'
 
 @Service()
 export class AppService {
@@ -96,7 +96,7 @@ The example above is just to show that we can place our services anywhere in our
 application, without depending on configuration files or any other kind of
 setup. We recommend you placing your services in a specifics directory to save
 only your service classes and not inside your route file. A good place to put
-your services is `app/Services` directory, since `make:service` command will
+your services is `app/services` directory, since `make:service` command will
 save your services there. But of course you can do whatever you want with
 Athenna 😎.
 
@@ -113,8 +113,8 @@ the container to write this code, it is managing the injection of their
 dependencies behind the scenes.
 
 ```typescript
-import { Context, Controller } from '@athenna/http'
-import { AppService } from '#app/Services/AppService'
+import { AppService } from '#app/services/AppService'
+import { Controller, type Context } from '@athenna/http'
 
 @Controller()
 export class AppController {
@@ -147,7 +147,7 @@ global property. We can register a binding using the `bind` method, passing the
 alias name that we wish to register along with our dependency:
 
 ```typescript
-import { StringNormalizer } from '#app/Helpers/StringNormalizer'
+import { StringNormalizer } from '#app/helpers/StringNormalizer'
 
 ioc.bind('App/Helpers/StringNormalizer', StringNormalizer)
 ```
@@ -160,7 +160,7 @@ resolved, a new object instance will be returned on subsequent calls into the
 container:
 
 ```typescript
-import { StringNormalizer } from '#app/Helpers/StringNormalizer'
+import { StringNormalizer } from '#app/helpers/StringNormalizer'
 
 ioc.transient('App/Helpers/StringNormalizer', StringNormalizer)
 ```
@@ -179,7 +179,7 @@ resolved one time. Once a singleton binding is resolved, the same object
 instance will be returned on subsequent calls into the container:
 
 ```typescript
-import { StringNormalizer } from '#app/Helpers/StringNormalizer'
+import { StringNormalizer } from '#app/helpers/StringNormalizer'
 
 ioc.singleton('App/Helpers/StringNormalizer', StringNormalizer)
 ```
@@ -191,7 +191,7 @@ You may also bind an existing object instance into the container using the
 calls into the container:
 
 ```typescript
-import { StringNormalizer } from '#app/Helpers/StringNormalizer'
+import { StringNormalizer } from '#app/helpers/StringNormalizer'
 
 ioc.instance('App/Helpers/StringNormalizer', new StringNormalizer())
 ```
@@ -203,7 +203,7 @@ resolve a class instance from the container. The use method accepts the alias
 of the dependency you wish to resolve:
 
 ```typescript
-import { StringNormalizer } from '#app/Helpers/StringNormalizer'
+import { StringNormalizer } from '#app/helpers/StringNormalizer'
 
 const sn = ioc.use<StringNormalizer>('App/Helpers/StringNormalizer')
 ```
@@ -224,8 +224,8 @@ constructor. The service will automatically be resolved and injected into the
 class:
 
 ```typescript
-import { Context, Controller } from '@athenna/http'
-import { AppService } from '#app/Services/AppService'
+import { AppService } from '#app/services/AppService'
+import { Controller, type Context } from '@athenna/http'
 
 @Controller()
 export class AppController {
@@ -247,8 +247,8 @@ camelCase name of your dependency as the property name to be resolved properly:
 
 ```typescript
 import { Inject } from '@athenna/ioc'
-import { Context, Controller } from '@athenna/http'
-import { AppService } from '#app/Services/AppService'
+import { AppService } from '#app/services/AppService'
+import { Controller, type Context } from '@athenna/http'
 
 @Controller()
 export class AppController {
@@ -268,8 +268,8 @@ specific alias to be resolved in the container:
 
 ```typescript
 import { Inject } from '@athenna/ioc'
-import { Context, Controller } from '@athenna/http'
-import { AppService } from '#app/Services/AppService'
+import { AppService } from '#app/services/AppService'
+import { Controller, type Context } from '@athenna/http'
 
 @Controller()
 export class AppController {

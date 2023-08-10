@@ -38,7 +38,7 @@ command:
 ```
 
 This command will place a new `EnsureApiKeyIsValid` class
-within your `app/Http/Middlewares` directory. In this
+within your `app/http/middlewares` directory. In this
 middleware, we will only allow access to the route if the
 supplied api key input matches a specified value. Otherwise,
 we will throw an unauthorized exception:
@@ -84,7 +84,7 @@ file:
 ```json
 {
   "middlewares": [
-    "#app/Http/Middlewares/EnsureApiKeyIsValid"
+    "#app/http/middlewares/EnsureApiKeyIsValid"
   ]
 }
 ```
@@ -106,7 +106,8 @@ to your application, you can set the `isGlobal` value to
 true in the `@Middleware` annotation:
 
 ```typescript
-import { Context, Middleware, MiddlewareContract } from '@athenna/http'
+import { Middleware } from '@athenna/http'
+import type { Context, MiddlewareContract } from '@athenna/http'
 
 @Middleware({ isGlobal: true }) 👈
 export class EnsureApiKeyIsValid implements MiddlewareContract {
@@ -124,7 +125,7 @@ If you are not using TypeScript you can use the
 ```json
 {
   "globalMiddlewares": [
-    "#app/Http/Middlewares/EnsureApiKeyIsValid"
+    "#app/http/middlewares/EnsureApiKeyIsValid"
   ]
 }
 ```
@@ -138,7 +139,8 @@ custom name to your middleware using the `@Middleware`
 annotation:
 
 ```typescript
-import { Context, Middleware, MiddlewareContract } from '@athenna/http'
+import { Middleware } from '@athenna/http'
+import type { Context, MiddlewareContract } from '@athenna/http'
 
 @Middleware({ name: 'auth' }) 👈
 export class EnsureApiKeyIsValid implements MiddlewareContract {
@@ -156,7 +158,7 @@ If you are not using TypeScript you can use the
 ```json
 {
   "namedMiddlewares": {
-    "auth": "#app/Http/Middlewares/EnsureApiKeyIsValid"
+    "auth": "#app/http/middlewares/EnsureApiKeyIsValid"
   }
 }
 ```
@@ -184,10 +186,11 @@ To create one, you can use the following command:
 Just like `make:middleware`, Athenna will auto register the
 middleware if using `make:interceptor` command. The above
 command will produce the following content at
-`app/Http/Interceptors/InterceptMiddleware.ts` file:
+`app/http/interceptors/InterceptMiddleware.ts` file:
 
 ```typescript
-import { Interceptor, InterceptContext, InterceptorContract } from '@athenna/http'
+import { Interceptor } from '@athenna/http'
+import type { InterceptContext, InterceptorContract } from '@athenna/http'
 
 @Interceptor()
 export class InterceptMiddleware implements InterceptorContract {
@@ -232,10 +235,11 @@ To create one, you can use the following command:
 Just like `make:middleware`, Athenna will auto register the
 middleware if using `make:terminator` command. The above
 command will produce the following content at
-`app/Http/Terminators/TerminateMiddleware.ts` file:
+`app/http/terminators/TerminateMiddleware.ts` file:
 
 ```typescript
-import { Terminator, TerminateContext, TerminatorContract } from '@athenna/http'
+import { Terminator } from '@athenna/http'
+import type { TerminateContext, TerminatorContract } from '@athenna/http'
 
 @Terminator()
 export class TerminateMiddleware implements TerminatorContract {
@@ -259,6 +263,6 @@ Route.get('/welcome', () => {
 
 The requests log created by Athenna when the `logger`
 property is true in your `config/http.ts` file are handled
-by a terminator middleware! You can see the code [here](https://github.com/AthennaIO/Http/blob/develop/src/Kernels/HttpKernel.ts#L93).
+by a terminator middleware! You can see the code [here](https://github.com/AthennaIO/Http/blob/develop/src/kernels/HttpKernel.ts#L93).
 
 :::

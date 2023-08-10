@@ -125,7 +125,7 @@ Artisan command:
 Next, import and raise the exception as follows.
 
 ```typescript
-import { NotFoundResourceException } from '#app/Exceptions/NotFoundResourceException'
+import { NotFoundResourceException } from '#app/exceptions/NotFoundResourceException'
 
 throw new NotFoundResourceException('Your resource has not been found.')
 ```
@@ -145,8 +145,8 @@ Let's suppose you want to write a custom logic for handling
 your exceptions. You can do so by creating your own
 exception handler:
 
-```typescript title="app/Http/Exceptions/Handler.ts"
-import { ErrorContext, HttpExceptionHandler } from '@athenna/http'
+```typescript title="app/http/exceptions/Handler.ts"
+import { type ErrorContext, HttpExceptionHandler } from '@athenna/http'
 
 export class Handler extends HttpExceptionHandler {
   public async handle(ctx: ErrorContext) {

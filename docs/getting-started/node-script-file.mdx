@@ -20,7 +20,7 @@ application every time in the terminal.
 
 ## The `--loader` flag
 
-The `--loader ts-node/esm` flag is required to run your Athenna
+The `--loader=ts-node/esm` flag is required to run your Athenna
 application in development mode with TypeScript. This flag is
 responsible to set up a Node.js ESM loader that will first compile
 your modules every time that you ask to import them using the
@@ -42,7 +42,7 @@ To be able to run this file with Node.js, you can use the
 following command:
 
 ```bash
-node --loader ts-node/esm index.ts
+node --loader=ts-node/esm index.ts
 ```
 
 Or use the node script file that already has this flag
@@ -78,7 +78,7 @@ module. This function accepts a second argument which is the
 parent module from which to resolve from:
 
 ```typescript
-const specifier = '#app/Services/MyService'
+const specifier = '#app/services/MyService'
 const metaUrl = import.meta.url
 
 const url = await import.meta.resolve(specifier, metaUrl)

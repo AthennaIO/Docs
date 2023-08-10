@@ -103,7 +103,7 @@ registered inside the service container:
 
 ```typescript
 import { Facade } from '@athenna/ioc'
-import { Logger } from '#src/Logger/Logger'
+import { Logger } from '#src/logger/Logger'
 
 export const Log = Facade.createFor<Logger>('Athenna/Core/Logger')
 ```
@@ -123,13 +123,13 @@ The service container binding key is also included where applicable.
 
 | Facade | Reference class | Binding alias |
 |:----------|:-------:|-------------:|
-| [Log](https://github.com/AthennaIO/Logger/blob/develop/src/Facades/Log.ts)   | [Logger](https://github.com/AthennaIO/Logger/blob/develop/src/Logger/Logger.ts)  |      Athenna/Core/Logger |
-| [Route](https://github.com/AthennaIO/Http/blob/develop/src/Facades/Route.ts)   | [Router](https://github.com/AthennaIO/Http/blob/develop/src/Router/Router.ts)  |      Athenna/Core/HttpRoute |
-| [Server](https://github.com/AthennaIO/Http/blob/develop/src/Facades/Server.ts)   | [ServerImpl](https://github.com/AthennaIO/Http/blob/develop/src/Server/ServerImpl.ts)  |      Athenna/Core/HttpServer |
-| [Mail](https://github.com/AthennaIO/Mail/blob/develop/src/Facades/Mail.ts)   | [MailImpl](https://github.com/AthennaIO/Mail/blob/develop/src/Mail/MailImpl.ts)  |      Athenna/Core/Mail |
-| [View](https://github.com/AthennaIO/View/blob/develop/src/Facades/View.ts)   | [ViewImpl](https://github.com/AthennaIO/View/blob/develop/src/Views/ViewImpl.ts)  |      Athenna/Core/View |
-| [Artisan](https://github.com/AthennaIO/Artisan/blob/develop/src/Facades/Artisan.ts)   | [ArtisanImpl](https://github.com/AthennaIO/Artisan/blob/develop/src/Artisan/ArtisanImpl.ts)  |      Athenna/Core/Artisan |
-| [Database](https://github.com/AthennaIO/Artisan/blob/develop/src/Facades/Artisan.ts)   | [DatabaseImpl](https://github.com/AthennaIO/Database/blob/develop/src/Database/DatabaseImpl.ts)  |      Athenna/Core/Database |
+| [Log](https://github.com/AthennaIO/Logger/blob/develop/src/facades/Log.ts)   | [Logger](https://github.com/AthennaIO/Logger/blob/develop/src/logger/Logger.ts)  |      Athenna/Core/Logger |
+| [Route](https://github.com/AthennaIO/Http/blob/develop/src/facades/Route.ts)   | [Router](https://github.com/AthennaIO/Http/blob/develop/src/router/Router.ts)  |      Athenna/Core/HttpRoute |
+| [Server](https://github.com/AthennaIO/Http/blob/develop/src/facades/Server.ts)   | [ServerImpl](https://github.com/AthennaIO/Http/blob/develop/src/server/ServerImpl.ts)  |      Athenna/Core/HttpServer |
+| [Mail](https://github.com/AthennaIO/Mail/blob/develop/src/facades/Mail.ts)   | [MailImpl](https://github.com/AthennaIO/Mail/blob/develop/src/mail/MailImpl.ts)  |      Athenna/Core/Mail |
+| [View](https://github.com/AthennaIO/View/blob/develop/src/facades/View.ts)   | [ViewImpl](https://github.com/AthennaIO/View/blob/develop/src/views/ViewImpl.ts)  |      Athenna/Core/View |
+| [Artisan](https://github.com/AthennaIO/Artisan/blob/develop/src/facades/Artisan.ts)   | [ArtisanImpl](https://github.com/AthennaIO/Artisan/blob/develop/src/artisan/ArtisanImpl.ts)  |      Athenna/Core/Artisan |
+| [Database](https://github.com/AthennaIO/Artisan/blob/develop/src/facades/Artisan.ts)   | [DatabaseImpl](https://github.com/AthennaIO/Database/blob/develop/src/database/DatabaseImpl.ts)  |      Athenna/Core/Database |
 
 ## Writing facades
 
@@ -143,8 +143,8 @@ to resolve our dependency inside the [service container](/docs/architecture-conc
 Now let's register all of our helpers inside the `register()` method:
 
 ```typescript
-import { File } from '#app/Helpers/File'
-import { String } from '#app/Helpers/String'
+import { File } from '#app/helpers/File'
+import { String } from '#app/helpers/String'
 import { ServiceProvider } from '@athenna/ioc'
 
 export class HelperProvider extends ServiceProvider {
@@ -175,7 +175,7 @@ generic type:
 
 ```typescript
 import { Facade } from '@athenna/ioc'
-import { String as StringImpl } from '#app/Helpers/String'
+import { String as StringImpl } from '#app/helpers/String'
 
 export const String = Facade.createFor<StringImpl>('App/Helpers/String')
 ```

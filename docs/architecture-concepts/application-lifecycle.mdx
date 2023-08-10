@@ -164,7 +164,7 @@ export class CustomKernel extends HttpKernel {
 :::note
 
 You can check all the methods available for you to override in your
-custom kernel implementation taking a look at [HttpKernel](https://github.com/AthennaIO/Http/blob/develop/src/Kernels/HttpKernel.ts)
+custom kernel implementation taking a look at [HttpKernel](https://github.com/AthennaIO/Http/blob/develop/src/kernels/HttpKernel.ts)
 implementation code.
 
 :::
@@ -177,7 +177,7 @@ import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url)
 
-await ignite.httpServer({ kernelPath: '#app/Http/CustomKernel' })'
+await ignite.httpServer({ kernelPath: '#app/http/CustomKernel' })'
 ```
 
 ### Routes
@@ -272,7 +272,7 @@ export class CustomKernel extends ConsoleKernel {
 :::note
 
 You can check all the methods available for you to override in your custom
-kernel implementation taking a look at [ConsoleKernel](https://github.com/AthennaIO/Artisan/blob/develop/src/Kernels/ConsoleKernel.ts) implementation code.
+kernel implementation taking a look at [ConsoleKernel](https://github.com/AthennaIO/Artisan/blob/develop/src/kernels/ConsoleKernel.ts) implementation code.
 
 :::
 
@@ -286,7 +286,7 @@ const ignite = await new Ignite().load(import.meta.url, {
   bootLogs: false
 })
 
-await ignite.artisan({ kernelPath: '#app/Http/CustomKernel' })
+await ignite.artisan({ kernelPath: '#app/http/CustomKernel' })
 ```
 
 ### Execution
@@ -303,7 +303,7 @@ executed the `hello` command defined in our `.athennarc.json` file:
 {
   "commands": {
     "hello": {
-      "path": "#app/Console/Commands/HelloCommand",
+      "path": "#app/console/commands/HelloCommand",
       "loadApp": false,
       "stayAlive": false,
       "loadAllCommands": false,

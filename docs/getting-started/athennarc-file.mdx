@@ -37,7 +37,7 @@ also register it inside your `.athennarc.json` file:
 ```json
 {
   "services": [
-    "#app/Services/UserService"
+    "#app/services/UserService"
   ]
 }
 ```
@@ -98,8 +98,8 @@ services in the container:
 ```json
 {
   "services": [
-    "#app/Services/AppService",
-    "./app/Services/OtherService.js"
+    "#app/services/AppService",
+    "./app/services/OtherService.js"
   ]
 }
 ```
@@ -164,16 +164,16 @@ resolve the paths of your application:
     "bin": "bin",
     "src": "src",
     "app": "app",
-    "services": "app/Services",
-    "exceptions": "app/Exceptions",
-    "repositories": "app/Repositories",
-    "console": "app/Console",
-    "commands": "app/Console/Commands",
-    "http": "app/Http",
-    "controllers": "app/Http/Controllers",
-    "middlewares": "app/Http/Middlewares",
-    "interceptors": "app/Http/Interceptors",
-    "terminators": "app/Http/Terminators",
+    "services": "app/services",
+    "exceptions": "app/exceptions",
+    "repositories": "app/repositories",
+    "console": "app/console",
+    "commands": "app/console/commands",
+    "http": "app/http",
+    "controllers": "app/http/controllers",
+    "middlewares": "app/http/middlewares",
+    "interceptors": "app/http/interceptors",
+    "terminators": "app/http/terminators",
     "bootstrap": "bootstrap",
     "config": "config",
     "database": "database",
@@ -194,7 +194,7 @@ resolve the paths of your application:
     "storage": "storage",
     "logs": "storage/logs",
     "tests": "tests",
-    "stubs": "tests/Stubs"
+    "stubs": "tests/stubs",
   }
 }
 ```
@@ -220,8 +220,8 @@ Route facade:
 ```json
 {
   "controllers": [
-    "#app/Http/Controllers/AppController",
-    "./app/Http/Controllers/OtherController.js"
+    "#app/http/controllers/AppController",
+    "./app/http/controllers/OtherController.js"
   ]
 }
 ```
@@ -236,8 +236,8 @@ Route facade:
 ```json
 {
   "middlewares": [
-    "#app/Http/Middlewares/AppMiddleware",
-    "./app/Http/Interceptors/AppInterceptor.js"
+    "#app/http/middlewares/AppMiddleware",
+    "./app/http/interceptors/AppInterceptor.js"
   ]
 }
 ```
@@ -261,8 +261,8 @@ in your route declaration:
 ```json
 {
   "namedMiddlewares": {
-    "app": "#app/Http/Middlewares/AppMiddleware",
-    "intercept": "./app/Http/Interceptors/AppInterceptor.js"
+    "app": "#app/http/middlewares/AppMiddleware",
+    "intercept": "./app/http/interceptors/AppInterceptor.js"
   }
 }
 ```
@@ -279,8 +279,8 @@ in any request of your application:
 ```json
 {
   "globalMiddlewares": [
-    "#app/Http/Middlewares/AppMiddleware",
-    "./app/Http/Interceptors/AppInterceptor.js"
+    "#app/http/middlewares/AppMiddleware",
+    "./app/http/interceptors/AppInterceptor.js"
   ]
 }
 ```

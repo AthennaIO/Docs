@@ -21,7 +21,7 @@ creating your own commands by extending the abstract class
 
 In addition to the commands provided with Artisan, you may
 build your own custom commands. Commands are typically stored
-in the `app/Console/Commands` directory; however, you are
+in the `app/console/commands` directory; however, you are
 free to choose your own storage location as long as your
 commands can be imported.
 
@@ -29,7 +29,7 @@ commands can be imported.
 
 To create a new command, you may use the `make:command`
 Artisan command. This command will create a new command
-class in the `app/Console/Commands` directory and register
+class in the `app/console/commands` directory and register
 it inside `commands` object of `.athennarc.json` file.
 Don't worry if this directory does not exist in your
 application—it will be created the first time you run the
@@ -61,7 +61,7 @@ already define `"loadApp": true` for you:
 {
   "commands": {
     "sendEmails": {
-      "path": "#app/Console/Commands/SendEmails",
+      "path": "#app/console/commands/SendEmails",
       "loadApp": true
     }
   }
@@ -74,7 +74,7 @@ the `@Inject()` annotation:
 ```typescript
 import { Inject } from '@athenna/ioc'
 import { BaseCommand } from '@athenna/artisan'
-import { MailgunService } from '#app/Services/MailgunService'
+import { MailgunService } from '#app/services/MailgunService'
 
 export class SendEmails extends BaseCommand {
   public static signature(): string {
@@ -123,7 +123,7 @@ annotations on your commands. See the example:
 
 ```typescript
 import { Inject } from '@athenna/ioc'
-import { MailgunService } from '#app/Services/MailgunService'
+import { MailgunService } from '#app/services/MailgunService'
 import { Option, Argument, BaseCommand } from '@athenna/artisan'
 
 export class SendEmails extends BaseCommand {
@@ -177,7 +177,7 @@ commands in `commands` object:
 {
   "commands": {
     "send:email": { 👈
-      "path": "#app/Console/Commands/SendEmails",
+      "path": "#app/console/commands/SendEmails",
       "loadApp": true
     }
   }
@@ -202,7 +202,7 @@ object:
 {
   "commands": {
     "sendEmails": { 👈 // All commands will be loaded
-      "path": "#app/Console/Commands/SendEmails",
+      "path": "#app/console/commands/SendEmails",
       "loadApp": true
     }
   }
@@ -215,7 +215,7 @@ inside your command:
 
 ```typescript
 import { Inject } from '@athenna/ioc'
-import { MailgunService } from '#app/Services/MailgunService'
+import { MailgunService } from '#app/services/MailgunService'
 import { Option, Artisan, Argument, BaseCommand } from '@athenna/artisan'
 
 export class SendEmails extends BaseCommand {
@@ -264,7 +264,7 @@ setting in your command:
 {
   "commands": {
     "send:email": {
-      "path": "#app/Console/Commands/SendEmails",
+      "path": "#app/console/commands/SendEmails",
       "loadApp": true,
       "loadAllCommands": true 👈 // All commands will be loaded
     }
