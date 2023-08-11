@@ -27,10 +27,9 @@ be copied to `.env` and `.env.test`.
 
 :::note
 
-If you are not using the Laravel project template, you can
-simply create a `.env` file in the root path of your
-application and Athenna will automatically resolve it for
-you.
+If you are not using the slim project structure, you can
+create a `.env` file in the root path of your application 
+and Athenna will automatically resolve it for you.
 
 :::
 
@@ -193,10 +192,18 @@ console.log(Env('APP_URL')) // "http://localhost:3000"
 ## Configuration files
 
 All the configuration files for the Athenna framework are
-stored in the `config` directory if you are using Laravel
-based project template. Each option is documented, so feel
-free to look through the files and get familiar with the
-options available to you.
+stored in the `config` directory if you are using the 
+default project template. Each option is documented, so 
+feel free to look through the files and get familiar with 
+the options available to you.
+
+:::info
+
+The slim template is configured to use `src/config` path 
+instead. But the folder does not exist in the project by 
+default. You can check how to change this path [in here](/docs/getting-started/configuration#define-my-own-configuration-path).
+
+:::
 
 Athenna needs almost no additional configuration out of
 the box. You are free to get started developing! Each
@@ -446,20 +453,20 @@ await Config.loadAll(Path.stubs('config'))
 
 ### Define my own configuration path
 
-If you are using the [slim](https://athenna.io/docs/getting-started/installation#laravel-project-structure)
+If you are using the [slim](https://athenna.io/docs/getting-started/installation#project-structure)
 project structure, or you are building your own project
 structure, you are not going to have the config directory
 in your project root path.
 
 You will have two options now:
 
-1. If you are using the [slim](https://athenna.io/docs/getting-started/installation#laravel-project-structure)
+1. If you are using the [slim](https://athenna.io/docs/getting-started/installation#project-structure)
 project structure, you can create the `config` directory inside your `src` folder.
 2. Specify to Athenna a different path to your `config` directory.
 
 :::note
 
-The [slim](https://athenna.io/docs/getting-started/installation#laravel-project-structure)
+The [slim](https://athenna.io/docs/getting-started/installation#project-structure)
 project structure is using the second option above to
 specify to Athenna that the configuration files will
 be inside of `src/config` directory. Check the examples
@@ -469,7 +476,7 @@ above how this implementation works.
 
 To specify your application directories to Athenna, you can
 open the `.athennarc.json` file and add the `directories`
-property to it. If you are using [slim](https://athenna.io/docs/getting-started/installation#laravel-project-structure)
+property to it. If you are using [slim](https://athenna.io/docs/getting-started/installation#project-structure)
 project structure, you will already have this property
 defined.
 
