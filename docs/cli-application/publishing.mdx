@@ -13,4 +13,42 @@ Check how you can publish a global CLI application.
 
 ## Introduction
 
-Coming soon
+In this documentation section we are going to cover how
+you can publish a global CLI application in NPM registry.
+
+## Logging in to NPM
+
+To publish your package on the NPM registry, you need to 
+have an account at NPM. If you don't have an account, 
+visit the [NPM sign up page](https://www.npmjs.com/signup) 
+to create one.
+
+After creating the account, open your terminal and run the 
+following command in the root of your package:
+
+```shell
+npm login
+```
+
+You will get a prompt to enter your `username` and `password`. 
+If login is successful, you should see a message like this:
+
+```shell
+Logged in as <your-username-here> on https://registry.npmjs.org/.
+```
+
+## Publishing
+
+Now that you are authenticated, to publish a package to NPM
+is very simple, just run the following command:
+
+```shell
+npm publish --access public
+```
+
+If you have been following along, then congratulations! You 
+just published your first NPM package.
+
+You can visit the NPM website and run a search for your 
+package. You should see your package show up in the search results.
+

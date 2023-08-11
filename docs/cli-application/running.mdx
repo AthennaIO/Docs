@@ -13,4 +13,48 @@ Check how to run your CLI commands in different scenarios.
 
 ## Introduction
 
-Coming soon
+The CLI application of Athenna can run in three ways. 
+Using the `./node artisan`, the npm scripts inside 
+`package.json` file or linking the CLI using `npm link`, 
+this way you can execute your CLI anywhere from your 
+terminal. As Artisan and npm scripts comes configured by 
+default in your application, we are going to focus in 
+`npm link` in this documentation.
+
+## Registering your CLI command name
+
+To register your CLI command name you need to add the 
+`bin` object inside your `package.json` file and set the
+path to the entry point file of your CLI:
+
+```json
+"bin": {
+  "yourCliCommand": "./bootstrap/main.js"
+}
+```
+
+## Entrypoint file
+
+In our example we defined the `./bootstrap/main.js` 
+file as the entrypoint file of our CLI. By default, this 
+file comes with the shebang line 
+`#!/usr/bin/env -S node --experimental-import-meta-resolve` 
+in the top of the file. Without this line the `npm link` 
+command will not work. So just in case you want to define a 
+different entrypoint file, remember that 
+`#!/usr/bin/env -S node --experimental-import-meta-resolve` 
+should be on the top of this file.
+
+## Linking the CLI
+
+Now you just need to run the following command in your project root:
+
+```shell
+npm link
+```
+
+And now the `yourCliCommand` will exist in your actual Node.js version:
+
+```shell
+yourCliCommand --help
+```
