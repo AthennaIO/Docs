@@ -15,8 +15,32 @@ Understand how you can handle the errors of the REST API application.
 
 When you start a new Athenna project, error and exception
 handling is already configured for you. But you can configure
-your own extending the Athenna error handler. We'll dive
-deeper into how to do that throughout this documentation.
+your own extending the Athenna error handler. We'll dive deeper 
+into how to do that throughout this documentation.
+
+This documentation will cover about error handling in the **REST API**
+application, which means that only errors that happens inside 
+routes and bellow that will be handled:
+
+```typescript title="routes/http.ts"
+import { Route } from '@athenna/http'
+
+// If AppController.show throws, HttpExceptionHandler will handle it 👈
+Route.get('/', 'AppController.show')
+
+Route.get('/users', () => {
+  throw new Error('HttpExceptionHandler will handle this.') 👈
+})
+
+throw new Error('This error will be handled by @athenna/core.') 👈
+```
+
+:::info
+
+Errors handled by `@athenna/core` usually means that a 
+bootstrap failure has been found in your application.
+
+:::
 
 ## Configuration
 
@@ -153,4 +177,13 @@ export class Handler extends HttpExceptionHandler {
       // Implement your own logic
   }
 }
+```
+
+Now you need to register your exception handler when 
+bootstrapping your application:
+
+```typescript title="bootstrap/main.ts"
+await ignite.httpServer({
+  exceptionHandlerPath: '#app/http/exceptions/Handler', 👈
+})
 ```
