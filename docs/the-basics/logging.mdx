@@ -424,3 +424,23 @@ channels: {
     }
 }
 ```
+
+## Disabling boot and shutdown logs
+
+When your application starts, Athenna creates some logs to help you to track
+the application boot process. The same happens when your application is shuting 
+down.
+
+If you wish to run your application in silent mode, you can disable this kind 
+of logs using the `Ignite.load()` method:
+
+```typescript filename="bootstrap/main.ts"
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url, {
+  bootLogs: false, 👈
+  shutdownLogs: false, 👈
+})
+
+await ignite.httpServer()
+```
