@@ -115,6 +115,31 @@ always be considered as a not treated exception.
 
 :::
 
+## Simple exceptions
+
+When talking about exceptions in Artisan and CLI applications,
+we can divide them into two categories: simple exceptions and
+the more complex ones. Simple exceptions are exceptions that
+when handled by the `ConsoleExceptionHandler` will only log the
+exception **message**. The more complex will log the entire exception
+including **code, message, help and stack trace**.
+
+Simple exceptions are recognized by `ConsoleExceptionHandler` by
+the `code`. If the code is `E_SIMPLE_CLI`, it will be considered
+as a simple exception:
+
+```typescript title="app/console/exceptions/NotFoundDatabaseException.ts"
+import { Exception } from '@athenna/common'
+
+export class NotFoundDatabaseException extends Exception {
+  public constructor(databaseName: string) {
+    const code = 'E_SIMPLE_CLI' 👈
+
+    super({ code, message: `Database ${databaseName} not found.` })
+  }
+}
+```
+
 ## Implementing your own exception handler
 
 Let's suppose you want to write a custom logic for handling
