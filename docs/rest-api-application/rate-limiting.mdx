@@ -1,0 +1,139 @@
+---
+title: Rate Limiting
+sidebar_position: 7
+description: See how to create rate limiting rules for Athenna REST API application.
+tags:
+  - REST API Application
+  - Rate Limiting
+---
+
+# Rate Limiting
+
+See how to create rate limiting rules for Athenna REST API application.
+
+## Introduction
+
+Rate limiters ensure the fair usage of your http 
+server by clients. It regulates the number of times 
+a user can request your application in a given time-frame.
+
+## Basic usage
+
+Athenna uses the [`@fastify/rate-limit`](https://github.com/fastify/fastify-rate-limit) 
+plugin inside `HttpKernel`. All the configurations that 
+`@fastify/rate-limit` supports can be set inside `config/http.js` 
+file in the `rateLimit` object:
+
+```typescript
+export default {
+  rateLimit: {
+    global: true,
+    max: 1000,
+    ban: null,
+    timeWindow: 1000 * 60,
+    cache: 5000,
+    allowList: [],
+    continueExceeding: false,
+    enableDraftSpec: false,
+  }
+}
+```
+
+## Configuring for specific routes
+
+In Athenna you can set specific options of rate limit 
+for specific routes. You can also disable the `global` 
+option of your `rateLimit` configuration in `config/http.js` 
+and set different rules in your routes:
+
+```typescript
+Route
+  .get('/hello', 'WelcomeController.show')
+  .rateLimit({ max: 1, timeWindow: '1 minute' }) 👈
+```
+
+### Usage in route groups
+
+You can also use the `rateLimit()` method in route groups. 
+This will set the same configuration for all routes inside 
+the group:
+
+```typescript
+Route.group(() => {
+    Route.get('/hello', 'WelcomeController.show')
+}).rateLimit({ max: 1, timeWindow: '1 minute' }) 👈
+```
+
+:::warning
+
+The `rateLimit()` method of route groups will never 
+subscribe the already set methods of routes. Use it 
+to create "defaults" configurations for all routes.
+
+:::
+
+### Usage in route resources
+
+Same behavior as route groups, but for resources:
+
+```typescript
+// Set the same configurations for all routes of resource
+Route.resource('/tests', 'WelcomeController').rateLimit({...})
+
+// Set configuration only for that specific action of resource
+Route.resource('/tests', 'WelcomeController').rateLimit('index', {...})
+Route.resource('/tests', 'WelcomeController').rateLimit('store', {...})
+```
+
+## Rate limit headers
+
+The response will have the following headers 
+if `enableDraftSpec` is true in `rateLimit` config or route:
+
+<table>
+    <thead>
+    <tr>
+        <th>Header</th>
+        <th>Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><code>ratelimit-limit</code></td>
+        <td>How many requests the client can make</td>
+    </tr>
+    <tr>
+        <td><code>ratelimit-remaining</code></td>
+        <td>How many requests remain to the client in the timewindow</td>
+    </tr>
+    <tr>
+        <td><code>ratelimit-reset</code></td>
+        <td>How many seconds must pass before the rate limit resets</td>
+    </tr>
+    <tr>
+        <td><code>retry-after</code></td>
+        <td>Contains the same value in time as <code>ratelimit-reset</code></td>
+    </tr>
+    </tbody>
+</table>
+
+:::tip
+
+For more information on Rate limit headers, please 
+consult the [Meta article about rate limiters](https://developers.facebook.com/docs/graph-api/overview/rate-limiting/).
+
+:::
+
+## Disabling rate limiting
+
+The `HttpKernel` class will automatically disable the 
+plugin registration if the package does not exist, so 
+to disable rate limiting in Athenna you need to 
+remove the `@fastify/rate-limit` package from your 
+application:
+
+```shell
+npm remove @fastify/rate-limit
+```
+
+

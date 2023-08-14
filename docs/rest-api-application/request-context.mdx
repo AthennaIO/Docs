@@ -49,6 +49,22 @@ interact with the current HTTP request being handled by your
 application as well as retrieve the ip, headers, body, and
 files that were submitted with the request.
 
+#### The `id` getter
+
+With this getter, you will be able to get the id from the
+request:
+
+```typescript
+Route.get('/welcome', ({ request }) => {
+    console.log(request.id) // 123e4567-e89b-12d3-a456-426614174000
+
+    /*....*/
+})
+```
+
+This is very useful to trace the requests of your server.
+Check the [tracing requests](/docs/rest-api-application/tracing-requests) documentation page for more information.
+
 #### The `ip` getter
 
 With this getter, you will be able to get the ip from where

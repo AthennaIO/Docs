@@ -1,0 +1,99 @@
+---
+title: REPL
+sidebar_position: 1
+description: See how to create a REPL session with Athenna Framework ecosystem.
+tags:
+  - Digging Deeper
+  - REPL
+---
+
+# REPL
+
+See how to create a REPL session with Athenna Framework ecosystem.
+
+## Introduction
+
+From [Digital ocean article](https://www.digitalocean.com/community/tutorials/what-is-repl): 
+A Read-Eval-Print Loop, or REPL, is a computer environment 
+where user inputs are read and evaluated, and then the results 
+are returned to the user. REPLs provide an interactive 
+environment to explore tools available in specific environments 
+or programming languages. Some examples include the Node.js 
+console, IPython, the Bash shell, and the developer console 
+found in most web browsers.
+
+Athenna can easily integrate with 
+[`node:repl`](https://nodejs.org/api/repl.html#repl) package 
+to run your entire infrastructure in parallel with the package.
+
+## Booting REPL
+
+REPL allows you to interact with your entire Athenna 
+application on the command line, including your models,
+jobs, events, and more. To enter the REPL environment, 
+run the Artisan command:
+
+```shell
+./node artisan repl
+```
+
+:::info
+
+When running this command, Athenna will use the 
+`Path.bootstrap('repl.ts')` file to execute your session.
+
+:::
+
+## Importing modules in REPL session
+
+To import modules inside REPL you need to use dynamic imports:
+
+```javascript
+{ Log } = await import('@athenna/logger') // Destructuring import
+helpers = await import('#src/Helpers/index') // Default import
+```
+
+:::caution
+
+If you don't use `var/let/const` in front of your importation, 
+the variable will be set globally in your REPL session.
+
+:::
+
+:::tip
+
+You can check the global context of your REPL session 
+running `.ls`. You can type `.help` to check all REPL 
+commands available.
+
+:::
+
+## Pre-importing modules
+
+You can pre-import modules in your REPL session to avoid keep
+importing them everytime inside your REPL session. You can do that
+in your `Path.bootstrap('repl.ts')` file:
+
+```typescript
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url, { bootLogs: false })
+
+const repl = await ignite.repl()
+
+await import('@athenna/common').then(common => {
+  Object.keys(common).forEach(key => (
+    repl.context[key] = common[key] 👈
+  ))
+})
+
+repl.context.helloWorld = 'Hello World!' 👈
+repl.context.appService = ioc.safeUse('App/Services/AppService') 👈
+```
+
+:::info
+
+As you can see in the implementation above, by default Athenna
+pre-imports all the `@athenna/common` helpers to your REPL session.
+
+:::
