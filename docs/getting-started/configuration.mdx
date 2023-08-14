@@ -189,6 +189,29 @@ APP_URL=http://${HOST}:${PORT}
 console.log(Env('APP_URL')) // "http://localhost:3000"
 ```
 
+## Custom environment file path 
+
+You can also change the name and the path of your `.env` file. 
+To do that you need to set the new path to `Ignite.load()` method:
+
+```typescript filename="bootstrap/dev.ts"
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url, {
+  envPath: './bootstrap/.env.dev' 👈
+})
+
+await ignite.httpServer()
+```
+
+:::tip
+
+Always remember that when using relative paths to set something
+in Athenna, you need to use your project root path as reference,
+just like in the example above.
+
+:::
+
 ## Configuration files
 
 All the configuration files for the Athenna framework are
