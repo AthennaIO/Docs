@@ -169,17 +169,40 @@ which a browser should permit loading resources.
 
 Athenna uses the [`@fastify/cors`](https://github.com/fastify/fastify-cors)
 plugin inside `HttpKernel`. All the configurations that
-`@fastify/cors` supports can be set inside `Path.config('http.ts')`
+`@fastify/cors` supports can be set inside `Path.config('http.js')`
 file in the `cors` object.
 
 Cors plugin is registered in your http application by
 default, but you can remove it uninstalling `@fastify/cors`
 from your application, or removing the `cors` object key
-from your `Path.config('http.ts')` file.
+from your `Path.config('http.js')` file.
 
 :::tip
 
 For more information on CORS and CORS headers, please
 consult the [MDN web documentation on CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS).
+
+:::
+
+## Custom route file path 
+
+You can change the name and the path of your `Path.route('http.js')` file. 
+To do that you need to set the new path to `Ignite.httpServer()` method:
+
+```typescript filename="Path.bootstrap('dev.js')"
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url)
+
+await ignite.httpServer({
+  routePath: './bootstrap/routes/http-dev.js' 👈
+})
+```
+
+:::tip
+
+Always remember that when using relative paths to set something
+in Athenna, you need to use your project root path as reference,
+just like in the example above.
 
 :::

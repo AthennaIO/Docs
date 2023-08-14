@@ -49,7 +49,7 @@ create customized ones for each environement (`.athennarc.dev.json`,
 `.athennarc.prod.json`). To do that you need to set the new 
 path to `Ignite.load()` method:
 
-```typescript filename="bootstrap/dev.ts"
+```typescript filename="Path.bootstrap('dev.js')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url, {

@@ -62,7 +62,7 @@ bootstrap failure has been found in your application.
 
 ## Configuration
 
-The `debug` option in your `Path.config('app.ts')` configuration
+The `debug` option in your `Path.config('app.js')` configuration
 file determines how much information about an error is
 actually displayed to the user. By default, this option is
 set to respect the value of the `APP_DEBUG` environment
@@ -77,13 +77,13 @@ users.
 
 Every error will be logged by default using the `console`
 driver from `@athenna/logger`. By default, Athenna uses the
-`exception` channel of your `Path.config('logging.ts')` file to log
+`exception` channel of your `Path.config('logging.js')` file to log
 all exceptions that happens in your application.
 
 :::tip
 
 You can change the driver and formatter of `exception`
-channel inside `Path.config('logging.ts')` file. This way you can
+channel inside `Path.config('logging.js')` file. This way you can
 send all your error logs to another provider and with
 a different formatter.
 
@@ -159,7 +159,7 @@ export class Handler extends ConsoleExceptionHandler {
 Now you need to register your exception handler when 
 bootstrapping your application:
 
-```typescript title="bootstrap/main.ts"
+```typescript filename="Path.bootstrap('main.js')"
 await ignite.artisan(process.argv, { 
   displayName: 'Athenna',
   exceptionHandlerPath: '#app/console/exceptions/Handler', 👈

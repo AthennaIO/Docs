@@ -194,7 +194,7 @@ console.log(Env('APP_URL')) // "http://localhost:3000"
 You can also change the name and the path of your `.env` file. 
 To do that you need to set the new path to `Ignite.load()` method:
 
-```typescript filename="bootstrap/dev.ts"
+```typescript filename="Path.bootstrap('dev.js')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url, {
@@ -361,7 +361,7 @@ Config.set('app.name', builders.functionCall('Env', ['MY_APP_NAME']))
 await Config.rewrite('app')
 ```
 
-The example above will produce the following code in `Path.config('app.ts')`:
+The example above will produce the following code in `Path.config('app.js')`:
 
 ```typescript
 export default {
@@ -445,7 +445,7 @@ file path:
 import { Path } from '@athenna/common'
 import { Config } from '@athenna/config'
 
-await Config.load(Path.stubs('config/test.ts'))
+await Config.load(Path.stubs('config/test.js'))
 
 console.log(Config.get('test')) // { ... }
 ```
@@ -459,7 +459,7 @@ is not defined:
 import { Path } from '@athenna/common'
 import { Config } from '@athenna/config'
 
-await Config.safeLoad(Path.stubs('config/app.ts'))
+await Config.safeLoad(Path.stubs('config/app.js'))
 ```
 
 #### `Config.loadAll()`
@@ -559,7 +559,7 @@ your environment it could become one. To avoid reloading configuration
 files in these situations, you can set the `loadConfigSafe` option as `true`
 in `Ignite.load()` method:
 
-```typescript filename="bootstrap/main.ts"
+```typescript filename="Path.bootstrap('main.js')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url, {
@@ -571,7 +571,7 @@ await ignite.httpServer()
 
 ## Debug mode
 
-The `debug` option in your `Path.config('app.ts')` configuration
+The `debug` option in your `Path.config('app.js')` configuration
 file determines how much information about your application
 is actually displayed to you and for who is going to consume
 your application. By default, this option is set to respect

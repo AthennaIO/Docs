@@ -105,9 +105,9 @@ Node.js supports registering as many as signals event
 listeners you want, this means that you can use the default
 `SIGINT` and `SIGTERM` listeners of Athenna and also create 
 your own. We recommend doing this implementation in the bootstrap
-file of your like application, like `bootstrap/main.ts`:
+file of your like application:
 
-```typescript
+```typescript filename="Path.bootstrap('main.js')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url)
@@ -125,7 +125,7 @@ process.on('SIGTERM', () => {
 
 If you wish to remove or change the default listeners of
 Athenna, or also listen to new signals, you can create 
-the `signals` property in the `Path.config('app.ts')`
+the `signals` property in the `Path.config('app.js')`
 file:
 
 ```typescript
