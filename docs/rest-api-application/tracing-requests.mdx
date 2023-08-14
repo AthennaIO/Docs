@@ -1,0 +1,75 @@
+---
+title: Tracing Requests
+sidebar_position: 8
+description: Understand how to trace requests in your REST API application of Athenna.
+tags:
+  - REST API Application
+  - Tracing Requests
+---
+
+# Tracing Requests
+
+Understand how to trace requests in your REST API application of Athenna.
+
+## Introduction
+
+Briefly, tracing represents a single user's 
+journey through an entire app stack. By 
+tracing through a stack, developers can identify 
+what happened with determined request and also 
+identify bottlenecks and focus on improving performance.
+
+## Basic usage
+
+Athenna uses the [`cls-rtracer`](https://github.com/puzpuzpuz/cls-rtracer) 
+plugin inside `HttpKernel`. All the configurations 
+that `cls-rtracer` supports can be set inside 
+`config/http.js` file in the `rTracer` object:
+
+```typescript
+export default {
+  trace: true,
+  rTracer: {
+    echoHeader: false,
+    useHeader: false,
+    headerName: 'X-Request-Id',
+    useFastifyRequestId: false,
+  },
+}
+```
+
+When `trace` is set to `true`, the `cls-rtracer` 
+plugin will be enabled and a UUID will be generated 
+for each request. This UUID will be available in
+`request.id` property of your routes:
+
+```typescript
+import { Log } from '@athenna/logger'
+import { Route } from '@athenna/http'
+
+Route.get('/', ({ request }) => {
+  Log.info(request.id) // 123e4567-e89b-12d3-a456-426614174000
+
+  return 'Hello World!'
+})
+```
+
+:::tip
+
+Athenna request logger enabled by `http.logger` 
+configuration will automatically log the request 
+ID for you.
+
+:::
+
+## Disabling tracer
+
+The `HttpKernel` class will automatically disable the 
+plugin registration if `http.trace` is set to `false` 
+or if the package does not exist, so to disable tracer 
+in Athenna you need to remove the `cls-rtracer` package 
+from your application:
+
+```shell
+npm remove cls-rtracer
+```

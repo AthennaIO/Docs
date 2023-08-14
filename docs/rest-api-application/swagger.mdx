@@ -1,0 +1,151 @@
+---
+title: Swagger
+sidebar_position: 6
+description: See how to create the Swagger documentation for Athenna REST API application.
+tags:
+  - REST API Application
+  - Swagger
+---
+
+# Swagger
+
+See how to create the Swagger documentation for Athenna REST API application.
+
+## Introduction
+
+Swagger allows you to describe the structure of 
+your APIs so that machines can read them. The 
+ability of APIs to describe their own structure 
+is the root of all awesomeness in Swagger.
+
+## Configuration
+
+Athenna uses the [`@fastify/swagger`](https://github.com/fastify/fastify-swagger) 
+and [`@fastify/swagger-ui`](https://github.com/fastify/fastify-swagger-ui) 
+plugins inside `HttpKernel`. All the configurations that `@fastify/swagger` 
+supports can be set inside `config/http.js` file in the `swagger.configurations` 
+object. And all the configurations that `@fastify/swagger-ui`
+supports can be set inside `config/http.js` file in the `swagger.ui` object:
+
+```typescript
+export default {
+  swagger: {
+    ui: {
+      staticCSP: true,
+      routePrefix: '/documentation',
+    },
+    configurations: {
+      mode: 'dynamic',
+      swagger: {
+        basePath: '/',
+        consumes: ['application/json'],
+        produces: ['application/json'],
+        info: {
+          title: Config.get('app.name'),
+          version: Config.get('app.version'),
+          description: Config.get('app.description'),
+        },
+        externalDocs: {
+          url: 'https://athenna.io',
+          description: 'Find more info about Athenna here',
+        },
+      },
+    },
+  },
+}
+```
+
+## Basic usage
+
+You can set your Swagger configurations using 
+the `Route` facade in `routes/http.js` file:
+
+```typescript
+Route.get('/hello', 'WelcomeController.show')
+    .summary('Hello route')
+    .tags('hello', 'world')
+    .description('Hello route used to say hello to the user')
+    .queryString('name', 'string', 'Name to say hello')
+    .response(200, {
+        description: 'Successful response',
+        schema: {
+            type: 'object',
+            properties: {
+                name: { type: 'string' },
+            },
+        },
+    })
+```
+
+You can also use the `swagger()` method and use 
+the same configurations of `@fastify/swagger` plugin:
+
+```typescript
+Route.get('/hello', 'WelcomeController.show').swagger({
+    summary: 'Hello route',
+    tags: ['hello', 'world'],
+    description: 'Hello route used to say hello to the user',
+    querystring: {
+      type: 'object',
+      properties: {
+        name: {
+          type: 'string',
+          description: 'Name to say hello'
+        }
+      }
+    },
+    response: {
+        200: {
+            description: 'Successful response',
+            properties: {
+                name: { type: 'string' }
+            }
+        }
+    }
+})
+```
+
+### Usage in route groups
+
+You can also use all the swagger methods in route groups. 
+This will set the same configuration for all routes inside 
+the group:
+
+```javascript
+Route.group(() => {
+    Route.get('/hello', 'WelcomeController.show').summary('Hello route')
+}).swagger({...})
+```
+
+:::warning
+
+The swagger methods of route groups will never subscribe 
+the already set methods of routes. Use them to create "defaults"
+configurations for all routes such as `security`.
+
+:::
+
+### Usage in route resources
+
+Same behavior as route groups, but for resources:
+
+```javascript
+// Set the same configurations for all routes of resource
+Route.resource('/tests', 'WelcomeController').swagger({...})
+
+// Set configuration only for that specific action of resource
+Route.resource('/tests', 'WelcomeController').swagger('index', {...})
+Route.resource('/tests', 'WelcomeController').swagger('store', {...})
+```
+
+## Disabling Swagger
+
+The `HttpKernel` class will automatically disable the 
+plugin registration if the package does not exist, so 
+to disable Swagger in Athenna you need to remove the 
+`@fastify/swagger` and `@fastify/swagger-ui` packages from your 
+application:
+
+```shell
+npm remove @fastify/swagger @fastify/swagger-ui
+```

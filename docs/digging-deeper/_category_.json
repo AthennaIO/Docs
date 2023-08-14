@@ -1,0 +1,10 @@
+{
+  "label": "Digging Deeper",
+  "position": 5,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "slug": "/digging-deeper",
+    "description": "Digging deeper into Athenna Framework."
+  }
+}

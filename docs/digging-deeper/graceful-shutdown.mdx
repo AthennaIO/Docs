@@ -1,0 +1,171 @@
+---
+title: Graceful Shutdown
+sidebar_position: 2
+description: See how to graceful shutdown any kind of Athenna application.
+tags:
+  - Digging Deeper
+  - Graceful Shutdown
+---
+
+# Graceful Shutdown
+
+See how to graceful shutdown any kind of Athenna application.
+
+## Introduction
+
+Graceful shutdown means that the OS (operating system) 
+can safely shutdown its processes and close all connections, 
+however long that takes. This helps to prevent accidental 
+data loss or other unexpected problems if the shutdown is 
+performed intentionally by the user. To understand how 
+graceful shutdown works, you need to have a little bit of 
+knowledge about how the [signal events](https://nodejs.org/api/process.html#signal-events) 
+works and when they trigger.
+
+Athenna already comes with a graceful shutdown mechanism
+configured for you out of the box. However, just like 
+any other thing in this framework, you can customize it
+to your needs. We will see further in this documentation
+how to operate with this mechanism and also how to customize 
+it.
+
+## Default behavior
+
+Athenna only listen to `SIGINT` and `SIGTERM` signal events 
+by default, this is what is executed when they are triggered:
+
+```typescript
+process.on('SIGINT', () => {
+  process.exit()
+})
+
+process.on('SIGTERM', async () => {
+  await LoadHelper.shutdownProviders()
+
+  process.kill(process.pid, signal)
+})
+```
+
+:::info
+
+- **`SIGINT`** - Triggered when the user presses `CTRL + C` in the terminal.
+- **`SIGTERM`** - Triggered when the machine sends a `SIGTERM` signal to the 
+process, this is the default signal created by `kill` or `killall` commands.
+
+:::
+
+## The `LoadHelper.shutdownProviders()` method
+
+This method is responsible for calling the `shutdown()` 
+method of all your service providers. Let's see the implementation
+of `HttpServerProvider` to understand how it works:
+
+```typescript
+import { ServiceProvider } from '@athenna/ioc'
+import { ServerImpl } from '#src/server/ServerImpl'
+
+export class HttpServerProvider extends ServiceProvider {
+  public register() {
+    this.container.instance('Athenna/Core/HttpServer', new ServerImpl(), false)
+  }
+
+  public async shutdown() {
+    const Server = this.container.use<ServerImpl>('Athenna/Core/HttpServer')
+
+    if (!Server) {
+      return
+    }
+
+    if (!Server.isListening) {
+      return
+    }
+
+    await Server.close()
+  }
+}
+```
+
+As you can see, the `shutdown()` method of this 
+provider first verifies if the `Server` instance
+exists in the service container and if it's listening 
+and them close it.
+
+:::caution
+
+If you wish to implement your own `SIGTERM` event, always
+remember that is your responsibility to call the 
+`LoadHelper.shutdownProviders()` method, if you don't call it
+Athenna will never graceful shutdown.
+
+:::
+
+## Customizing
+
+Node.js supports registering as many as signals event 
+listeners you want, this means that you can use the default
+`SIGINT` and `SIGTERM` listeners of Athenna and also create 
+your own. We recommend doing this implementation in the bootstrap
+file of your like application, like `bootstrap/main.ts`:
+
+```typescript
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url)
+
+await ignite.httpServer()
+
+process.on('SIGINT', () => {
+  console.log('executing SIGINT')
+})
+
+process.on('SIGTERM', () => {
+  console.log('executing SIGTERM')
+})
+```
+
+If you wish to remove or change the default listeners of
+Athenna, or also listen to new signals, you can create 
+the `signals` property in the `config/app.ts`
+file:
+
+```typescript
+import { LoadHelper } from '@athenna/ioc'
+
+export default {
+  signals: {
+    SIGINT: () => {
+      console.log('executing SIGINT')
+
+      process.exit()
+    },
+    SIGTERM: async () => {
+      console.log('executing SIGTERM')
+
+      await LoadHelper.shutdownProviders()
+
+      process.kill(process.pid, signal)
+    },
+    // NEW SIGNAL
+    SIGKILL: async () => {
+      console.log('executing SIGKILL')
+    }
+  }
+}
+```
+
+:::tip
+
+To "remove" the default listeners, just implement a NOOP 
+function in `SIGINT` and `SIGTERM`, because if you remove 
+the key or let it `undefined`, Athenna will use the default:
+
+```typescript
+export default {
+  signals: {
+    SIGINT: () => {},
+    SIGTERM: () => {},
+  }
+}
+```
+
+:::
