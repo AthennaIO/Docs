@@ -34,7 +34,7 @@ the classes in your application will be in this directory.
 ### The bootstrap directory
 
 The `bootstrap` directory contains all of your application's
-bootstrap files. It's here that Athenna holds the `main.ts`
+bootstrap files. It's here that Athenna holds the `main.js`
 file that bootstrap the application using the `Ignite` class.
 
 ### The config directory
@@ -71,17 +71,17 @@ The `routes` directory contains all the route definitions
 for your application. By default, several route files are
 included with Athenna:
 
-- The `http.ts` file is where you will define the entry
+- The `http.js` file is where you will define the entry
 point of your api using the Route facade that is provided
 by the HttpRouteProvider.
-- The `console.ts` file is where you will define the entry
+- The `console.js` file is where you will define the entry
 point of your commands using the Artisan facade that is
 provided by the ArtisanProvider.
 
 :::important
 
 As you may have noticed your project does not have the
-`console.ts` file. We only recommend using this file when
+`console.js` file. We only recommend using this file when
 you don't want to use TypeScript in your application or
 when you want to add some personalized option of [commander](https://www.npmjs.com/package/commander)
 to your command. Check the example:
@@ -126,7 +126,7 @@ command.
 If your test file name does not end with `Test`, it will
 be ignored and the test class will not run. But, you can
 customize this behavior in the configure function of [Japa](https://japa.dev/docs)
-inside your `Path.bootstrap('test.js')` file.
+inside your `Path.bootstrap('test.ts')` file.
 
 :::
 
@@ -144,16 +144,16 @@ create the project:
 There are some files in your project that are crucial to
 keep in certain places. Let's analyze some of them:
 
-- The `Path.bootstrap('main.js')` file is the entry point of the
+- The `Path.bootstrap('main.ts')` file is the entry point of the
 `./node artisan serve` command. Every time that you run this
 command, Athenna will use this file to run your application.
-- The `Path.bootstrap('artisan.js')` file is the entry point of the
+- The `Path.bootstrap('artisan.ts')` file is the entry point of the
 `./node artisan` script. You can check how this works in the
 [node script file documentation section](https://athenna.io/docs/getting-started/node-script-file).
 - The `config` path is where you are going to set up your
 configuration files. You can learn more about configuration
 files at [the configuration documentation section](https://athenna.io/docs/getting-started/configuration).
-- The `Path.routes('http.js')` file is where you are going to register
+- The `Path.routes('http.ts')` file is where you are going to register
 your Http server routes.
 
 Athenna is a framework with a lot of opinions, with predefined

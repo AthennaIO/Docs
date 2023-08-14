@@ -58,3 +58,41 @@ And now the `yourCliCommand` will exist in your actual Node.js version:
 ```shell
 yourCliCommand --help
 ```
+
+## Display CLI name
+
+When running your CLI without any option and command, the display
+name will be rendered in the terminal using 
+[`chalk-rainbow`](https://www.npmjs.com/package/chalk-rainbow) 
+and [`figlet`](https://www.npmjs.com/package/figlet).
+
+By default Artisan always display the `Artisan` name, but you can
+change it for your own display name by setting the `displayName` 
+property in `Ignite.artisan()` method:
+
+```typescript title="Path.bootstrap('main.ts')"
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url)
+
+await ignite.artisan({
+  displayName: 'Your CLI Command', 👈
+})
+```
+
+:::tip
+
+If you wish to disable the display name, just set the `displayName`
+as `null`:
+
+```typescript title="Path.bootstrap('main.ts')"
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url)
+
+await ignite.artisan({
+  displayName: null, 👈
+})
+```
+
+:::

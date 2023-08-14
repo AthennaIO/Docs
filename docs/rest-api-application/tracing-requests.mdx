@@ -24,7 +24,7 @@ identify bottlenecks and focus on improving performance.
 Athenna uses the [`cls-rtracer`](https://github.com/puzpuzpuz/cls-rtracer) 
 plugin inside `HttpKernel`. All the configurations 
 that `cls-rtracer` supports can be set inside 
-`Path.config('http.js')` file in the `rTracer` object:
+`Path.config('http.ts')` file in the `rTracer` object:
 
 ```typescript
 export default {
@@ -75,7 +75,7 @@ npm remove cls-rtracer
 
 You can also disable the tracer by setting `http.trace` to `false`:
 
-```typescript filename="Path.config('http.js')"
+```typescript title="Path.config('http.ts')"
 export default {
   trace: false,
 }
@@ -84,7 +84,7 @@ export default {
 Or by setting the `tracer` option as `false` when booting the 
 server in `Ignite.httpServer()` method:
 
-```typescript filename="Path.bootstrap('main.js')"
+```typescript title="Path.bootstrap('main.ts')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url)

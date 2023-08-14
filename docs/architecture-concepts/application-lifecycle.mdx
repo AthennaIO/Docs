@@ -35,7 +35,7 @@ application you are using. Meaning that no matter what is the type of
 application you are using to build your solution, the explanation bellow
 is valid for all of them.
 
-The entry point of an Athenna application is the `Path.bootstrap('main.js')`. 
+The entry point of an Athenna application is the `Path.bootstrap('main.ts')`. 
 The first action taken by Athenna itself is to create an instance of the 
 application and then boot it.
 
@@ -118,10 +118,11 @@ in the `.athennarc.json` in the `preloads` array.
 :::note
 
 The process of firing the Athenna foundation is triggered by the
-`Ignite.fire` method. But if you check your `main.ts` entrypoint file,
-you will see that this method is not called directly. The reason for
-this is that this method is called internally depending on the type of
-application you are using. Let's cover some examples bellow:
+`Ignite::fire()` static method. But if you check your `Path.bootstrap('main.ts')` 
+entrypoint file, you will see that this method is not called directly. 
+The reason for this is that this method is called internally depending 
+on the type of application you are using. Let's cover some examples 
+bellow:
 
 - The `REST API` application needs to fire the foundation first because
 it depends on service providers to register your controllers, services,
@@ -140,7 +141,7 @@ will be fired before executing your command.
 ### Kernel
 
 The Kernel class is responsible by defining some bootstraps that will
-be run before reading your `Path.routes('http.js')` file. These bootstraps
+be run before reading your `Path.routes('http.ts')` file. These bootstraps
 configure error handling for requests, tracing and logging, detect the
 application environment, and perform other tasks that need to be done
 before the request is actually handled. Typically, these classes handle
@@ -168,7 +169,7 @@ implementation code.
 
 :::
 
-Then, you can register your `CustomKernel` in your `Path.bootstrap('main.js')`
+Then, you can register your `CustomKernel` in your `Path.bootstrap('main.ts')`
 file:
 
 ```typescript
@@ -181,14 +182,14 @@ await ignite.httpServer({ kernelPath: '#app/http/CustomKernel' })
 
 ### Routes
 
-The `Path.routes('http.js')` file is the entrypoint for all your http requests.
+The `Path.routes('http.ts')` file is the entrypoint for all your http requests.
 This file is responsible to create a contract between your client and
 your application. It Is in here that we define all our routes and the
 handlers/controllers who will handle the client request.
 
 One of the most important service providers in your application is the
 `HttpRouteProvider`. This service provider adds in the container the
-`Route` class instance used inside `Path.routes('http.js')` file.
+`Route` class instance used inside `Path.routes('http.ts')` file.
 
 When the client request arrives, the server first executes all your
 global middlewares, then it will execute all your route middlewares.
@@ -275,8 +276,8 @@ kernel implementation taking a look at [ConsoleKernel](https://github.com/Athenn
 
 :::
 
-Then, you can register your `CustomKernel` in your `Path.bootstrap('main.js')` or
-`Path.bootstrap('artisan.js')` file:
+Then, you can register your `CustomKernel` in your 
+`Path.bootstrap('main.ts')` or `Path.bootstrap('artisan.ts')` file:
 
 ```typescript
 import { Ignite } from '@athenna/core'
@@ -290,9 +291,9 @@ await ignite.artisan({ kernelPath: '#app/http/CustomKernel' })
 
 ### Execution
 
-The `Path.routes('console.js')` and the `commands` property of `.athennarc.json` file
-is where that we define all ours commands and the handlers who will handle
-the terminal arguments.
+The `Path.routes('console.ts')` and the `commands` property of 
+`.athennarc.json` file is where that we define all ours commands 
+and the handlers who will handle the terminal arguments.
 
 When the terminal arguments arrive, the application will be bootstrapped
 based on the command that you are asking to execute. Let's suppose we have
@@ -318,10 +319,10 @@ command and execute it:
 ```mermaid
 flowchart LR
     terminalCommand(("Terminal Command"))
-    igniteLoad{"Ignite.load()"}
+    igniteLoad{"Ignite::load()"}
     consoleKernel{"ConsoleKernel"}
     loadAppEqualsTrue{"loadApp === true"}
-    igniteFire{"Ignite.fire()"}
+    igniteFire{"Ignite::fire()"}
     defineArgsAndFlags{"Define arguments and flags"}
     commandHandler("Command Handler")
 
