@@ -546,6 +546,29 @@ check [the do your own structure documentation section](https://athenna.io/docs/
 for more information about how to create your own project
 structure.
 
+## Safe loading configuration files
+
+Athenna got multiple types of applications, while using the framework
+you will notice that some times you could end up igniting your application
+twice. Let's suppose you are using `./node artisan serve` command to start
+your application, this command will first ignite your application by Artisan
+and them by the HTTP server.
+
+This is usually not a problem at all, but depending on how you have created
+your environment it could become one. To avoid reloading configuration
+files in these situations, you can set the `loadConfigSafe` option as `true`
+in `Ignite.load()` method:
+
+```typescript filename="bootstrap/main.ts"
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url, {
+  loadConfigSafe: true, 👈
+})
+
+await ignite.httpServer()
+```
+
 ## Debug mode
 
 The `debug` option in your `Path.config('app.ts')` configuration
