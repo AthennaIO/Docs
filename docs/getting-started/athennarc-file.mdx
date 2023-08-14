@@ -42,6 +42,53 @@ also register it inside your `.athennarc.json` file:
 }
 ```
 
+## Custom RC file path
+
+You can change the name and the path of your RC file or even 
+create customized ones for each environement (`.athennarc.dev.json`, 
+`.athennarc.prod.json`). To do that you need to set the new 
+path to `Ignite::load()` static method:
+
+```typescript title="Path.bootstrap('dev.ts')"
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url, {
+  athennaRcPath: './bootstrap/athennadevrc.json' 👈
+})
+
+await ignite.httpServer()
+```
+
+:::tip
+
+Always remember that when using relative paths to set something
+in Athenna, you need to use your project root path as reference,
+just like in the example above.
+
+:::
+
+## Using RC file in `package.json`
+
+You can also use the RC file inside `package.json`. By default,
+If you don't specify the path of your RC file, and the default 
+`.athennarc.json` cannot be found in the root path of your application,
+Athenna will check if the `athenna` property exists in your `package.json`:
+
+```json title="package.json"
+{
+  "athenna": {
+    "providers": [
+      "@athenna/core/providers/CoreProvider",
+      "@athenna/http/providers/HttpRouteProvider",
+      "@athenna/http/providers/HttpServerProvider"
+    ],
+    "directories": {
+      "bootstrap": "bin"
+    }
+  }
+}
+```
+
 ## The `preloads` property
 
 An array of files that will be loaded when your application
@@ -49,7 +96,7 @@ is bootstrapping. The files are loaded after booting the
 service providers. You can do anything you want in preload
 files. Check the example bellow:
 
-```typescript filename="say-hello.js"
+```typescript title="say-hello.js"
 import { Log } from '@athenna/logger'
 import { Config } from '@athenna/core'
 

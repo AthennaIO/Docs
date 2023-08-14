@@ -41,7 +41,7 @@ allow you to easily log values, create "if" statements,
 iterate over data, and more.
 
 Once you have created a view file, eg: `resources/views/welcome.edge`,
-you may register your view disk inside `config/view.ts` file:
+you may register your view disk inside `Path.config('view.ts')` file:
 
 ```typescript
 import { Path } from '@athenna/common'
@@ -184,7 +184,7 @@ time-consuming process, and hence it is recommended to cache
 the compiled templates in production.
 
 You can control the template caching using the `edge.cache`
-property inside `config/view.ts` file. Just make sure to set
+property inside `Path.config('view.ts')` file. Just make sure to set
 the value to `true` in the production environment:
 
 ```typescript

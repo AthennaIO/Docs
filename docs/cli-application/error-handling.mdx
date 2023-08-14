@@ -27,7 +27,7 @@ This documentation will cover about error handling in the **CLI**
 application, which means that only errors that happens inside 
 the `handle()` method of commands and bellow that will be handled:
 
-```typescript title="app/console/commands/AppCommand.ts"
+```typescript title="app/console/commands/AppCommand.js"
 import { BaseCommand } from '@athenna/artisan'
 import { AppService } from '#app/services/AppService'
 
@@ -62,7 +62,7 @@ bootstrap failure has been found in your application.
 
 ## Configuration
 
-The `debug` option in your `config/app.ts` configuration
+The `debug` option in your `Path.config('app.ts')` configuration
 file determines how much information about an error is
 actually displayed to the user. By default, this option is
 set to respect the value of the `APP_DEBUG` environment
@@ -77,13 +77,13 @@ users.
 
 Every error will be logged by default using the `console`
 driver from `@athenna/logger`. By default, Athenna uses the
-`exception` channel of your `config/logging.ts` file to log
+`exception` channel of your `Path.config('logging.ts')` file to log
 all exceptions that happens in your application.
 
 :::tip
 
 You can change the driver and formatter of `exception`
-channel inside `config/logging.ts` file. This way you can
+channel inside `Path.config('logging.ts')` file. This way you can
 send all your error logs to another provider and with
 a different formatter.
 
@@ -115,13 +115,38 @@ always be considered as a not treated exception.
 
 :::
 
+## Simple exceptions
+
+When talking about exceptions in Artisan and CLI applications,
+we can divide them into two categories: simple exceptions and
+the more complex ones. Simple exceptions are exceptions that
+when handled by the `ConsoleExceptionHandler` will only log the
+exception **message**. The more complex will log the entire exception
+including **code, message, help and stack trace**.
+
+Simple exceptions are recognized by `ConsoleExceptionHandler` by
+the `code`. If the code is `E_SIMPLE_CLI`, it will be considered
+as a simple exception:
+
+```typescript title="app/console/exceptions/NotFoundDatabaseException.js"
+import { Exception } from '@athenna/common'
+
+export class NotFoundDatabaseException extends Exception {
+  public constructor(databaseName: string) {
+    const code = 'E_SIMPLE_CLI' 👈
+
+    super({ code, message: `Database ${databaseName} not found.` })
+  }
+}
+```
+
 ## Implementing your own exception handler
 
 Let's suppose you want to write a custom logic for handling
 your exceptions. You can do so by creating your own
 exception handler:
 
-```typescript title="app/console/exceptions/Handler.ts"
+```typescript title="app/console/exceptions/Handler.js"
 import { ConsoleExceptionHandler } from '@athenna/artisan'
 
 export class Handler extends ConsoleExceptionHandler {
@@ -134,7 +159,7 @@ export class Handler extends ConsoleExceptionHandler {
 Now you need to register your exception handler when 
 bootstrapping your application:
 
-```typescript title="bootstrap/main.ts"
+```typescript title="Path.bootstrap('main.ts')"
 await ignite.artisan(process.argv, { 
   displayName: 'Athenna',
   exceptionHandlerPath: '#app/console/exceptions/Handler', 👈
