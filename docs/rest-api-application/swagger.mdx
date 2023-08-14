@@ -23,9 +23,9 @@ is the root of all awesomeness in Swagger.
 Athenna uses the [`@fastify/swagger`](https://github.com/fastify/fastify-swagger) 
 and [`@fastify/swagger-ui`](https://github.com/fastify/fastify-swagger-ui) 
 plugins inside `HttpKernel`. All the configurations that `@fastify/swagger` 
-supports can be set inside `config/http.js` file in the `swagger.configurations` 
+supports can be set inside `Path.config('http.ts')` file in the `swagger.configurations` 
 object. And all the configurations that `@fastify/swagger-ui`
-supports can be set inside `config/http.js` file in the `swagger.ui` object:
+supports can be set inside `Path.config('http.ts')` file in the `swagger.ui` object:
 
 ```typescript
 export default {

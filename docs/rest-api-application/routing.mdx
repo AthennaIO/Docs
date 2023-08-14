@@ -169,13 +169,13 @@ which a browser should permit loading resources.
 
 Athenna uses the [`@fastify/cors`](https://github.com/fastify/fastify-cors)
 plugin inside `HttpKernel`. All the configurations that
-`@fastify/cors` supports can be set inside `config/http.ts`
+`@fastify/cors` supports can be set inside `Path.config('http.ts')`
 file in the `cors` object.
 
 Cors plugin is registered in your http application by
 default, but you can remove it uninstalling `@fastify/cors`
 from your application, or removing the `cors` object key
-from your `config/http.ts` file.
+from your `Path.config('http.ts')` file.
 
 :::tip
 

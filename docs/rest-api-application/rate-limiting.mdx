@@ -21,7 +21,7 @@ a user can request your application in a given time-frame.
 
 Athenna uses the [`@fastify/rate-limit`](https://github.com/fastify/fastify-rate-limit) 
 plugin inside `HttpKernel`. All the configurations that 
-`@fastify/rate-limit` supports can be set inside `config/http.js` 
+`@fastify/rate-limit` supports can be set inside `Path.config('http.ts')` 
 file in the `rateLimit` object:
 
 ```typescript
@@ -43,7 +43,7 @@ export default {
 
 In Athenna you can set specific options of rate limit 
 for specific routes. You can also disable the `global` 
-option of your `rateLimit` configuration in `config/http.js` 
+option of your `rateLimit` configuration in `Path.config('http.ts')` 
 and set different rules in your routes:
 
 ```typescript

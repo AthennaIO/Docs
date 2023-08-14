@@ -338,7 +338,7 @@ Config.set('app.name', builders.functionCall('Env', ['MY_APP_NAME']))
 await Config.rewrite('app')
 ```
 
-The example above will produce the following code in `config/app.ts`:
+The example above will produce the following code in `Path.config('app.ts')`:
 
 ```typescript
 export default {
@@ -525,7 +525,7 @@ structure.
 
 ## Debug mode
 
-The `debug` option in your `config/app.ts` configuration
+The `debug` option in your `Path.config('app.ts')` configuration
 file determines how much information about your application
 is actually displayed to you and for who is going to consume
 your application. By default, this option is set to respect
