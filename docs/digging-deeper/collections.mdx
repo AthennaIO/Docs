@@ -18,7 +18,7 @@ check out the following code. We'll create a new instance of `Collection` using 
 get all elements where the id is **1, 2 or 3**, order everything in ascending mode by **name** and then get only the value of
 the property `name` of each one of the elements:
 
-```javascript
+```typescript
 const users = [
     { id: 1, name: 'Marcelo Oliveira'},
     { id: 2, name: 'Vinicius Campelo' },
@@ -49,13 +49,13 @@ array. In general, collections are immutable, meaning every Collection method re
 
 As you can see in the example above, creating a collection is as simples as:
 
-```javascript
+```typescript
 const collection = new Collection([1, 2, 3])
 ```
 
 Simplifying even more: Athenna has extended the `Array` class to simply convert an array to a collection using the `toCollection` method:
 
-```javascript
+```typescript
 const numbers = [1, 2, 3]
 
 const collection = numbers.toCollection()
@@ -73,7 +73,7 @@ Collections are extendable, which allows you to add additional methods to the Co
 other methods via `this`, just as if it were a real method of the collection class. For example, the following code adds a `toUpper`
 method to the `Collection` class:
 
-```javascript
+```typescript
 import { Collection } from '@athenna/common'
 
 Collection.macro('toUpper', function () {
@@ -96,7 +96,7 @@ a [service provider](/docs/architecture-concepts/providers).
 
 If necessary, you may define macros that accept additional arguments:
 
-```javascript
+```typescript
 Collection.macro('remove', function (key) {
   return this.map(item => {
       if (item[key]) {

@@ -24,7 +24,7 @@ plugin inside `HttpKernel`. All the configurations that
 `@fastify/rate-limit` supports can be set inside `Path.config('http.ts')` 
 file in the `rateLimit` object:
 
-```typescript
+```typescript title="Path.config('http.ts')"
 export default {
   rateLimit: {
     global: true,
@@ -46,7 +46,7 @@ for specific routes. You can also disable the `global`
 option of your `rateLimit` configuration in `Path.config('http.ts')` 
 and set different rules in your routes:
 
-```typescript
+```typescript title="Path.route('http.ts')"
 Route
   .get('/hello', 'WelcomeController.show')
   .rateLimit({ max: 1, timeWindow: '1 minute' }) 👈
@@ -58,7 +58,7 @@ You can also use the `rateLimit()` method in route groups.
 This will set the same configuration for all routes inside 
 the group:
 
-```typescript
+```typescript title="Path.route('http.ts')"
 Route.group(() => {
     Route.get('/hello', 'WelcomeController.show')
 }).rateLimit({ max: 1, timeWindow: '1 minute' }) 👈
@@ -76,7 +76,7 @@ to create "defaults" configurations for all routes.
 
 Same behavior as route groups, but for resources:
 
-```typescript
+```typescript title="Path.route('http.ts')"
 // Set the same configurations for all routes of resource
 Route.resource('/tests', 'WelcomeController').rateLimit({...})
 
