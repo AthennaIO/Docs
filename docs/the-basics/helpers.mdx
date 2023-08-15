@@ -13,4 +13,330 @@ Understand how to use all the Athenna Helpers from @athenna/common and other pac
 
 ## Introduction
 
+Athenna includes a variety of "helpers" classes inside 
+the `@athenna/common` package that comes by default 
+installed in your application. Many of these classes are 
+used by the framework itself; however, you are free to use 
+them in your own applications if you find them convenient.
+
+## Available helpers
+
+- [`File`](/docs/the-basics/helpers#file) - Create, copy, move, 
+delete and get information about files.
+- [`Folder`](/docs/the-basics/helpers#folder) - Create, copy, move, 
+delete and get information about folders.
+
+### `File`
+
+Use the `File` class to create an instance of a file, it existing or not.
+
+#### `File.load()` & `File.loadSync()`
+
+Creates the file is does not exist and also load the file information:
+
+```typescript
+import { File } from '@athenna/common'
+
+const existent = new File(Path.storage('existent.txt'))
+const nonExistent = new File('./nonExistent.txt', 'File content')
+
+// Load the file info and content.
+await existent.load({ withContent: true })  👈
+
+// Create and load the file info without the 
+// content (be careful when loading big files).
+nonExistent.loadSync() 👈
+```
+
+After loading process, the file will contain new informations:
+
+- createdAt - The date when the file was created.
+- accessedAt - The date when the file was last accessed.
+- modifiedAt - The date when the file was last modified.
+- fileSize - The size of the file in MB.
+- content - The content of the file as `Buffer` if `withContent` was `true`.
+
+#### `File.copy()` & `File.copySync()` 
+
+Create a copy of the file in other location or with other name:
+
+```typescript
+import { File } from '@athenna/common'
+
+const copiedFile = file.copySync('./copy-of-file.txt')
+const copiedFile = await file.copy(Path.storage('copy-of-file.txt'))
+```
+
+To copy the file and load the content of the copy set the `withContent`
+as `true`:
+
+```typescript
+import { File } from '@athenna/common'
+
+const copiedFile = await file.copy(Path.storage('copy-of-file.txt'), {
+  withContent: true 👈
+})
+```
+
+When copying the file you can set the `mockedValues` to `true` to create 
+a file with fake name:
+
+```typescript
+import { File } from '@athenna/common'
+
+const copiedFile = await file.copy(Path.storage('copy-of-file.txt'), {
+  mockedValues: true 👈
+})
+```
+
+#### `File.move()` & `File.moveSync()` 
+
+Move the file to other location:
+
+```typescript
+import { File } from '@athenna/common'
+
+const movedFile = file.moveSync('./move-of-file.txt')               👈
+const movedFile = await file.move(Path.storage('move-of-file.txt')) 👈
+```
+
+To move the file and load the content of the move set the `withContent`
+as `true`:
+
+```typescript
+import { File } from '@athenna/common'
+
+const movedFile = await file.move(Path.storage('move-of-file.txt'), {
+  withContent: true 👈
+})
+```
+
+When moving the file you can set the `mockedValues` to `true` to create 
+a file with fake name:
+
+```typescript
+import { File } from '@athenna/common'
+
+const movedFile = await file.move(Path.storage('file-path.txt'), {
+  mockedValues: true 👈
+})
+```
+
+#### `File.remove()` & `File.removeSync()` 
+
+Delete a file from the file system:
+
+```typescript
+import { File } from '@athenna/common'
+
+file.removeSync()   👈
+await file.remove() 👈
+```
+
+#### `File.setContent()` & `File.setContentSync()`
+
+Set the content of a file overwriting the existing content:
+
+```typescript
+import { File } from '@athenna/common'
+
+const file = new File('./file.txt', 'Hello')
+
+file.setContentSync('Hello World!')   👈
+await file.setContent('Hello World!') 👈
+```
+
+#### `File.getContent()` & `File.getContentSync()`
+
+Get the content of a file as `Buffer`:
+
+```typescript
+import { File } from '@athenna/common'
+
+const contentBuffer = file.getContentSync()   👈
+const contentBuffer = await file.getContent() 👈
+```
+
+To save the content of the file in the instance set the `saveContent` as `true`:
+
+```typescript
+import { File } from '@athenna/common'
+
+const content = await file.getContent({ saveContent: true }) 👈
+```
+
+#### `File.getContentAsString()` & `File.getContentAsStringSync()`
+
+Same behavior of `getContent()`/`getContentSync()`, but return the content 
+as `string`:
+
+```typescript
+import { File } from '@athenna/common'
+
+const contentString = file.getContentAsStringSync()   👈
+const contentString = await file.getContentAsString() 👈
+```
+
+#### `File.getContentAsJson()` & `File.getContentAsJsonSync()`
+
+Same behavior of `getContent()`/`getContentSync()`, but return the content as 
+`object` if the content is a valid JSON string:
+
+```typescript
+import { File } from '@athenna/common'
+
+const contentJSON = file.getContentAsJsonSync()   👈
+const contentJSON = await file.getContentAsJson() 👈
+```
+
+#### `File.getContentAsBuilder()` & `File.getContentAsBuilderSync()`
+
+Same behavior of `getContent()`/`getContentSync()`, but return the content as 
+an [`ObjectBuilder`](/docs/the-basics/helpers#object-builder) instance if the 
+content is a valid JSON string:
+
+```typescript
+import { File } from '@athenna/common'
+
+const contentObjectBuilder = file.getContentAsBuilderSync()   👈
+const contentObjectBuilder = await file.getContentAsBuilder() 👈
+```
+
+#### `File.append()` & `File.appendSync()`
+
+Add content to the end of the file:
+
+```typescript
+import { File } from '@athenna/common'
+
+const file = new File('./file.txt', 'Hello')
+
+file.appendSync(' World') 👈
+await file.append('!\n')  👈
+```
+
+#### `File.prepend()` & `File.prependSync()`
+
+Add content to the top of the file:
+
+```typescript
+import { File } from '@athenna/common'
+
+const file = new File('./file.txt', 'World')
+
+file.prependSync('ello ') 👈
+await file.prepend('H')   👈
+```
+
+#### `File.createReadStream()`
+
+Create a [readable stream](https://nodejs.org/api/stream.html#readable-streams) 
+instance of the file:
+
+```typescript
+const stream = file.createReadStream()
+```
+
+#### `File.createWriteStream()`
+
+Create a [writable stream](https://nodejs.org/api/stream.html#writable-streams) 
+instance of the file:
+
+```typescript
+const stream = file.createWriteStream()
+```
+
+#### `File.toJSON()`
+
+Get the informations of the file as JSON:
+
+```typescript
+const infos = file.toJSON() 👈
+```
+
+#### `File.import()`
+
+Import the file path if is a valid module:
+
+```typescript
+import { File } from '@athenna/common'
+
+const file = new File('./file.js', "console.log('hello')")
+
+const module = await file.import() 👈
+```
+
+#### `File.safeImport()`
+
+Same as `import()` method, but if the file is not a valid module the exception
+will be ignored:
+
+```typescript
+import { File } from '@athenna/common'
+
+const file = new File('./file.txt', "console.log('hello')")
+
+const module = await file.safeImport() 👈
+```
+
+Importing files that got any errors like syntax errors will also not throw:
+
+```typescript
+import { File } from '@athenna/common'
+
+const file = new File('./file.js', "console.log('hello")
+
+const module = await file.safeImport() 👈 // Nothing happens
+```
+
+#### `File::safeRemove()`
+
+Call for a delete operation without worrying about exceptions because the file
+does not exist:
+
+```typescript
+import { File } from '@athenna/common'
+
+await File.safeRemove(Path.storage('file.txt'))      👈
+await File.safeRemove(Path.storage('not-found.txt')) 👈 // Will not throw
+```
+
+#### `File::exists()` & `File::existsSync()`
+
+Verify if a file exists or not:
+
+```typescript
+if (File.existsSync('package.json')) {
+  // do something
+}
+
+if (await File.exists('package.json')) {
+  // do something
+}
+```
+
+#### `File::isFile()` & `File::isFileSync()`
+
+Verify if a file is a valid file or not:
+
+```typescript
+if (File.isFileSync('package.json')) {
+  // do something
+}
+
+if (await File.isFile('package.json')) {
+  // do something
+}
+```
+
+#### `File::createFileOfSize()`
+
+Create a fake file with determined size for testing purposes:
+
+```typescript
+const file = await File.createFileOfSize('fake.js', 1024 * 1024 * 100) 👈
+```
+
+### `Folder`
+
 Coming soon
