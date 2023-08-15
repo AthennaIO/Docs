@@ -1,10 +1,10 @@
 ---
-title: Swagger
+title: Swagger Documentation
 sidebar_position: 6
 description: See how to create the Swagger documentation for Athenna REST API application.
 tags:
   - REST API Application
-  - Swagger
+  - Swagger Documentation
 ---
 
 # Swagger
@@ -27,7 +27,7 @@ supports can be set inside `Path.config('http.ts')` file in the `swagger.configu
 object. And all the configurations that `@fastify/swagger-ui`
 supports can be set inside `Path.config('http.ts')` file in the `swagger.ui` object:
 
-```typescript
+```typescript title="Path.config('http.ts')"
 export default {
   swagger: {
     ui: {
@@ -60,7 +60,7 @@ export default {
 You can set your Swagger configurations using 
 the `Route` facade in `routes/http.js` file:
 
-```typescript
+```typescript title="Path.route('http.ts')"
 Route.get('/hello', 'WelcomeController.show')
     .summary('Hello route')
     .tags('hello', 'world')
@@ -80,7 +80,7 @@ Route.get('/hello', 'WelcomeController.show')
 You can also use the `swagger()` method and use 
 the same configurations of `@fastify/swagger` plugin:
 
-```typescript
+```typescript title="Path.route('http.ts')"
 Route.get('/hello', 'WelcomeController.show').swagger({
     summary: 'Hello route',
     tags: ['hello', 'world'],
@@ -111,7 +111,7 @@ You can also use all the swagger methods in route groups.
 This will set the same configuration for all routes inside 
 the group:
 
-```javascript
+```typescript title="Path.route('http.ts')"
 Route.group(() => {
     Route.get('/hello', 'WelcomeController.show').summary('Hello route')
 }).swagger({...})
@@ -129,7 +129,7 @@ configurations for all routes such as `security`.
 
 Same behavior as route groups, but for resources:
 
-```javascript
+```typescript title="Path.route('http.ts')"
 // Set the same configurations for all routes of resource
 Route.resource('/tests', 'WelcomeController').swagger({...})
 
