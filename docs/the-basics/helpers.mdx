@@ -28,8 +28,6 @@ delete and get information about folders.
 
 ### `File`
 
-Use the `File` class to create an instance of a file, it existing or not.
-
 #### `File.load()` & `File.loadSync()`
 
 Creates the file is does not exist and also load the file information:
@@ -339,4 +337,310 @@ const file = await File.createFileOfSize('fake.js', 1024 * 1024 * 100) 👈
 
 ### `Folder`
 
-Coming soon
+#### `Folder.load()` & `Folder.loadSync()`
+
+Creates the folder if it does not exist and also load the folder information:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const existent = new Folder(Path.storage('existent'))
+const nonExistent = new Folder('./nonExistent')
+
+// Load the folder info with sub folders and with file contents.
+await existent.load({ withSub: true, withContent: true })  👈
+
+// Create and load the folder info without the 
+// content (be careful when loading big files).
+nonExistent.loadSync() 👈
+```
+
+After loading process, the folder will contain new informations:
+
+- createdAt - The date when the folder was created.
+- accessedAt - The date when the folder was last accessed.
+- modifiedAt - The date when the folder was last modified.
+- folderSize - The size of the folder in MB.
+
+#### `Folder.copy()` & `Folder.copySync()` 
+
+Create a copy of the folder in other location or with other name:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const copiedFolder = folder.copySync('./copy-of-folder')
+const copiedFolder = await folder.copy(Path.storage('copy-of-folder'))
+```
+
+To copy the folder and load the sub folders and the content of the 
+copy set the `withSub` and `withContent` as `true`:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const copiedFolder = await folder.copy(Path.storage('copy-of-folder'), {
+  withSub: true,    👈
+  withContent: true 👈
+})
+```
+
+When copying the folder you can set the `mockedValues` to `true` to copy the 
+files with fake names:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const copiedFolder = await folder.copy(Path.storage('copy-of-file'), {
+  mockedValues: true 👈
+})
+```
+
+#### `Folder.move()` & `Folder.moveSync()` 
+
+Move the folder to other location:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const movedFolder = folder.moveSync('./move-of-folder')               👈
+const movedFolder = await folder.move(Path.storage('move-of-folder')) 👈
+```
+
+To move the folder and load the sub folders and the content of the 
+move set the `withSub` and `withContent` as `true`:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const movedFolder = await folder.move(Path.storage('move-of-folder'), {
+  withSub: true,    👈
+  withContent: true 👈
+})
+```
+
+When moving the folder you can set the `mockedValues` to `true` to move the 
+files with fake names:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const movedFolder = await folder.move(Path.storage('file-path'), {
+  mockedValues: true 👈
+})
+```
+
+#### `Folder.remove()` & `Folder.removeSync()` 
+
+Delete a folder from the folder system:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+folder.removeSync()   👈
+await folder.remove() 👈
+```
+
+#### `Folder.setContent()` & `Folder.setContentSync()`
+
+Set the content of a folder overwriting the existing content:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const folder = new Folder('./file')
+
+file.setContentSync('Hello World!')   👈
+await file.setContent('Hello World!') 👈
+```
+
+#### `File.getContent()` & `File.getContentSync()`
+
+Get the content of a file as `Buffer`:
+
+```typescript
+import { File } from '@athenna/common'
+
+const contentBuffer = file.getContentSync()   👈
+const contentBuffer = await file.getContent() 👈
+```
+
+To save the content of the file in the instance set the `saveContent` as `true`:
+
+```typescript
+import { File } from '@athenna/common'
+
+const content = await file.getContent({ saveContent: true }) 👈
+```
+
+#### `File.getContentAsString()` & `File.getContentAsStringSync()`
+
+Same behavior of `getContent()`/`getContentSync()`, but return the content 
+as `string`:
+
+```typescript
+import { File } from '@athenna/common'
+
+const contentString = file.getContentAsStringSync()   👈
+const contentString = await file.getContentAsString() 👈
+```
+
+#### `File.getContentAsJson()` & `File.getContentAsJsonSync()`
+
+Same behavior of `getContent()`/`getContentSync()`, but return the content as 
+`object` if the content is a valid JSON string:
+
+```typescript
+import { File } from '@athenna/common'
+
+const contentJSON = file.getContentAsJsonSync()   👈
+const contentJSON = await file.getContentAsJson() 👈
+```
+
+#### `File.getContentAsBuilder()` & `File.getContentAsBuilderSync()`
+
+Same behavior of `getContent()`/`getContentSync()`, but return the content as 
+an [`ObjectBuilder`](/docs/the-basics/helpers#object-builder) instance if the 
+content is a valid JSON string:
+
+```typescript
+import { File } from '@athenna/common'
+
+const contentObjectBuilder = file.getContentAsBuilderSync()   👈
+const contentObjectBuilder = await file.getContentAsBuilder() 👈
+```
+
+#### `File.append()` & `File.appendSync()`
+
+Add content to the end of the file:
+
+```typescript
+import { File } from '@athenna/common'
+
+const file = new File('./file.txt', 'Hello')
+
+file.appendSync(' World') 👈
+await file.append('!\n')  👈
+```
+
+#### `File.prepend()` & `File.prependSync()`
+
+Add content to the top of the file:
+
+```typescript
+import { File } from '@athenna/common'
+
+const file = new File('./file.txt', 'World')
+
+file.prependSync('ello ') 👈
+await file.prepend('H')   👈
+```
+
+#### `File.createReadStream()`
+
+Create a [readable stream](https://nodejs.org/api/stream.html#readable-streams) 
+instance of the file:
+
+```typescript
+const stream = file.createReadStream()
+```
+
+#### `File.createWriteStream()`
+
+Create a [writable stream](https://nodejs.org/api/stream.html#writable-streams) 
+instance of the file:
+
+```typescript
+const stream = file.createWriteStream()
+```
+
+#### `File.toJSON()`
+
+Get the informations of the file as JSON:
+
+```typescript
+const infos = file.toJSON() 👈
+```
+
+#### `File.import()`
+
+Import the file path if is a valid module:
+
+```typescript
+import { File } from '@athenna/common'
+
+const file = new File('./file.js', "console.log('hello')")
+
+const module = await file.import() 👈
+```
+
+#### `File.safeImport()`
+
+Same as `import()` method, but if the file is not a valid module the exception
+will be ignored:
+
+```typescript
+import { File } from '@athenna/common'
+
+const file = new File('./file.txt', "console.log('hello')")
+
+const module = await file.safeImport() 👈
+```
+
+Importing files that got any errors like syntax errors will also not throw:
+
+```typescript
+import { File } from '@athenna/common'
+
+const file = new File('./file.js', "console.log('hello")
+
+const module = await file.safeImport() 👈 // Nothing happens
+```
+
+#### `File::safeRemove()`
+
+Call for a delete operation without worrying about exceptions because the file
+does not exist:
+
+```typescript
+import { File } from '@athenna/common'
+
+await File.safeRemove(Path.storage('file.txt'))      👈
+await File.safeRemove(Path.storage('not-found.txt')) 👈 // Will not throw
+```
+
+#### `File::exists()` & `File::existsSync()`
+
+Verify if a file exists or not:
+
+```typescript
+if (File.existsSync('package.json')) {
+  // do something
+}
+
+if (await File.exists('package.json')) {
+  // do something
+}
+```
+
+#### `File::isFile()` & `File::isFileSync()`
+
+Verify if a file is a valid file or not:
+
+```typescript
+if (File.isFileSync('package.json')) {
+  // do something
+}
+
+if (await File.isFile('package.json')) {
+  // do something
+}
+```
+
+#### `File::createFileOfSize()`
+
+Create a fake file with determined size for testing purposes:
+
+```typescript
+const file = await File.createFileOfSize('fake.js', 1024 * 1024 * 100) 👈
+```
