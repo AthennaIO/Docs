@@ -1,25 +1,31 @@
 .markdown code {
-  color: #ff80bf !important;
+  color: #ff80bf;
 }
 
 .markdown a {
   color: #939300 !important;
 }
 
+a code {
+  color: #939300 !important;
+}
+
 .markdown a:hover {
-  color: #ff80bf !important;
+  color: #ff80bf;
 }
 
 [data-theme='dark'] .markdown a {
   color: #ffff80 !important;
 }
 
+[data-theme='dark'] a code {
+  color: #ffff80 !important;
+}
+
 [data-theme='dark'] .markdown a:hover {
-  color: #ff80bf !important;
+  color: #ff80bf;
 }
 
 .markdown h1, .markdown h2, .markdown h3, .markdown h4, .markdown h5, .markdown h6 {
   font-weight: 800 !important;
 }
-
-

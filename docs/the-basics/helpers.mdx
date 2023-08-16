@@ -21,14 +21,36 @@ them in your own applications if you find them convenient.
 
 ## Available helpers
 
+- [`Clean`](/docs/the-basics/helpers#clean) - Remove falsy values 
+from different data structures.
+- [`Color`](/docs/the-basics/helpers#color) - The UI Kit of Athenna 
+command line applications.
+- [`Exec`](/docs/the-basics/helpers#exec) - Simple helpers that executes
+some operation, like executing a command in a child process.
+- [`FakeApi`](/docs/the-basics/helpers#fakeapi) - Create a fake REST API
+using `json` files to map the routes and their returns (similiar to [WireMock](https://wiremock.org/)).
 - [`File`](/docs/the-basics/helpers#file) - Create, copy, move, 
 delete and get information about files.
 - [`Folder`](/docs/the-basics/helpers#folder) - Create, copy, move, 
 delete and get information about folders.
 
-### `File`
+### `Clean`
 
-Use the `File` class to create an instance of a file, it existing or not.
+Coming soon
+
+### `Color`
+
+Coming soon
+
+### `Exec`
+
+Coming soon
+
+### `FakeApi`
+
+Coming soon
+
+### `File`
 
 #### `File.load()` & `File.loadSync()`
 
@@ -339,4 +361,184 @@ const file = await File.createFileOfSize('fake.js', 1024 * 1024 * 100) 👈
 
 ### `Folder`
 
-Coming soon
+#### `Folder.load()` & `Folder.loadSync()`
+
+Creates the folder if it does not exist and also load the folder information:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const existent = new Folder(Path.storage('existent'))
+const nonExistent = new Folder('./nonExistent')
+
+// Load the folder info with sub folders and with file contents.
+await existent.load({ withSub: true, withContent: true })  👈
+
+// Create and load the folder info without the 
+// content (be careful when loading big files).
+nonExistent.loadSync() 👈
+```
+
+After loading process, the folder will contain new informations:
+
+- createdAt - The date when the folder was created.
+- accessedAt - The date when the folder was last accessed.
+- modifiedAt - The date when the folder was last modified.
+- folderSize - The size of the folder in MB.
+
+#### `Folder.copy()` & `Folder.copySync()` 
+
+Create a copy of the folder in other location or with other name:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const copiedFolder = folder.copySync('./copy-of-folder')
+const copiedFolder = await folder.copy(Path.storage('copy-of-folder'))
+```
+
+To copy the folder and load the sub folders and the content of the 
+copy set the `withSub` and `withContent` as `true`:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const copiedFolder = await folder.copy(Path.storage('copy-of-folder'), {
+  withSub: true,    👈
+  withContent: true 👈
+})
+```
+
+When copying the folder you can set the `mockedValues` to `true` to copy the 
+files with fake names:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const copiedFolder = await folder.copy(Path.storage('copy-of-file'), {
+  mockedValues: true 👈
+})
+```
+
+#### `Folder.move()` & `Folder.moveSync()` 
+
+Move the folder to other location:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const movedFolder = folder.moveSync('./move-of-folder')               👈
+const movedFolder = await folder.move(Path.storage('move-of-folder')) 👈
+```
+
+To move the folder and load the sub folders and the content of the 
+move set the `withSub` and `withContent` as `true`:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const movedFolder = await folder.move(Path.storage('move-of-folder'), {
+  withSub: true,    👈
+  withContent: true 👈
+})
+```
+
+When moving the folder you can set the `mockedValues` to `true` to move the 
+files with fake names:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+const movedFolder = await folder.move(Path.storage('file-path'), {
+  mockedValues: true 👈
+})
+```
+
+#### `Folder.remove()` & `Folder.removeSync()` 
+
+Delete a folder from the folder system:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+folder.removeSync()   👈
+await folder.remove() 👈
+```
+
+#### `Folder.toJSON()`
+
+Get the informations of the folder as JSON:
+
+```typescript
+const infos = folder.toJSON() 👈
+```
+
+#### `Folder.getFilesByPattern()`
+
+Get all the files of a folder using a glob pattern:
+
+```typescript
+const files = folder.getFilesByPattern('**/*.js') 👈
+```
+
+#### `Folder.getFoldersByPattern()`
+
+Get all the folders of a folder using a glob pattern:
+
+```typescript
+const folders = folder.getFoldersByPattern('**/*') 👈
+```
+
+#### `Folder::safeRemove()`
+
+Call for a delete operation without worrying about exceptions because the folder
+does not exist:
+
+```typescript
+import { Folder } from '@athenna/common'
+
+await Folder.safeRemove(Path.storage('folder'))    👈
+await Folder.safeRemove(Path.storage('not-found')) 👈 // Will not throw
+```
+
+#### `Folder::exists()` & `Folder::existsSync()`
+
+Verify if a folder exists or not:
+
+```typescript
+if (Folder.existsSync('app')) {
+  // do something
+}
+
+if (await Folder.exists('app')) {
+  // do something
+}
+```
+
+#### `Folder::isFolder()` & `Folder::isFolderSync()`
+
+Verify if a folder is a valid folder or not:
+
+```typescript
+if (Folder.isFolderSync('app')) {
+  // do something
+}
+
+if (await Folder.isFolder('app')) {
+  // do something
+}
+```
+
+#### `Folder::size()` & `Folder::sizeSync()`
+
+Get the size of the folder in MB:
+
+```typescript
+if (Folder.sizeSync('app') === 100) {
+  // do something
+}
+
+if (await Folder.size('app')  === 100) {
+  // do something
+}
+```

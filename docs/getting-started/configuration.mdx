@@ -478,7 +478,7 @@ await Config.loadAll(Path.stubs('config'))
 
 If you are using the [slim](https://athenna.io/docs/getting-started/installation#project-structure)
 project structure, or you are building your own project
-structure, you are not going to have the config directory
+structure, you are not going to have the `config` directory
 in your project root path.
 
 You will have two options now:
@@ -493,7 +493,7 @@ The [slim](https://athenna.io/docs/getting-started/installation#project-structur
 project structure is using the second option above to
 specify to Athenna that the configuration files will
 be inside of `src/config` directory. Check the examples
-above how this implementation works.
+bellow to see how this implementation works.
 
 :::
 
@@ -505,7 +505,7 @@ defined.
 
 The `directories` property is an object that maps the directory
 base path that the [`Path`](https://athenna.io/docs/digging-deeper/helpers#path)
-class will use to resolve your application paths:
+helper will use to resolve your application paths:
 
 ```typescript
 import { Path } from '@athenna/common'
