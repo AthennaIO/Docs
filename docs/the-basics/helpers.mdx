@@ -21,10 +21,34 @@ them in your own applications if you find them convenient.
 
 ## Available helpers
 
+- [`Clean`](/docs/the-basics/helpers#clean) - Remove falsy values 
+from different data structures.
+- [`Color`](/docs/the-basics/helpers#color) - The UI Kit of Athenna 
+command line applications.
+- [`Exec`](/docs/the-basics/helpers#exec) - Simple helpers that executes
+some operation, like executing a command in a child process.
+- [`FakeApi`](/docs/the-basics/helpers#fakeapi) - Create a fake REST API
+using `json` files to map the routes and their returns (similiar to [WireMock](https://wiremock.org/)).
 - [`File`](/docs/the-basics/helpers#file) - Create, copy, move, 
 delete and get information about files.
 - [`Folder`](/docs/the-basics/helpers#folder) - Create, copy, move, 
 delete and get information about folders.
+
+### `Clean`
+
+Coming soon
+
+### `Color`
+
+Coming soon
+
+### `Exec`
+
+Coming soon
+
+### `FakeApi`
+
+Coming soon
 
 ### `File`
 
@@ -441,206 +465,80 @@ folder.removeSync()   👈
 await folder.remove() 👈
 ```
 
-#### `Folder.setContent()` & `Folder.setContentSync()`
+#### `Folder.toJSON()`
 
-Set the content of a folder overwriting the existing content:
+Get the informations of the folder as JSON:
+
+```typescript
+const infos = folder.toJSON() 👈
+```
+
+#### `Folder.getFilesByPattern()`
+
+Get all the files of a folder using a glob pattern:
+
+```typescript
+const files = folder.getFilesByPattern('**/*.js') 👈
+```
+
+#### `Folder.getFoldersByPattern()`
+
+Get all the folders of a folder using a glob pattern:
+
+```typescript
+const folders = folder.getFoldersByPattern('**/*') 👈
+```
+
+#### `Folder::safeRemove()`
+
+Call for a delete operation without worrying about exceptions because the folder
+does not exist:
 
 ```typescript
 import { Folder } from '@athenna/common'
 
-const folder = new Folder('./file')
-
-file.setContentSync('Hello World!')   👈
-await file.setContent('Hello World!') 👈
+await Folder.safeRemove(Path.storage('folder'))    👈
+await Folder.safeRemove(Path.storage('not-found')) 👈 // Will not throw
 ```
 
-#### `File.getContent()` & `File.getContentSync()`
+#### `Folder::exists()` & `Folder::existsSync()`
 
-Get the content of a file as `Buffer`:
-
-```typescript
-import { File } from '@athenna/common'
-
-const contentBuffer = file.getContentSync()   👈
-const contentBuffer = await file.getContent() 👈
-```
-
-To save the content of the file in the instance set the `saveContent` as `true`:
+Verify if a folder exists or not:
 
 ```typescript
-import { File } from '@athenna/common'
-
-const content = await file.getContent({ saveContent: true }) 👈
-```
-
-#### `File.getContentAsString()` & `File.getContentAsStringSync()`
-
-Same behavior of `getContent()`/`getContentSync()`, but return the content 
-as `string`:
-
-```typescript
-import { File } from '@athenna/common'
-
-const contentString = file.getContentAsStringSync()   👈
-const contentString = await file.getContentAsString() 👈
-```
-
-#### `File.getContentAsJson()` & `File.getContentAsJsonSync()`
-
-Same behavior of `getContent()`/`getContentSync()`, but return the content as 
-`object` if the content is a valid JSON string:
-
-```typescript
-import { File } from '@athenna/common'
-
-const contentJSON = file.getContentAsJsonSync()   👈
-const contentJSON = await file.getContentAsJson() 👈
-```
-
-#### `File.getContentAsBuilder()` & `File.getContentAsBuilderSync()`
-
-Same behavior of `getContent()`/`getContentSync()`, but return the content as 
-an [`ObjectBuilder`](/docs/the-basics/helpers#object-builder) instance if the 
-content is a valid JSON string:
-
-```typescript
-import { File } from '@athenna/common'
-
-const contentObjectBuilder = file.getContentAsBuilderSync()   👈
-const contentObjectBuilder = await file.getContentAsBuilder() 👈
-```
-
-#### `File.append()` & `File.appendSync()`
-
-Add content to the end of the file:
-
-```typescript
-import { File } from '@athenna/common'
-
-const file = new File('./file.txt', 'Hello')
-
-file.appendSync(' World') 👈
-await file.append('!\n')  👈
-```
-
-#### `File.prepend()` & `File.prependSync()`
-
-Add content to the top of the file:
-
-```typescript
-import { File } from '@athenna/common'
-
-const file = new File('./file.txt', 'World')
-
-file.prependSync('ello ') 👈
-await file.prepend('H')   👈
-```
-
-#### `File.createReadStream()`
-
-Create a [readable stream](https://nodejs.org/api/stream.html#readable-streams) 
-instance of the file:
-
-```typescript
-const stream = file.createReadStream()
-```
-
-#### `File.createWriteStream()`
-
-Create a [writable stream](https://nodejs.org/api/stream.html#writable-streams) 
-instance of the file:
-
-```typescript
-const stream = file.createWriteStream()
-```
-
-#### `File.toJSON()`
-
-Get the informations of the file as JSON:
-
-```typescript
-const infos = file.toJSON() 👈
-```
-
-#### `File.import()`
-
-Import the file path if is a valid module:
-
-```typescript
-import { File } from '@athenna/common'
-
-const file = new File('./file.js', "console.log('hello')")
-
-const module = await file.import() 👈
-```
-
-#### `File.safeImport()`
-
-Same as `import()` method, but if the file is not a valid module the exception
-will be ignored:
-
-```typescript
-import { File } from '@athenna/common'
-
-const file = new File('./file.txt', "console.log('hello')")
-
-const module = await file.safeImport() 👈
-```
-
-Importing files that got any errors like syntax errors will also not throw:
-
-```typescript
-import { File } from '@athenna/common'
-
-const file = new File('./file.js', "console.log('hello")
-
-const module = await file.safeImport() 👈 // Nothing happens
-```
-
-#### `File::safeRemove()`
-
-Call for a delete operation without worrying about exceptions because the file
-does not exist:
-
-```typescript
-import { File } from '@athenna/common'
-
-await File.safeRemove(Path.storage('file.txt'))      👈
-await File.safeRemove(Path.storage('not-found.txt')) 👈 // Will not throw
-```
-
-#### `File::exists()` & `File::existsSync()`
-
-Verify if a file exists or not:
-
-```typescript
-if (File.existsSync('package.json')) {
+if (Folder.existsSync('app')) {
   // do something
 }
 
-if (await File.exists('package.json')) {
+if (await Folder.exists('app')) {
   // do something
 }
 ```
 
-#### `File::isFile()` & `File::isFileSync()`
+#### `Folder::isFolder()` & `Folder::isFolderSync()`
 
-Verify if a file is a valid file or not:
+Verify if a folder is a valid folder or not:
 
 ```typescript
-if (File.isFileSync('package.json')) {
+if (Folder.isFolderSync('app')) {
   // do something
 }
 
-if (await File.isFile('package.json')) {
+if (await Folder.isFolder('app')) {
   // do something
 }
 ```
 
-#### `File::createFileOfSize()`
+#### `Folder::size()` & `Folder::sizeSync()`
 
-Create a fake file with determined size for testing purposes:
+Get the size of the folder in MB:
 
 ```typescript
-const file = await File.createFileOfSize('fake.js', 1024 * 1024 * 100) 👈
+if (Folder.sizeSync('app') === 100) {
+  // do something
+}
+
+if (await Folder.size('app')  === 100) {
+  // do something
+}
 ```
