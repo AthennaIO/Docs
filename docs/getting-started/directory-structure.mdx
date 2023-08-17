@@ -34,7 +34,7 @@ the classes in your application will be in this directory.
 ### The bootstrap directory
 
 The `bootstrap` directory contains all of your application's
-bootstrap files. It's here that Athenna holds the `main.js`
+bootstrap files. It's here that Athenna holds the `main.ts`
 file that bootstrap the application using the `Ignite` class.
 
 ### The config directory
@@ -71,17 +71,17 @@ The `routes` directory contains all the route definitions
 for your application. By default, several route files are
 included with Athenna:
 
-- The `http.js` file is where you will define the entry
+- The `http.ts` file is where you will define the entry
 point of your api using the Route facade that is provided
 by the HttpRouteProvider.
-- The `console.js` file is where you will define the entry
+- The `console.ts` file is where you will define the entry
 point of your commands using the Artisan facade that is
 provided by the ArtisanProvider.
 
 :::important
 
 As you may have noticed your project does not have the
-`console.js` file. We only recommend using this file when
+`console.ts` file. We only recommend using this file when
 you don't want to use TypeScript in your application or
 when you want to add some personalized option of [commander](https://www.npmjs.com/package/commander)
 to your command. Check the example:
