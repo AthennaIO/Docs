@@ -164,7 +164,12 @@ only in helpers that **`Color`** provides different from **chalk**.
 
 #### `Color::apply()`
 
-Apply the color engine of Athenna to some string:
+Apply the color engine of Athenna to some string. The color
+engine execute [chalk](https://www.npmjs.com/package/chalk) 
+methods under the hood. In the example bellow we are executing
+`yellow()` and `bold()` method of 
+[chalk](https://www.npmjs.com/package/chalk) in the word 
+`World`:
 
 ```typescript
 import { Color } from '@athenna/common'
