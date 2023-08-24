@@ -60,23 +60,431 @@ validate if they are valid.
 
 ### `Clean`
 
-Coming soon
+#### `Clean::cleanArray()`
+
+Clean falsy and empty values from an array:
+
+```typescript
+import { Clean } from '@athenna/common'
+
+const array = [
+  '',
+  1,
+  null,
+  undefined, 
+  { joao: 'joao', lenon: null }, 
+  {}
+]
+
+const cleanedArray = Clean.cleanArray(array)
+
+console.log(cleanedArray)
+
+/**
+ * [
+ *  1,
+ *  { joao: 'joao', lenon: null }, 
+ *  {}
+ * ]
+ */
+```
+
+The `cleanArray()` method supports two options, `removeEmpty` to remove empty 
+values like `{}` and `[]` and `recursive` to recursivelly remove data
+from objects and arrays:
+
+```typescript
+const cleanedArray = Clean.cleanArray(array, {
+  removeEmpty: true,
+  recursive: true
+})
+
+console.log(cleanedArray)
+
+/**
+ * [
+ *  1, { joao: 'joao' }
+ * ]
+ */
+```
+
+#### `Clean::cleanObject()`
+
+```typescript
+const object = {
+  key: 'value',
+  emptyArray: [],
+  emptyObject: {},
+  object: { joao: 'joao' },
+  nullValue: null,
+  undefinedValue: undefined,
+  arrayWithSubs: [null, 1, { joao: 'joao', lenon: null }, {}],
+}
+
+const cleanedObject = Clean.cleanObject(object)
+
+console.log(cleanedObject) 
+/**
+ * {
+ *  key: 'value',
+ *  emptyArray: [],
+ *  emptyObject: {},
+ *  object: { joao: 'joao' },
+ *  arrayWithSubs: [null, 1, { joao: 'joao', lenon: null }, {}],
+ * }
+ */
+```
+
+The `cleanObject()` method supports two options, `removeEmpty` to remove empty 
+values like `{}` and `[]` and `recursive` to recursivelly remove data
+from objects and arrays:
+
+```typescript
+const cleanedObject = Clean.cleanObject(object, {
+  removeEmpty: true,
+  recursive: true,
+})
+
+console.log(cleanedObject) 
+/**
+ * {
+ *  key: 'value',
+ *  object: { joao: 'joao' },
+ *  arrayWithSubs: [1, { joao: 'joao' }],
+ * }
+ */
+```
 
 ### `Color`
 
-Coming soon
+This helper uses [chalk](https://www.npmjs.com/package/chalk) 
+library under the hood to create unique colors for Athenna
+CLI applications. In this documentation we are going to focus
+only in helpers that **`Color`** provides different from **chalk**.
+
+#### `Color::apply()`
+
+Apply the color engine of Athenna to some string:
+
+```typescript
+import { Color } from '@athenna/common'
+
+const colorizedString = Color.apply('Hello ({yellow, bold} World)!')
+```
+
+:::info
+
+The color of `World` word will be yellow with bold format.
+
+:::
+
+#### `Color::remove()`
+
+Remove all the formats and colors of your string:
+
+```typescript
+import { Color } from '@athenna/common'
+
+const noColorString = Color.remove(Color.yellow('Davi Mezencio'))
+```
+
+#### `Color::httpMethod()`
+
+Get an instance of chalk with a determined color for each type 
+of http method:
+
+```typescript
+import { Color } from '@athenna/common'
+
+Color.httpMethod('GET').bold('Request Received')
+Color.httpMethod('HEAD').bold('Request Received')
+Color.httpMethod('POST').bold('Request Received')
+Color.httpMethod('PUT').bold('Request Received')
+Color.httpMethod('PATCH').bold('Request Received')
+Color.httpMethod('DELETE').bold('Request Received')
+Color.httpMethod('OPTIONS').bold('Request Received')
+```
 
 ### `Exception`
 
-Coming soon
+In this documentation section we are going to cover only the 
+helpers of the `Exception` class. You can learn more about 
+exceptions when handling errors in your application. Those are 
+the available documentation for error handling by application:
+
+- [REST API](/docs/rest-api-application/error-handling)
+- [CLI](/docs/cli-application/error-handling)
+
+#### `Exception.toJSON()`
+
+Get the informations of the exception as JSON:
+
+```typescript
+import { Exception } from '@athenna/common'
+
+const exception = new Exception({
+  status: 500,
+  name: 'ErrorName',
+  code: 'ERROR_CODE',
+  message: 'Some exception has ocurred.',
+  help: 'Try restarting your computer, should work.'
+})
+
+const json = exception.toJSON() // { status: 500, name: 'ErrorName', ... }
+```
+
+#### `Exception.prettify()`
+
+Transform the exception to a human redable format:
+
+```typescript
+import { Exception } from '@athenna/common'
+
+const exception = new Exception({
+  status: 500,
+  name: 'ErrorName',
+  code: 'ERROR_CODE',
+  message: 'Some exception has ocurred.',
+  help: 'Try restarting your computer, should work.'
+})
+
+Logger.error(await exception.prettify())
+```
 
 ### `Exec`
 
-Coming soon
+#### `Exec::sleep()`
+
+Put the code to sleep for a determined amount of MS:
+
+```typescript
+import { Exec } from '@athenna/common'
+
+await Exec.sleep(3000) // 3 seconds
+```
+
+#### `Exec::concurrently()`
+
+Execute some callback concurrently for each value of 
+the array:
+
+```typescript
+import { Exec } from '@athenna/common'
+
+const array = [1, 2, 3]
+
+const newArray = await Exec.concurrently(array, async (number) => {
+  // Some sync operation just to simulate
+  await Exec.sleep(1000)
+
+  return number++
+})
+```
+
+#### `Exec::command()`
+
+Execute some command of your OS in a child process:
+
+```typescript
+import { Exec } from '@athenna/common'
+
+const { stdout } = await Exec.command('ls -la')
+```
+
+If your command fails, Athenna will throw the 
+`NodeCommandException`, to avoid this you can set the 
+`ignoreErrors` option:
+
+```typescript
+import { Exec } from '@athenna/common'
+
+const { stdout, stderr } = await Exec.command('ls -la', {
+  ignoreErrors: true
+})
+```
+
+#### `Exec::download()`
+
+Download some file from some URL and get the `File` instance:
+
+```typescript
+import { Exec } from '@athenna/common'
+
+// File helper class instance
+const file = await Exec.download(Path.storage('file.txt'), 'https://athenna.io/file.txt')
+```
+
+#### `Exec::pagination()`
+
+Create a pagination object for your API:
+
+```typescript
+import { Exec } from '@athenna/common'
+
+const data = [{...}, {...}]
+
+const paginateObject = await Exec.pagination(data, data.length, {
+  page: 0,
+  limit: 10,
+  resourceUrl: Config.get('app.url')
+})
+
+console.log(paginateObject)
+/**
+ * {
+ *  data: [{...}, {...}],
+ *  meta: {
+ *    itemCount: 2,
+ *    totalItems: 2,
+ *    totalPages: 1,
+ *    currentPage: 0,
+ *    itemsPerPage: 10,
+ *  },
+ *  links: {
+ *    first: 'http://localhost:3000?limit=10',
+ *    previous: 'http://localhost:3000?page=0&limit=10',
+ *    next: 'http://localhost:3000?page=1&limit=10',
+ *    last: 'http://localhost:3000?page=0&limit=10',
+ *  } 
+ * }
+ */
+```
 
 ### `FakeApi`
 
-Coming soon
+#### `FakeApi::start()`
+
+Start the fake server on port `8989` and loading the path
+`Path.resources('fake-api')`:
+
+```typescript
+import { FakeApi } from '@athenna/common'
+
+await FakeApi.start()
+```
+
+:::note
+
+You can change the server port and the path to read the
+`json` files:
+
+```typescript
+import { FakeApi } from '@athenna/common'
+
+await FakeApi.start(8989, Path.resources('path'))
+```
+
+:::
+
+#### `FakeApi::stop()`
+
+Stop the fake api server and call `FakeApi::recreate()` 
+method to create a new server instance:
+
+```typescript
+import { FakeApi } from '@athenna/common'
+
+await FakeApi.stop()
+```
+
+#### `FakeApi::isRunning()`
+
+Verify if the fake api server is running:
+
+```typescript
+import { FakeApi } from '@athenna/common'
+
+if (FakeApi.isRunning()) {
+  // do something...
+}
+```
+
+#### `FakeApi::listRoutes()`
+
+List all the routes registered in the fake api server:
+
+```typescript
+import { FakeApi } from '@athenna/common'
+
+const routes = FakeApi.listRoutes()
+
+console.log(routes)
+```
+
+#### `FakeApi::registerFile()`
+
+Register a route using a `json` file in the fake api:
+
+```typescript
+import { FakeApi } from '@athenna/common'
+
+FakeApi.registerFile(Path.resources('fake-api/users.json'))
+```
+
+Content of `Path.resources('fake-api/users.json')` file:
+
+```json
+{
+  "path": "/users",
+  "method": "GET",
+  "statusCode": 200, 👈 // The response status code
+  "body": [ 👈 // The response body
+    {
+      "id": 1,
+      "name": "João Lenon",
+    },
+    {
+      "id": 2,
+      "name": "Thais Gabriela",
+    }
+  ],
+  "headers": { 👈 // The response header
+    "Content-Type": "application/json"
+  }
+}
+```
+
+#### `FakeApi::registerFolder()`
+
+Recursively register all the `json` files of some folder:
+
+```typescript
+import { FakeApi } from '@athenna/common'
+
+await FakeApi.registerFolder(Path.resources('fake-api'))
+```
+
+#### `FakeApi::build()`
+
+Use this method to programatically build the routes u
+sing the builder pattern:
+
+```typescript
+import { FakeApi } from '@athenna/common'
+import type { RouteOptions } from 'fastify'
+
+const options: RouteOptions = {}
+const fakeApiBuilder = FakeApi.build()
+
+const users = [
+  {
+    id: 1,
+    name: 'João Lenon',
+  },
+  {
+    id: 2,
+    name: 'Thais Gabriela',
+  }
+]
+
+fakeApiBuilder
+  .path('/users')
+  .method('GET')
+  .statusCode(200)
+  .body(users)
+  .header({ 'Content-Type': 'application/json' })
+  .register(options)
+```
 
 ### `File`
 
