@@ -44,6 +44,8 @@ equals to some type or pattern.
 Node.js modules.
 - [`Number`](/docs/the-basics/helpers#number) - Simple helpers to manipulate
 numbers.
+- [`ObjectBuilder`](/docs/the-basics/helpers#object-builder) - Build objects removing 
+`undefined` and `null` values and without memory reference.
 - [`Options`](/docs/the-basics/helpers#options) - Simple helpers to develop
 API's (functions and methods) with good options and configurations for 
 developers.
@@ -58,7 +60,7 @@ strings.
 - [`Uuid`](/docs/the-basics/helpers#uuid) - Create customized UUID v4 and 
 validate if they are valid.
 
-### `Clean`
+### Clean
 
 #### `Clean::cleanArray()`
 
@@ -155,7 +157,7 @@ console.log(cleanedObject)
  */
 ```
 
-### `Color`
+### Color
 
 This helper uses [chalk](https://www.npmjs.com/package/chalk) 
 library under the hood to create unique colors for Athenna
@@ -210,7 +212,7 @@ Color.httpMethod('DELETE').bold('Request Received')
 Color.httpMethod('OPTIONS').bold('Request Received')
 ```
 
-### `Exception`
+### Exception
 
 In this documentation section we are going to cover only the 
 helpers of the `Exception` class. You can learn more about 
@@ -256,7 +258,7 @@ const exception = new Exception({
 Logger.error(await exception.prettify())
 ```
 
-### `Exec`
+### Exec
 
 #### `Exec::sleep()`
 
@@ -355,7 +357,7 @@ console.log(paginateObject)
  */
 ```
 
-### `FakeApi`
+### FakeApi
 
 #### `FakeApi::start()`
 
@@ -491,7 +493,7 @@ fakeApiBuilder
   .register(options)
 ```
 
-### `File`
+### File
 
 #### `File.load()` & `File.loadSync()`
 
@@ -800,7 +802,7 @@ Create a fake file with determined size for testing purposes:
 const file = await File.createFileOfSize('fake.js', 1024 * 1024 * 100) 👈
 ```
 
-### `Folder`
+### Folder
 
 #### `Folder.load()` & `Folder.loadSync()`
 
@@ -984,46 +986,1442 @@ if (await Folder.size('app')  === 100) {
 }
 ```
 
-### `HttpClient`
+### HttpClient
 
 Coming soon
 
-### `Is`
+### Is
 
 Coming soon
 
-### `Json`
+### Json
 
 Coming soon
 
-### `Module`
+### Module
 
 Coming soon
 
-### `Number`
+### Number
 
 Coming soon
 
-### `Options`
+### ObjectBuilder
 
 Coming soon
 
-### `Parser`
+### Options
 
-Coming soon
+#### `Options::create()`
 
-### `Path`
+Creates an option object with default values:
 
-Coming soon
+```typescript
+import { Options } from '@athenna/common'
 
-### `Route`
+type Options = {
+  opts1?: boolean
+  opts2?: string
+}
 
-Coming soon
+function doSomething(options: Options = {}) {
+  options = Options.create(options, {
+    opts1: true,
+    opts2: 'Hello World'
+  }) // { opts1: false, opts2: 'Hello World' }
+}
 
-### `String`
+doSomething({ opts1: false })
+```
 
-Coming soon
+#### `Options::bind()`
 
-### `Uuid`
+Return a closure of the object with the same object 
+instance binded on it:
 
-Coming soon
+```typescript
+import { Options } from '@athenna/common'
+
+class Person {
+  constructor(public name: string) {}
+
+  greet() {
+    console.log(`Hello ${this.name}`)
+  }
+}
+
+const closure = Options.bind(new Person('João'), 'greet')
+
+closure() // Hello João
+```
+
+#### `Options.whenDefined()`
+
+Execute some closure only when something is defined:
+
+```typescript
+import { Is, Options } from '@athenna/common'
+
+Options.whenDefined('Helloo', (statement) => {
+  console.log(statement) // Helloo
+})
+```
+
+### Parser
+
+#### `Parser::stringToArray()`
+
+Parse a string to an array:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const string = 'hello-world-!'
+const separator = '-'
+
+const array = Parser.stringToArray(string, separator)
+// ['hello', 'world', '!']
+```
+
+#### `Parser::arrayToString()`
+
+Parse an array of strings to a string:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const array = ['hello', 'world', '!']
+const string = Parser.arrayToString(array, { separator: '-' })
+// 'hello-world-!'
+```
+
+#### `Parser::stringToNumber()`
+
+Parse a string to a integer or float number:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const integer = Parser.stringToNumber('12345')
+// 12345
+
+const float = Parser.stringToNumber('100.000,000000')
+// 100000000000
+```
+
+You can also set that the string is a coordinate to force 
+parsing to a float:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const isCoordinate = true
+const float = Parser.stringToNumber('15,23456', isCoordinate)
+```
+
+#### `Parser::jsonToFormData()`
+
+Parse an object to form data:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const formData = Parser.jsonToFormData({
+  name: 'João Lenon',
+  age: 22,
+})
+// &name=João%20Lenon&age=22
+```
+
+#### `Parser::formDataToJson()`
+
+Parse form data to an object:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const json = Parser.formDataToJson('&name=João%20Lenon&age=22')
+// { name: 'João Lenon', age: '22' }
+```
+
+#### `Parser::linkToHref()`
+
+Parse all links inside the string to HTML link with `a` tag:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const string = 'Visit my website https://athenna.io'
+const html = Parser.linkToHref(string)
+// Visit my website <a href="https://athenna.io">https://athenna.io</a>
+```
+
+#### `Parser::sizeToByte()`
+
+Parse a number to byte format:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const size = Parser.sizeToByte(1024)
+// 1.00 KB
+```
+
+#### `Parser::byteToSize()`
+
+Parse a byte to number format:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const size = Parser.byteToSize('1.00 KB')
+// 1024
+```
+
+#### `Parser::timeToMs()`
+
+Parse a time to milliseconds:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const ms = Parser.timeToMs('1s')
+// 1000
+```
+
+#### `Parser::msToTime()`
+
+Parse milliseconds to time:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const ms = Parser.msToTime(1000)
+// 1s
+```
+
+#### `Parser::statusCodeToReason()`
+
+Parse a status code to a reason string:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const reason = Parser.statusCodeToReason(200)
+// OK
+```
+
+#### `Parser::reasonToStatusCode()`
+
+Parse reason to a status code:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const statusCode = Parser.reasonToStatusCode('OK')
+// 200
+```
+
+#### `Parser::dbUrlToConnectionObj()`
+
+Parses a database url to a connection object:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const url = 'mysql://user:pass@localhost:3306/database?hello=true'
+const connection = Parser.dbUrlToConnectionObj(url)
+// { 
+//    protocol: 'mysql', 
+//    user: 'user', 
+//    password: 'pass', 
+//    host: 'localhost', 
+//    port: 3306, 
+//    database: 'database', 
+//    options: { hello: 'true' } 
+// }
+```
+
+#### `Parser::connectionObjToDbUrl()`
+
+Parses a connection object to a database url:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const connectionObj = { 
+   protocol: 'mysql', 
+   user: 'user', 
+   password: 'pass', 
+   host: 'localhost', 
+   port: 3306, 
+   database: 'database', 
+   options: { hello: 'true' } 
+}
+
+const url = Parser.connectionObjToDbUrl(connectionObj)
+// mysql://user:pass@localhost:3306/database?hello=true
+```
+
+#### `Parser::objectToBuilder()`
+
+Parse an object to an [`ObjectBuilder`](/docs/the-basics/helpers#object-builder) instance:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const object = { name: 'João Lenon', age: 22 }
+const builder = Parser.objectToBuilder(object)
+```
+
+#### `Parser::arrayObjectToArrayBuilder()`
+
+Parse an array of objects to an array of [`ObjectBuilder`](/docs/the-basics/helpers#object-builder) instances:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const array = [{ name: 'João Lenon', age: 22 }]
+const builders = Parser.arrayObjectToArrayBuilder(array)
+```
+
+### Path
+
+#### `Path::dirs`
+
+An object with all base directories that `Path` uses to create 
+full paths:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.dirs.services) // app/services
+console.log(Path.dirs.controllers) // app/http/controllers
+console.log(Path.dirs.bootstrap) // bootstrap
+```
+
+#### `Path::mergeDirs()`
+
+Merge the `Path.dirs` object with a new object:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.mergeDirs({
+  services: 'app/internal/services',
+  controllers: 'app/internal/http/controllers',
+  bootstrap: 'bin',
+})
+```
+
+#### `Path::ext()`
+
+Return the default extension that the application is using:
+
+```typescript
+import { Path } from '@athenna/common'
+
+process.env.IS_TS = 'true'
+
+console.log(Path.ext()) // ts
+
+process.env.IS_TS = 'false'
+
+console.log(Path.ext()) // js
+```
+
+#### `Path::pwd()`
+
+Return the root path where the project is running:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.pwd()) // /home/user/athenna-project
+```
+
+#### `Path::src()`
+
+Merge the project root path with `Path.dirs.src`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.src()) // /home/user/athenna-project/src
+```
+
+#### `Path::setSrc()`
+
+Set the `Path.dirs.src` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setSrc('src/app')
+```
+
+#### `Path::bin()`
+
+Merge the project root path with `Path.dirs.bin`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.bin()) // /home/user/athenna-project/bin
+```
+
+#### `Path::setBin()`
+
+Set the `Path.dirs.bin` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setBin('bin/app')
+```
+
+#### `Path::app()`
+
+Merge the project root path with `Path.dirs.app`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.app()) // /home/user/athenna-project/app
+```
+
+#### `Path::setApp()`
+
+Set the `Path.dirs.app` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setApp('app/app')
+```
+
+#### `Path::boostrap()`
+
+Merge the project root path with `Path.dirs.boostrap`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.boostrap()) // /home/user/athenna-project/boostrap
+```
+
+#### `Path::setBootstrap()`
+
+Set the `Path.dirs.bootstrap` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setBootstrap('bootstrap/app')
+```
+
+#### `Path::config()`
+
+Merge the project root path with `Path.dirs.config`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.config()) // /home/user/athenna-project/config
+```
+
+#### `Path::setConfig()`
+
+Set the `Path.dirs.config` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setConfig('config/app')
+```
+
+#### `Path::database()`
+
+Merge the project root path with `Path.dirs.database`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.database()) // /home/user/athenna-project/database
+```
+
+#### `Path::setDatabase()`
+
+Set the `Path.dirs.database` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setDatabase('database/app')
+```
+
+#### `Path::lang()`
+
+Merge the project root path with `Path.dirs.lang`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.lang()) // /home/user/athenna-project/lang
+```
+
+#### `Path::setLang()`
+
+Set the `Path.dirs.lang` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setLang('lang/app')
+```
+
+#### `Path::nodeModules()`
+
+Merge the project root path with `Path.dirs.nodeModules`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.nodeModules()) // /home/user/athenna-project/nodeModules
+```
+
+#### `Path::setNodeModules()`
+
+Set the `Path.dirs.nodeModules` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setNodeModules('node_modules/app')
+```
+
+#### `Path::providers()`
+
+Merge the project root path with `Path.dirs.providers`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.providers()) // /home/user/athenna-project/providers
+```
+
+#### `Path::setProviders()`
+
+Set the `Path.dirs.providers` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setProviders('providers/app')
+```
+
+#### `Path::facades()`
+
+Merge the project root path with `Path.dirs.facades`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.facades()) // /home/user/athenna-project/providers/facades
+```
+
+#### `Path::setFacades()`
+
+Set the `Path.dirs.facades` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setFacades('pfacades/app')
+```
+
+#### `Path::public()`
+
+Merge the project root path with `Path.dirs.public`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.public()) // /home/user/athenna-project/public
+```
+
+#### `Path::setPublic()`
+
+Set the `Path.dirs.public` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setPublic('public/app')
+```
+
+#### `Path::resources()`
+
+Merge the project root path with `Path.dirs.resources`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.resources()) // /home/user/athenna-project/resources
+```
+
+#### `Path::setResources()`
+
+Set the `Path.dirs.resources` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setResources('resources/app')
+```
+
+#### `Path::routes()`
+
+Merge the project root path with `Path.dirs.routes`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.routes()) // /home/user/athenna-project/routes
+```
+
+#### `Path::setRoutes()`
+
+Set the `Path.dirs.routes` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setRoutes('routes/app')
+```
+
+#### `Path::storage()`
+
+Merge the project root path with `Path.dirs.storage`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.storage()) // /home/user/athenna-project/storage
+```
+
+#### `Path::setStorage()`
+
+Set the `Path.dirs.storage` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setStorage('storage/app')
+```
+
+#### `Path::tests()`
+
+Merge the project root path with `Path.dirs.tests`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.tests()) // /home/user/athenna-project/tests
+```
+
+#### `Path::setTests()`
+
+Set the `Path.dirs.tests` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setTests('tests/app')
+```
+
+#### `Path::logs()`
+
+Merge the project root path with `Path.dirs.logs`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.logs()) // /home/user/athenna-project/storage/logs
+```
+
+#### `Path::setLogs()`
+
+Set the `Path.dirs.logs` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setLogs('logs/app')
+```
+
+#### `Path::views()`
+
+Merge the project root path with `Path.dirs.views`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.views()) // /home/user/athenna-project/resources/views
+```
+
+#### `Path::setViews()`
+
+Set the `Path.dirs.views` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setViews('views/app')
+```
+
+#### `Path::static()`
+
+Merge the project root path with `Path.dirs.static`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.static()) // /home/user/athenna-project/public/static
+```
+
+#### `Path::setStatic()`
+
+Set the `Path.dirs.static` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setStatic('static/app')
+```
+
+#### `Path::assets()`
+
+Merge the project root path with `Path.dirs.assets`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.assets()) // /home/user/athenna-project/public/assets
+```
+
+#### `Path::setAssets()`
+
+Set the `Path.dirs.assets` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setAssets('assets/app')
+```
+
+#### `Path::locales()`
+
+Merge the project root path with `Path.dirs.locales`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.locales()) // /home/user/athenna-project/resources/locales
+```
+
+#### `Path::setLocales()`
+
+Set the `Path.dirs.locales` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setLocales('locales/app')
+```
+
+#### `Path::stubs()`
+
+Merge the project root path with `Path.dirs.stubs`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.stubs()) // /home/user/athenna-project/tests/stubs
+```
+
+#### `Path::setStubs()`
+
+Set the `Path.dirs.stubs` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setStubs('stubs/app')
+```
+
+#### `Path::http()`
+
+Merge the project root path with `Path.dirs.http`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.http()) // /home/user/athenna-project/app/http
+```
+
+#### `Path::setHttp()`
+
+Set the `Path.dirs.http` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setHttp('http/app')
+```
+
+#### `Path::console()`
+
+Merge the project root path with `Path.dirs.console`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.console()) // /home/user/athenna-project/app/console
+```
+
+#### `Path::setConsole()`
+
+Set the `Path.dirs.console` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setConsole('console/app')
+```
+
+#### `Path::services()`
+
+Merge the project root path with `Path.dirs.services`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.services()) // /home/user/athenna-project/app/services
+```
+
+#### `Path::setServices()`
+
+Set the `Path.dirs.services` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setServices('services/app')
+```
+
+#### `Path::repositories()`
+
+Merge the project root path with `Path.dirs.repositories`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.repositories()) // /home/user/athenna-project/app/repositories
+```
+
+#### `Path::setRepositories()`
+
+Set the `Path.dirs.repositories` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setRepositories('repositories/app')
+```
+
+#### `Path::commands()`
+
+Merge the project root path with `Path.dirs.commands`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.commands()) // /home/user/athenna-project/app/console/commands
+```
+
+#### `Path::setCommands()`
+
+Set the `Path.dirs.commands` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setCommands('commands/app')
+```
+
+#### `Path::controllers()`
+
+Merge the project root path with `Path.dirs.controllers`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.controllers()) // /home/user/athenna-project/app/http/controllers
+```
+
+#### `Path::setControllers()`
+
+Set the `Path.dirs.controllers` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setControllers('controllers/app')
+```
+
+#### `Path::exceptions()`
+
+Merge the project root path with `Path.dirs.exceptions`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.exceptions()) // /home/user/athenna-project/app/exceptions
+```
+
+#### `Path::setExceptions()`
+
+Set the `Path.dirs.exceptions` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setExceptions('exceptions/app')
+```
+
+#### `Path::middlewares()`
+
+Merge the project root path with `Path.dirs.middlewares`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.middlewares()) // /home/user/athenna-project/app/http/middlewares
+```
+
+#### `Path::setMiddlewares()`
+
+Set the `Path.dirs.middlewares` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setMiddlewares('middlewares/app')
+```
+
+#### `Path::interceptors()`
+
+Merge the project root path with `Path.dirs.interceptors`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.interceptors()) // /home/user/athenna-project/app/http/interceptors
+```
+
+#### `Path::setInterceptors()`
+
+Set the `Path.dirs.interceptors` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setInterceptors('interceptors/app')
+```
+
+#### `Path::terminators()`
+
+Merge the project root path with `Path.dirs.terminators`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.terminators()) // /home/user/athenna-project/app/http/terminators
+```
+
+#### `Path::setTerminators()`
+
+Set the `Path.dirs.terminators` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setTerminators('terminators/app')
+```
+
+#### `Path::migrations()`
+
+Merge the project root path with `Path.dirs.migrations`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.migrations()) // /home/user/athenna-project/database/migrations
+```
+
+#### `Path::setMigrations()`
+
+Set the `Path.dirs.migrations` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setMigrations('migrations/app')
+```
+
+#### `Path::seeders()`
+
+Merge the project root path with `Path.dirs.seeders`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.seeders()) // /home/user/athenna-project/database/seeders
+```
+
+#### `Path::setSeeders()`
+
+Set the `Path.dirs.seeders` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setSeeders('seeders/app')
+```
+
+#### `Path::nodeModulesBin()`
+
+Merge the project root path with `Path.dirs.nodeModulesBin`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.nodeModulesBin()) // /home/user/athenna-project/node_modules/.bin
+```
+
+#### `Path::setNodeModulesBin()`
+
+Set the `Path.dirs.nodeModulesBin` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setNodeModulesBin('node_modules/.bin/app')
+```
+
+#### `Path::vmTmp()`
+
+Return the tmp path of your vm.
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.vmTmp()) // /tmp
+```
+
+#### `Path::vmHome()`
+
+Return the home path of your vm.
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.vmHome()) // /home/user
+```
+
+#### `Path::this()`
+
+Return the execution path of where this method is being called:
+
+```typescript title="/home/user/athenna-project/app/logPath.ts"
+import { Path } from '@athenna/common'
+
+export function logPath() {
+  console.log(Path.this())
+}
+```
+
+```typescript title="/home/user/athenna-project/bootstrap/index.ts"
+import { logPath } from '#app/logPath'
+
+logPath() // /home/user/athenna-project/app
+```
+
+### Route
+
+#### `Route::getQueryString()`
+
+Get the query string in form data format:
+
+```typescript
+import { Route } from '@athenna/common'
+
+const url = 'http://localhost:3000/user?name=João%20Lenon&age=21'
+const queryString = Route.getQueryString(url) // name=João%20Lenon&age=21
+```
+
+#### `Route::removeQueryParams()`
+
+Remove the query params from the url:
+
+```typescript
+import { Route } from '@athenna/common'
+
+const url = 'http://localhost:3000/user?name=João%20Lenon&age=21'
+const urlWithoutQueryParams = Route.removeQueryParams(url)
+// http://localhost:3000/user
+```
+
+#### `Route::getQueryParamsValue()`
+
+Get object with **?&queryParams** values from route:
+
+```typescript
+import { Route } from '@athenna/common'
+
+const url = 'http://localhost:3000/user?name=João%20Lenon&age=21'
+const queryParams = Route.getQueryParamsValue(url)
+// { name: 'João Lenon', age: '21' }
+```
+
+#### `Route::getQueryParamsName()`
+
+Get an array with **?&queryParams** names from route:
+
+```typescript
+import { Route } from '@athenna/common'
+
+const url = 'http://localhost:3000/user?name=João%20Lenon&age=21'
+const queryParams = Route.getQueryParamsName(url)
+// ['name', 'age']
+```
+
+#### `Route::getParamsValue()`
+
+Get object with **/:params** values from route:
+
+```typescript
+import { Route } from '@athenna/common'
+
+const urlWithParams = 'http://localhost:3000/user/:id'
+const urlWithValues = 'http://localhost:3000/user/1'
+
+const params = Route.getParamsValue(urlWithParams, urlWithValues)
+// { id: '1' }
+```
+
+#### `Route::getParamsName()`
+
+Get an array with **/:params** names from route:
+
+```typescript
+import { Route } from '@athenna/common'
+
+const url = 'http://localhost:3000/user/:id'
+
+const params = Route.getParamsName(url)
+// ['id']
+```
+
+#### `Route::createMatcher()`
+
+Create a RegExp matcher for a route:
+
+```typescript
+import { Route } from '@athenna/common'
+
+const urlParams = 'http://localhost:3000/user/:id'
+const urlValues = 'http://localhost:3000/user/1'
+const regexp = Route.createMatcher(url)
+
+if (regexp.test(urlValues)) {
+  // routes matches, do something...
+}
+```
+
+### String
+
+#### `String::generateRandom()`
+
+Generate a random string with a determined length:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.generateRandom(10)
+```
+
+#### `String::toCamelCase()`
+
+Transforms the string to **camelCase**:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.toCamelCase('Hello World')
+// helloWorld
+```
+
+#### `String::toSnakeCase()`
+
+Transforms the string to **snake_case**:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.toSnakeCase('helloWorld')
+// hello_world
+```
+
+#### `String::toConstantCase()`
+
+Transforms the string to **CONSTANT_CASE**:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.toConstantCase('hello_world')
+// HELLO_WORLD
+```
+
+#### `String::toPascalCase()`
+
+Transforms the string to **PascalCase**:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.toPascalCase('HELLO_WORLD')
+// HelloWorld
+```
+
+#### `String::toSentenceCase()`
+
+Transforms the string to **Sentence Case**:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.toSentenceCase('HelloWorld')
+// Hello World
+```
+
+#### `String::toDotCase()`
+
+Transforms the string to **dot.case**:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.toDotCase('Hello World')
+// hello.world
+```
+
+#### `String::toDashCase()`
+
+Transforms the string to **dash-case**:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.toDashCase('hello.world')
+// hello-world
+```
+
+#### `String::toNoCase()`
+
+Removes all sorted cases from string:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.toNoCase('Hello-World')
+// hello world
+```
+
+#### `String::pluralize()`
+
+Transforms the string to plural form:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.pluralize('cat') // cats
+```
+
+#### `String::singularize()`
+
+Transforms the string to singular form:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.singularize('cats') // cat
+```
+
+#### `String::ordinalize()`
+
+Transforms a number to your ordinal format:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.ordinalize('10') // 10th
+```
+
+#### `String::generateRandomColor()`
+
+Generate a random color in hexadecimal format:
+
+```typescript
+import { String } from '@athenna/common'
+
+const color = String.generateRandomColor()
+// #a0eebc
+```
+
+#### `String::normalizeBase64()`
+
+Normalizes the string in base64 format removing
+special characters:
+
+```typescript
+import { String } from '@athenna/common'
+
+const base64 = String.normalizeBase64('+++///===')
+// '---___'
+```
+
+### Uuid
+
+#### `Uuid::generate()`
+
+Generate a UUID v4:
+
+```typescript
+import { Uuid } from '@athenna/common'
+
+const uuid = Uuid.generate()
+// a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+```
+
+You can also generate an UUID with a prefixed string:
+
+```typescript
+const prefixedUuid = Uuid.generate('adm')
+// adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+```
+
+#### `Uuid::verify()`
+
+Verify if a string is a valid UUID v4:
+
+```typescript
+import { Uuid } from '@athenna/common'
+
+if (Uuid.verify('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11')) {
+  // do something
+}
+```
+
+You can also verify if a string is a valid UUID and if 
+the prefix matches:
+
+```typescript
+const prefixedUuid = 'adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+
+// Verify if the string is a valid UUID and the prefix 
+// is equals to adm
+if (Uuid.verify(prefixedUuid, { prefix: 'adm' })) {
+  // do something
+}
+```
+
+By default, the `verify()` method will ignore the prefix to verify
+if the string is a valid UUID, to avoid this set the `ignorePrefix`
+option as `false`:
+
+```typescript
+const prefixedUuid = 'adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+
+if (Uuid.verify(prefixedUuid, { ignorePrefix: false })) {
+  // will never enter here with the example above, 
+  // only with plain UUID's.
+}
+```
+
+#### `Uuid::getToken()`
+
+Get the UUID token without the prefix:
+
+```typescript
+import { Uuid } from '@athenna/common'
+
+const prefixedUuid = 'adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+const uuid = Uuid.getToken(prefixedUuid)
+// a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+```
+
+#### `Uuid::getPrefix()`
+
+Get the prefix without the UUID token:
+
+```typescript
+import { Uuid } from '@athenna/common'
+
+const prefixedUuid = 'adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+const prefix = Uuid.getPrefix(prefixedUuid) // adm
+```
+
+#### `Uuid::injectPrefix()`
+
+Inject a prefix in the UUID token, if the UUID token is not 
+valid, this method will throw:
+
+```typescript
+import { Uuid } from '@athenna/common'
+
+const uuid = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+const prefixedUuid = Uuid.injectPrefix(uuid, 'adm')
+// adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+```
+
+#### `Uuid::changePrefix()`
+
+Change the prefix of an UUID token, if the UUID token is not 
+valid, this function will throw:
+
+```typescript
+import { Uuid } from '@athenna/common'
+
+const uuid = 'adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
+const prefixedUuid = Uuid.changePrefix(uuid, 'mng')
+// mng::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+```
+
+#### `Uuid::changeOrGenerate()`
+
+Change the prefix of an UUID token, or generate the token
+if the UUID token is `undefined`:
+
+```typescript
+import { Uuid } from '@athenna/common'
+
+const uuid = undefined
+const prefixedUuid = Uuid.changeOrGenerate('adm', uuid)
+// adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+
+const changedPrefixUuid = Uuid.changeOrGenerate('mng', prefixedUuid)
+// mng::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
+```
