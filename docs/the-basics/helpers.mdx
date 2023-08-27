@@ -996,7 +996,112 @@ Coming soon
 
 ### Json
 
-Coming soon
+#### `Json::builder()`
+
+Create a new instance of [ObjectBuilder](/docs/the-basics/helpers#object-builder):
+
+```typescript
+import { Json } from '@athenna/common'
+
+const builder = Json.builder({ referencedValues: false })
+```
+
+#### `Json::copy()`
+
+Deep copy any object without memory reference:
+
+```typescript
+import { Json } from '@athenna/common'
+
+const object = { name: 'João Lenon' }
+const copiedObject = Json.copy(object)
+
+object.name = 'Victor Tesoura'
+
+console.log(object.name === copiedObject.name) // false
+```
+
+#### `Json::getJson()`
+
+Find all JSON values inside a string and return it:
+
+```typescript
+import { Json } from '@athenna/common'
+
+const string = 'Hello { "name": "João Lenon" }'
+const arrayOfFoundJson = Json.getJson(string)
+// ['{"name":"João Lenon"}']
+```
+
+#### `Json::parse()`
+
+Safe parse a JSON string. If the JSON is not valid, 
+returns `null`:
+
+```typescript
+import { Json } from '@athenna/common'
+
+const string = 'Hello { "name": "Lenon" }'
+const json = Json.parse(string) // null
+
+console.log('{ "name": "Lenon" }') // { name: 'Lenon' }
+```
+
+#### `Json::observeChanges()`
+
+Observe any change done inside an object and execute some closure:
+
+```typescript
+import { Json } from '@athenna/common'
+
+const object = { name: 'Lenon' }
+
+Json.observeChanges(object, (value) => {
+  console.log('Object changed!', value)
+})
+
+object.name = 'João Lenon'
+```
+
+#### `Json::fillable()`
+
+Remove all keys from data that is not inside the array:
+
+```typescript
+import { Json } from '@athenna/common'
+
+const data = {
+  name: 'João Lenon',
+  age: 22,
+  role: 'admin',
+  deletedAt: new Date()
+}
+
+const parsedData = Json.fillable(data, ['name', 'age'])
+// { name: 'João Lenon', age: 22 }
+```
+
+#### `Json::get()`
+
+Get the object properties using dot notation:
+
+```typescript
+import { Json } from '@athenna/common'
+
+const object = {
+  name: 'João Lenon',
+  age: 22,
+  role: 'admin',
+  deletedAt: new Date(),
+  configs: {
+    theme: 'dark',
+    language: 'en'
+  }
+}
+
+Json.get(object, 'name') // João Lenon
+Json.get(object, 'configs.theme') // dark
+```
 
 ### Module
 
@@ -1004,11 +1109,325 @@ Coming soon
 
 ### Number
 
-Coming soon
+#### `Number::getHigher()`
+
+Get the higher number of an array of numbers:
+
+```typescript
+import { Number } from '@athenna/common'
+
+const higher = Number.getHigher([1, 2, 3, 4, 5]) // 5
+```
+
+#### `Number::getKmRadius()`
+
+Get km radius between two coordinates:
+
+```typescript
+import { Number } from '@athenna/common'
+
+const centerCord = { 
+  latitude: -25503207, 
+  longitude: -545390592 
+}
+
+const pointCord = { 
+  latitude: -254957901, 
+  longitude: -545671577 
+}
+
+const radius = Number.getKmRadius(centerCord, pointCord)
+// 5338.683217695541
+```
+
+#### `Number::getLower()`
+
+Get the lower number of an array of numbers:
+
+```typescript
+import { Number } from '@athenna/common'
+
+const lower = Number.getLower([1, 2, 3, 4, 5]) // 1
+```
+
+#### `Number::extractNumber()`
+
+Extract all numbers inside a string and return as
+a unique number:
+
+```typescript
+import { Number } from '@athenna/common'
+
+const string = 'Hello 123 World 456'
+const number = Number.extractNumber(string) // 123456
+```
+
+#### `Number::extractNumbers()`
+
+Extract all numbers inside a string:
+
+```typescript
+import { Number } from '@athenna/common'
+
+const string = 'Hello 123 World 456'
+const numbers = Number.extractNumbers(string) // ['123', '456']
+```
+
+#### `Number::argsAverage()`
+
+Get the average of all numbers in function arguments:
+
+```typescript
+import { Number } from '@athenna/common'
+
+const average = Number.argsAverage(1, 2, 3, 4, 5) // 3
+```
+
+#### `Number::arrayAverage()`
+
+Get the average of all numbers in an array:
+
+```typescript
+import { Number } from '@athenna/common'
+
+const average = Number.argsAverage([1, 2, 3, 4, 5]) // 3
+```
+
+#### `Number::randomIntFromInterval()`
+
+Generate a random integer number between two numbers:
+
+```typescript
+import { Number } from '@athenna/common'
+
+const random = Number.randomIntFromInterval(1, 10) // 5
+```
 
 ### ObjectBuilder
 
-Coming soon
+#### `new ObjectBuilder()`
+
+Create a new instance of the object builder:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder({ 
+  // Dont create memory referenced values.
+  referencedValues: false,
+  // Dont ignore null values when calling `set()` method.
+  ignoreNull: false,
+  // Ignore undefined values when calling `set()` method.
+  ignoreUndefined: true,
+  // Default value to set if value is undefined on calling `set()` method.
+  defaultValue: 'Hello World' 
+})
+
+const key = 'name'
+const value = 'João Lenon'
+const defaultValue = 'User Name'
+
+builder.set(key, value, defaultValue)
+console.log(builder.get(key)) // João Lenon
+
+builder.set(key, undefined)
+console.log(builder.get(key)) // Hello World
+```
+
+#### `ObjectBuilder.set()`
+
+Set a value to the object builder:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'João Lenon', age: 22, options: { role: 'admin' } })
+
+console.log(builder.get())
+// { name: 'João Lenon', age: 22, options: { role: 'admin' } }
+```
+
+Set a value to the object builder using dot notation:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+const defaultValue = null
+
+builder.set('name', 'João Lenon', defaultValue)
+builder.set('age', 22, defaultValue)
+builder.set('deletedAt', undefined, defaultValue)
+builder.set('options.role', 'admin', defaultValue)
+
+console.log(builder.get())
+// { name: 'João Lenon', age: 22, deletedAt: null, options: { role: 'admin' } }
+```
+
+#### `ObjectBuilder.delete()`
+
+Delete a value from the object builder:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon' })
+builder.delete('name')
+```
+
+#### `ObjectBuilder.get()`
+
+Get the value of the object builder:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon', options: { role: 'admin' } })
+
+console.log(builder.get('name')) // Lenon
+console.log(builder.get('options.role')) // admin
+```
+
+#### `ObjectBuilder.keys()`
+
+Get all the keys of the object builder:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon' })
+
+console.log(builder.keys()) // ['name']
+```
+
+#### `ObjectBuilder.values()`
+
+Get all the values of the object builder:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon' })
+
+console.log(builder.values()) // ['Lenon']
+```
+
+#### `ObjectBuilder.entries()`
+
+Get all the entries of the object builder:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon' })
+
+console.log(builder.entries()) // [['name', 'Lenon']]
+```
+
+#### `ObjectBuilder.forEachKey()`
+
+Iterate over all the keys of the object builder:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon' })
+
+builder.forEachKey((key) => {
+  console.log(key) // name
+})
+```
+
+#### `ObjectBuilder.forEachValue()`
+
+Iterate over all the values of the object builder:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon' })
+
+builder.forEachValue((value) => {
+  console.log(value) // Lenon
+})
+```
+
+#### `ObjectBuilder.forEachEntry()`
+
+Iterate over all the entries of the object builder:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon' })
+
+builder.forEachEntry(([key, value]) => {
+  console.log(key, value) // name Lenon
+})
+```
+
+#### `ObjectBuilder.is()` & `ObjectBuilder.isNot()`
+
+Verify if the object key path is or not the same value:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon' })
+
+builder.is('name', 'Lenon') // true
+builder.isNot('name', 'Lenon') // false
+```
+
+#### `ObjectBuilder.exists()` & `ObjectBuilder.notExists()`
+
+Verify if the object key path exists or not:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon' })
+
+builder.exists('name') // true
+builder.notExists('name') // false
+```
+
+#### `ObjectBuilder.existsAll()` & `ObjectBuilder.notExistsAll()`
+
+Verify if all the object key paths exists or not:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon', age: 22 })
+
+builder.existsAll(['name', 'age']) // true
+builder.notExistsAll('name', 'age') // false
+```
 
 ### Options
 
