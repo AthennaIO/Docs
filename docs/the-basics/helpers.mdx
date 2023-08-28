@@ -37,6 +37,9 @@ delete and get information about files.
 delete and get information about folders.
 - [`HttpClient`](/docs/the-basics/helpers#httpclient) - Make HTTP requests for
 other servers with a human-friendly and powerful API.
+- [`HttpClientBuilder`](/docs/the-basics/helpers#httpclientbuilder) - Build requests
+using [builder pattern](https://refactoring.guru/design-patterns/builder) instead of 
+creating options as objects.
 - [`Is`](/docs/the-basics/helpers#is) - Validate if your data **is** 
 equals to some type or pattern.
 - [`Json`](/docs/the-basics/helpers#json) - Simple helpers to manipulate JSON.
@@ -988,11 +991,437 @@ if (await Folder.size('app')  === 100) {
 
 ### HttpClient
 
+This helper uses the [`got`](https://www.npmjs.com/package/got) 
+library under the hood the build the requests.
+
+#### `HttpClient::get()`
+
+Make a `GET` request to some URL:
+
+```typescript
+import { 
+  HttpClient, 
+  type Request,
+  type Response
+} from '@athenna/common'
+
+const options: Request = {
+  timeout: 2000,
+}
+
+const response: Response<any> = await HttpClient.get('https://athenna.io', options)
+```
+
+#### `HttpClient::post()`
+
+Make a `POST` request to some URL:
+
+```typescript
+import { 
+  HttpClient, 
+  type Request,
+  type Response
+} from '@athenna/common'
+
+const url = 'https://athenna.io'
+
+const options: Request = {
+  timeout: 2000,
+}
+
+const body = {
+  name: 'João Lenon',
+  age: 22,
+}
+
+const response: Response<any> = await HttpClient.post(url, body, options)
+```
+
+#### `HttpClient::put()`
+
+Make a `PUT` request to some URL:
+
+```typescript
+import { 
+  HttpClient, 
+  type Request,
+  type Response
+} from '@athenna/common'
+
+const url = 'https://athenna.io'
+
+const options: Request = {
+  timeout: 2000,
+}
+
+const body = {
+  name: 'João Lenon',
+  age: 22,
+}
+
+const response: Response<any> = await HttpClient.put(url, body, options)
+```
+
+#### `HttpClient::patch()`
+
+Make a `PATCH` request to some URL:
+
+```typescript
+import { 
+  HttpClient, 
+  type Request,
+  type Response
+} from '@athenna/common'
+
+const url = 'https://athenna.io'
+
+const options: Request = {
+  timeout: 2000,
+}
+
+const body = {
+  name: 'João Lenon',
+  age: 22,
+}
+
+const response: Response<any> = await HttpClient.patch(url, body, options)
+```
+
+#### `HttpClient::delete()`
+
+Make a `DELETE` request to some URL:
+
+```typescript
+import { 
+  HttpClient, 
+  type Request,
+  type Response
+} from '@athenna/common'
+
+const url = 'https://athenna.io'
+
+const options: Request = {
+  timeout: 2000,
+}
+
+const response: Response<any> = await HttpClient.delete(url, options)
+```
+
+#### `HttpClient::head()`
+
+Make a `HEAD` request to some URL:
+
+```typescript
+import { 
+  HttpClient, 
+  type Request,
+  type Response
+} from '@athenna/common'
+
+const url = 'https://athenna.io'
+
+const options: Request = {
+  timeout: 2000,
+}
+
+const response: Response<any> = await HttpClient.head(url, options)
+```
+
+#### `HttpClient::builder()` & `HttpClient::setBuilder()`
+
+Set the `HttpClientBuilder` instance that `HttpClient` class
+will use to build your requests in the example above:
+
+```typescript
+import { 
+  HttpClient, 
+  type RequestError, 
+  type RetryObject 
+} from '@athenna/common'
+
+const newBuilder = true
+const builder = HttpClient.builder(newBuilder)
+
+builder
+  .timeout(2000)
+  .prefixUrl('https://athenna.io')
+  .retryStrategy((error: RequestError, execCount: number, retryObject: RetryObject) => {
+    if (execCount === 3) {
+      return 0
+    }
+
+    return 2000
+  })
+
+HttpClient.setBuilder(builder)
+
+// Now all the requests done with HttpClient 
+// will use the same predefined builder options:
+const response = await HttpClient.get('https://athenna.io')
+```
+
+### HttpClientBuilder
+
 Coming soon
 
 ### Is
 
-Coming soon
+#### `Is::kindOf()`
+
+Validate if the value is equals to some type:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.kindOf('string', 'string') // true
+```
+
+#### `Is::Uuid()`
+
+Validate if the value is a valid UUID v4:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Uuid('adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11') // true
+Is.Uuid('adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', { prefix: 'adm' }) // true
+```
+
+#### `Is::Defined()`
+
+Validate if the value is defined:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Defined('Hello World') // true
+```
+
+#### `Is::Json()`
+
+Validate if the value is a valid JSON string:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Json('{ "name": "João Lenon" }') // true
+```
+
+#### `Is::Ip()`
+
+Validate if the value is a valid IP address:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Ip('192.168.0.1') // true
+```
+
+#### `Is::Empty()`
+
+Validate if the value is empty:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Empty(undefined) // true
+Is.Empty('') // true
+Is.Empty([]) // true
+Is.Empty({}) // true
+```
+
+#### `Is::Cep()`
+
+Validate if the value is a valid Brazil CEP:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Cep('85869-676') // true
+```
+
+#### `Is::Cpf()`
+
+Validate if the value is a valid Brazil Cpf:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Cpf('208.464.590-51') // true
+```
+
+#### `Is::Cnpj()`
+
+Validate if the value is a valid Brazil Cnpj:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Cnpj('71.151.950/0001-65') // true
+```
+
+#### `Is::Async()`
+
+Verify if a function is async:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Async(async () => {}) // true
+Is.Async(async function () {}) // true
+```
+
+#### `Is::Undefined()`
+
+Validate if the value is undefined:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Undefined(undefined) // true
+```
+
+#### `Is::Null()`
+
+Validate if the value is null:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Null(null) // true
+```
+
+#### `Is::Boolean()`
+
+Validate if the value is boolean:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Boolean(true) // true
+```
+
+#### `Is::Buffer()`
+
+Validate if the value is Buffer:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Buffer(new Buffer()) // true
+```
+
+#### `Is::Number()`
+
+Validate if the value is number:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Number(10) // true
+```
+
+#### `Is::String()`
+
+Validate if the value is string:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.String('Athenna is the best!') // true
+```
+
+#### `Is::Object()`
+
+Validate if the value is Object:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Object({ hello: 'world!' }) // true
+```
+
+#### `Is::Date()`
+
+Validate if the value is Date:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Date(new Date()) // true
+```
+
+#### `Is::Array()`
+
+Validate if the value is array:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Array([1, 2, 3, 4, 5]) // true
+```
+
+#### `Is::Regexp()`
+
+Validate if the value is Regexp:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Regexp(new RegExp()) // true
+```
+
+#### `Is::Error()`
+
+Validate if the value is error:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Error(new Error()) // true
+```
+
+#### `Is::Exception()`
+
+Validate if the value is [`Exception`](/docs/the-basics/helpers#exception)
+or any variation that extends from it:
+
+```typescript
+import { Is, Exception } from '@athenna/common'
+
+Is.Exception(new Error()) // false
+Is.Exception(new Exception()) // true
+```
+
+#### `Is::Class()`
+
+Validate if the value is class:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Class(Is) // true
+```
+
+#### `Is::Float()`
+
+Validate if the value is float:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Float(10.5) // true
+```
+
+#### `Is::ArrayOfObjects()`
+
+Validate if the value is an array of objects:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.ArrayOfObjects([{}, {}, {}]) // true
+```
 
 ### Json
 
@@ -1105,7 +1534,206 @@ Json.get(object, 'configs.theme') // dark
 
 ### Module
 
-Coming soon
+#### `Module::get()`
+
+Get the default module or the first exported module of a file:
+
+```typescript title="default.ts"
+export default {
+  name: 'João Lenon'
+}
+```
+
+```typescript title="object.ts"
+export const person = {
+  name: 'João Lenon'
+}
+```
+
+```typescript
+import { Module } from '@athenna/common'
+
+await Module.get(import('./default.js')) // { name: 'João Lenon' }
+await Module.get(import('./object.js')) // { name: 'João Lenon' }
+```
+
+#### `Module::getAll()`
+
+Get all exported modules of a path and return as array:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const modules = [import('./object.js'), import('./default.js')]
+
+await Module.getAll(modules)
+// [{ name: 'João Lenon' }, { name: 'João Lenon' }]
+```
+
+#### `Module::getFrom()`
+
+Same as [`Module::get()`](/docs/the-basics/helpers#moduleget) 
+method, but import from a path:
+
+```typescript
+import { Module } from '@athenna/common'
+
+await Module.getFrom('./default.js') // { name: 'João Lenon' }
+await Module.getFrom('./object.js') // { name: 'João Lenon' }
+```
+
+#### `Module::getAllFrom()`
+
+Same as [`Module::getAll()`](/docs/the-basics/helpers#modulegetall) 
+method, but import from a path:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const paths = ['./object.js', './default.js']
+
+await Module.getAllFrom(paths)
+// [{ name: 'João Lenon' }, { name: 'João Lenon' }]
+```
+
+#### `Module::getWithAlias()`
+
+Get the default module or the first exported module 
+of a file with alias:
+
+```typescript title="MyService.ts"
+export default class MyService {}
+```
+
+```typescript
+import { Module } from '@athenna/common'
+
+const modules = [import('./MyService.js')]
+const subAlias = 'App/Services'
+
+await Module.getWithAlias(modules, subAlias)
+// { alias: 'App/Services/MyService', module: [class MyService] }
+```
+
+#### `Module::getAllWithAlias()`
+
+Get all exported modules of a path and return as array with alias:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const modules = [import('./MyService.js')]
+const subAlias = 'App/Services'
+
+await Module.getAllWithAlias(modules, subAlias)
+// [{ alias: 'App/Services/MyService', module: { name: 'João Lenon' } }]
+```
+
+#### `Module::getFromWithAlias()`
+
+Same as [`Module::getWithAlias()`](/docs/the-basics/helpers#modulegetwithalias) 
+method, but import from a path:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const paths = ['./MyService.js']
+const subAlias = 'App/Services'
+
+await Module.getAllWithAlias(paths, subAlias)
+// [{ alias: 'App/Services/MyService', module: { name: 'João Lenon' } }]
+```
+
+#### `Module::getAllFromWithAlias()`
+
+Same as [`Module::getAllWithAlias()`](/docs/the-basics/helpers#modulegetallwithalias) 
+method, but import from a path:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const paths = ['./MyService.js']
+const subAlias = 'App/Services'
+
+await Module.getAllWithAlias(paths, subAlias)
+// [{ alias: 'App/Services/MyService', module: { name: 'João Lenon' } }]
+```
+
+#### `Module::getAllJSFilesFrom()`
+
+Get all the [`Path.ext()`](/docs/the-basics/helpers#pathext) 
+files from a path:
+
+```typescript
+import { File, Path, Module } from '@athenna/common'
+
+const files: File[] = await Module.getAllJSFilesFrom(Path.app())
+```
+
+#### `Module::import()`
+
+Import a full path using the path href to ensure 
+compatibility between OS's:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const module = await Module.import('./MyService.js')
+```
+
+#### `Module::safeImport()`
+
+Same as [`Module::import()`](/docs/the-basics/helpers#moduleimport) 
+method but return null if the module does not exist:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const module = await Module.safeImport('./notFound.js')
+```
+
+#### `Module::resolve()`
+
+Resolve the module path by meta url and import it:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const module = await Module.resolve('./MyService.js', import.meta.url)
+```
+
+#### `Module::createDirname()`
+
+Crete the old [`__dirname`](https://nodejs.org/api/modules.html#__dirname) 
+property:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const __dirname = Module.createDirname(import.meta.url)
+```
+
+#### `Module::createFilename()`
+
+Crete the old [`__filename`](https://nodejs.org/api/modules.html#__filename) 
+property:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const __filename = Module.createFilename(import.meta.url)
+```
+
+#### `Module::createRequire()`
+
+Crete the old [`require()`](https://nodejs.org/api/modules.html#requireid) 
+function:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const require = Module.createRequire(import.meta.url)
+```
 
 ### Number
 
