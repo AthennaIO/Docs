@@ -37,6 +37,9 @@ delete and get information about files.
 delete and get information about folders.
 - [`HttpClient`](/docs/the-basics/helpers#httpclient) - Make HTTP requests for
 other servers with a human-friendly and powerful API.
+- [`HttpClientBuilder`](/docs/the-basics/helpers#httpclientbuilder) - Build requests
+using [builder pattern](https://refactoring.guru/design-patterns/builder) instead of 
+creating options as objects.
 - [`Is`](/docs/the-basics/helpers#is) - Validate if your data **is** 
 equals to some type or pattern.
 - [`Json`](/docs/the-basics/helpers#json) - Simple helpers to manipulate JSON.
@@ -988,11 +991,1553 @@ if (await Folder.size('app')  === 100) {
 
 ### HttpClient
 
-Coming soon
+This helper uses the [`got`](https://www.npmjs.com/package/got) 
+library under the hood to build the requests.
+
+#### `HttpClient::get()`
+
+Make a `GET` request to some URL:
+
+```typescript
+import { 
+  HttpClient, 
+  type Request,
+  type Response
+} from '@athenna/common'
+
+const options: Request = {
+  timeout: 2000,
+}
+
+const response: Response<any> = await HttpClient.get('https://athenna.io', options)
+```
+
+#### `HttpClient::post()`
+
+Make a `POST` request to some URL:
+
+```typescript
+import { 
+  HttpClient, 
+  type Request,
+  type Response
+} from '@athenna/common'
+
+const url = 'https://athenna.io'
+
+const options: Request = {
+  timeout: 2000,
+}
+
+const body = {
+  name: 'João Lenon',
+  age: 22,
+}
+
+const response: Response<any> = await HttpClient.post(url, body, options)
+```
+
+#### `HttpClient::put()`
+
+Make a `PUT` request to some URL:
+
+```typescript
+import { 
+  HttpClient, 
+  type Request,
+  type Response
+} from '@athenna/common'
+
+const url = 'https://athenna.io'
+
+const options: Request = {
+  timeout: 2000,
+}
+
+const body = {
+  name: 'João Lenon',
+  age: 22,
+}
+
+const response: Response<any> = await HttpClient.put(url, body, options)
+```
+
+#### `HttpClient::patch()`
+
+Make a `PATCH` request to some URL:
+
+```typescript
+import { 
+  HttpClient, 
+  type Request,
+  type Response
+} from '@athenna/common'
+
+const url = 'https://athenna.io'
+
+const options: Request = {
+  timeout: 2000,
+}
+
+const body = {
+  name: 'João Lenon',
+  age: 22,
+}
+
+const response: Response<any> = await HttpClient.patch(url, body, options)
+```
+
+#### `HttpClient::delete()`
+
+Make a `DELETE` request to some URL:
+
+```typescript
+import { 
+  HttpClient, 
+  type Request,
+  type Response
+} from '@athenna/common'
+
+const url = 'https://athenna.io'
+
+const options: Request = {
+  timeout: 2000,
+}
+
+const response: Response<any> = await HttpClient.delete(url, options)
+```
+
+#### `HttpClient::head()`
+
+Make a `HEAD` request to some URL:
+
+```typescript
+import { 
+  HttpClient, 
+  type Request,
+  type Response
+} from '@athenna/common'
+
+const url = 'https://athenna.io'
+
+const options: Request = {
+  timeout: 2000,
+}
+
+const response: Response<any> = await HttpClient.head(url, options)
+```
+
+#### `HttpClient::builder()` & `HttpClient::setBuilder()`
+
+Set the `HttpClientBuilder` instance that `HttpClient` class
+will use to build your requests in the example above:
+
+```typescript
+import { 
+  HttpClient, 
+  type RequestError, 
+  type RetryObject 
+} from '@athenna/common'
+
+const newBuilder = true
+const builder = HttpClient.builder(newBuilder)
+
+builder
+  .timeout(2000)
+  .prefixUrl('https://athenna.io')
+  .retryStrategy((error: RequestError, execCount: number, retryObject: RetryObject) => {
+    if (execCount === 3) {
+      return 0
+    }
+
+    return 2000
+  })
+
+HttpClient.setBuilder(builder)
+
+// Now all the requests done with HttpClient 
+// will use the same predefined builder options:
+const response = await HttpClient.get('https://athenna.io')
+```
+
+### HttpClientBuilder
+
+This helper uses the [`got`](https://www.npmjs.com/package/got) 
+library under the hood to build the requests.
+
+#### `HttpClientBuilder.setInitHook()`
+
+Called with the plain request options, right before 
+their normalization. The second argument represents 
+the current `Options` instance.
+
+**Note:**
+> This hook must be synchronous.
+
+**Note:**
+> This is called every time options are merged.
+
+**Note:**
+> The `options` object may not have the `url` 
+> property. To modify it, use a `beforeRequest` 
+> hook instead.
+
+**Note:**
+> This hook is called when a new instance of 
+> `Options` is created.
+> Do not confuse this with the creation of 
+> `Request` or `got(…)`.
+
+For example, this can be used to fix typos to 
+migrate from older versions faster.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.setInitHook(init => {
+  if ('followRedirects' in init) {
+    init.followRedirect = init.followRedirects
+    delete init.followRedirects
+  }
+})
+```
+
+#### `HttpClientBuilder.setBeforeRequestHook()`
+
+Called right before making the request with 
+`options.createNativeRequestOptions()`. This hook 
+is especially useful in conjunction with 
+`HttpClient.setBuilder(customBuilder)` when you want 
+to sign your request.
+
+**Note:**
+> Got will make no further changes to the request 
+> before it is sent.
+
+**Note:**
+> Changing `options.json` or `options.form` has no 
+> effect on the request. You should change `options.body` 
+> instead. If needed, update the `options.headers` accordingly.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.setBeforeRequestHook(options => {
+  options.body = JSON.stringify({ payload: 'new' })
+  options.headers['content-length'] = options.body.length.toString()
+})
+```
+
+#### `HttpClientBuilder.setBeforeRedirectHook()`
+
+The equivalent of `setBeforeRequestHook` but when 
+redirecting.
+
+**Tip:**
+> This is especially useful when you want to avoid 
+> dead sites.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.setBeforeRedirectHook((options, response) => {
+    if (options.hostname === 'deadSite') {
+        options.hostname = 'fallbackSite'
+    }
+})
+```
+
+#### `HttpClientBuilder.setBeforeErrorHook()`
+
+Called with a `RequestError` instance. The error 
+is passed to the hook right before it's thrown. 
+This is especially useful when you want to have 
+more detailed errors.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder
+  .responseType('json')
+  .setBeforeErrorHook(error => {
+    const { response } = error
+
+    if (response && response.body) {
+      error.name = 'GitHubError'
+      error.message = `${response.body.message} (${response.statusCode})`
+    }
+    
+    return error
+  })
+```
+
+#### `HttpClientBuilder.setBeforeRetryHook()`
+
+The equivalent of `setBeforeErrorHook` but when 
+retrying. Additionally, there is a second argument 
+`retryCount`, the current retry number.
+
+**Note:**
+> When using the Stream API, this hook is ignored.
+
+**Note:**
+> When retrying, the `beforeRequest` hook is called 
+> afterwards.
+
+**Note:**
+> If no retry occurs, the `beforeError` hook is called 
+> instead.
+
+This hook is especially useful when you want to retrieve 
+the cause of a retry.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.setBeforeRetryHook((error, retryCount) => {
+  console.log(`Retrying [${retryCount}]: ${error.code}`)
+  // Retrying [1]: ERR_NON_2XX_3XX_RESPONSE
+})
+```
+
+#### `HttpClientBuilder.setAfterResponseHook()`
+
+Each function should return the response. This is 
+especially useful when you want to refresh an access 
+token.
+
+**Note:**
+> When using the Stream API, this hook is ignored.
+
+**Note:**
+> Calling the `retryWithMergedOptions` function will 
+> trigger `beforeRetry` hooks. If the retry is successful, 
+> all remaining `afterResponse` hooks will be called. In 
+> case of an error, `beforeRetry` hooks will be called 
+> instead.
+
+Meanwhile, the `init`, `beforeRequest` , `beforeRedirect` 
+as well as already executed `afterResponse` hooks will be 
+skipped.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.mutableDefaults(true)
+  .setBeforeRetry(error => {
+      // This will be called on `retryWithMergedOptions(...)`
+  })
+  .setAfterResponseHook((response, retryWithMergedOptions) => {
+    // Unauthorized
+    if (response.statusCode === 401) {
+      // Refresh the access token
+      const updatedOptions = {
+        headers: {
+          token: getNewToken()
+        }
+      };
+
+      // Update the defaults
+      instance.defaults.options.merge(updatedOptions)
+
+      // Make a new retry
+      return retryWithMergedOptions(updatedOptions)
+    }
+    
+    // No changes otherwise
+    return response
+  })
+```
+
+#### `HttpClientBuilder.agent()`
+
+An object representing `http`, `https` and `http2` keys 
+for [`http.Agent`](https://nodejs.org/api/http.html#http_class_http_agent), 
+[`https.Agent`](https://nodejs.org/api/https.html#https_class_https_agent) 
+and [`http2wrapper.Agent`](https://github.com/szmarczak/http2-wrapper#new-http2agentoptions) 
+instance. This is necessary because a request to one 
+protocol might redirect to another. In such a scenario, 
+HttpClient will switch over to the right protocol agent for 
+you. If a key is not present, it will default to a global 
+agent.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+import HttpAgent, { HttpsAgent } from 'agentkeepalive'
+
+const builder = new HttpClientBuilder()
+
+builder.agent({ http: new HttpAgent(), https: new HttpsAgent() })
+```
+
+#### `HttpClientBuilder.http2()`
+
+If set to `true`, HttpClient will additionally accept 
+HTTP2 requests.
+
+It will choose either HTTP/1.1 or HTTP/2 depending on 
+the ALPN protocol:
+
+**Note:** 
+> This option requires Node.js 15.10.0 or newer as 
+> HTTP/2 support on older Node.js versions is very 
+> buggy.
+
+**Note:** 
+> Overriding `options.request` will disable HTTP2 
+> support.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.http2(true)
+```
+
+#### `HttpClientBuilder.h2session()`
+
+Set the http2 session instance to be used by the request:
+
+```typescript
+import { connect } from 'node:http2'
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+const session = connect('https://localhost:1234')
+
+builder.h2session(session)
+```
+
+#### `HttpClientBuilder.decompress()`
+
+Decompress the response automatically. This will set 
+the `accept-encoding` header to `gzip, deflate, br` 
+unless you set it yourself. If this is disabled, a 
+compressed response is returned as a `Buffer`. This 
+may be useful if you want to handle decompression 
+yourself or stream the raw compressed data.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.decompress(true)
+```
+
+#### `HttpClientBuilder.timeout()`
+
+Milliseconds to wait for the server to end the response 
+before aborting the request with `got.TimeoutError` error 
+(a.k.a. `request` property). By default, there's no timeout.
+
+This also accepts an `object` with the following fields to 
+constrain the duration of each phase of the request lifecycle:
+- `lookup` starts when a socket is assigned and ends when the hostname has been resolved.
+    Does not apply when using a Unix domain socket.
+- `connect` starts when `lookup` completes (or when the socket is assigned if lookup does not apply to the request) and ends when the socket is connected.
+- `secureConnect` starts when `connect` completes and ends when the handshaking process completes (HTTPS only).
+- `socket` starts when the socket is connected. See [request.setTimeout](https://nodejs.org/api/http.html#http_request_settimeout_timeout_callback).
+- `response` starts when the request has been written to the socket and ends when the response headers are received.
+- `send` starts when the socket is connected and ends with the request has been written to the socket.
+- `request` starts when the request is initiated and ends when the response's end event fires.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.timeout(2000)
+// or
+builder.timeout({
+  lookup: 2000,
+})
+```
+
+#### `HttpClientBuilder.body()`
+
+Set the request body:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.body({
+  hello: 'world!'
+})
+```
+
+#### `HttpClientBuilder.form()`
+
+Set the request body as `form`:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.form({
+  hello: 'world!'
+})
+```
+
+#### `HttpClientBuilder.header()`
+
+Set a header of the request:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.header('Content-Type', 'application/json')
+```
+
+#### `HttpClientBuilder.safeHeader()`
+
+Same as [`header()`](/docs/the-basics/helpers#httpclientbuilderheader), 
+but if the header already exists it will not be overwritten:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder
+  .header('Content-Type', 'application/json')
+  .safeHeader('Content-Type', 'will-not-change')
+```
+
+#### `HttpClientBuilder.removeHeader()`
+
+Remove the header of the request:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder
+  .header('Content-Type', 'application/json')
+  .removeHeader('Content-Type')
+```
+
+#### `HttpClientBuilder.prefixUrl()`
+
+When specified, `prefixUrl` will be prepended to `url`.
+The prefix can be any valid URL, either relative or absolute.
+A trailing slash `/` is optional - one will be added 
+automatically:
+
+**Note:**
+> `prefixUrl` will be ignored if the `url` argument is 
+> a URL instance.
+
+**Note:**
+> Leading slashes in `input` are disallowed when using 
+> this option to enforce consistency and avoid confusion.
+> For example, when the prefix URL is 
+> `https://example.com/foo` and the input is `/bar`, 
+> there's ambiguity whether the resulting URL would 
+> become `https://example.com/foo/bar` or 
+> `https://example.com/bar`. The latter is used by browsers.
+
+**Note:**
+> Useful when used with `got.extend()` to create 
+> niche-specific Got instances.
+
+**Note:**
+> You can change `prefixUrl` using hooks as long as 
+> the URL still includes the `prefixUrl`. If the URL 
+> doesn't include it anymore, it will throw.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.prefixUrl('https://athenna.io')
+```
+
+#### `HttpClientBuilder.method()`
+
+Set the request method:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.method('POST')
+```
+
+#### `HttpClientBuilder.url()`
+
+Set the request url:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.url('https://athenna.io/api/v1')
+```
+
+#### `HttpClientBuilder.cookieJar()`
+
+Set the cookie jar of the request:
+
+**Note:**
+> If you provide this option, `options.headers.cookie` 
+> will be overridden.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.cookieJar(new CookieJar())
+```
+
+#### `HttpClientBuilder.signal()`
+
+Set the signal of the request:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+const abortController = new AbortController()
+
+build.signal(abortController.signal)
+
+setTimeout(() => {
+  abortController.abort()
+}, 100)
+```
+
+#### `HttpClientBuilder.ignoreInvalidCookies()`
+
+Ignore invalid cookies instead of throwing an 
+error. Only useful when the `cookieJar` option has 
+been set. Not recommended:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.ignoreInvalidCookies(true)
+```
+
+#### `HttpClientBuilder.searchParams()`
+
+Query string that will be added to the request URL.
+This will override the query string in `url`. If you 
+need to pass in an array, you can do it using a 
+`URLSearchParams` instance:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder
+  .searchParams({ hello: 'world!' })
+  .searchParams(new URLSearchParams([['key', 'a'], ['key', 'b']]))
+```
+
+#### `HttpClientBuilder.queryParams()`
+
+Alias for [`searchParams()`](/docs/the-basics/helpers#httpclientbuildersearchparams)
+method.
+
+#### `HttpClientBuilder.dnsLookup()`
+
+Set the DNS lookup options of the request:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.dnsLookup({
+  family: 6
+})
+```
+
+#### `HttpClientBuilder.dnsCache()`
+
+An instance of [`CacheableLookup`](https://github.com/szmarczak/cacheable-lookup) 
+used for making DNS lookups. Useful when making lots of 
+requests to different **public** hostnames.
+
+`CacheableLookup` uses `dns.resolver4(..)` and 
+`dns.resolver6(...)` under the hood and fall backs to 
+`dns.lookup(...)` when the first two fail, which may lead 
+to additional delay:
+
+**Note:**
+> This should stay disabled when making requests to 
+> internal hostnames such as `localhost`, `database.local` 
+> etc.
+
+```typescript
+import CacheableLookup from 'cacheable-lookup'
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.dnsCache(new CacheableLookup())
+```
+
+#### `HttpClientBuilder.context()`
+
+User data. `context` is shallow merged and enumerable. 
+If it contains non-enumerable properties they will NOT 
+be merged:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder
+  .setBeforeRequestHook(options => {
+    if (!options.context || !options.context.token) {
+        throw new Error('Token required')
+    }
+
+    options.headers.token = options.context.token
+  })
+  .context({ token: 'secret' })
+```
+
+#### `HttpClientBuilder.hooks()`
+
+Hooks allow modifications during the request 
+lifecycle. Hook functions may be async and are 
+run serially:
+
+```typescript
+import { HttpClientBuilder, type Hooks } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+const hooks: Hooks = {}
+
+builder.hooks(hooks)
+```
+
+#### `HttpClientBuilder.followRedirect()`
+
+Defines if redirect responses should be followed 
+automatically. Note that if a `303` is sent by 
+the server in response to any request type 
+(`POST`, `DELETE`, etc.), Got will automatically 
+request the resource pointed to in the location 
+header via `GET`. This is in accordance with 
+[the spec](https://tools.ietf.org/html/rfc7231#section-6.4.4). 
+You can optionally turn on this behavior also for 
+other redirect codes - see `methodRewriting`:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.followRedirect(true)
+```
+
+#### `HttpClientBuilder.followRedirects()`
+
+Alias for [`followRedirect()`](/docs/the-basics/helpers#httpclientbuilderfollowredirect).
+
+#### `HttpClientBuilder.maxRedirects()`
+
+If exceeded, the request will be aborted and a 
+`MaxRedirectsError` will be thrown:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.maxRedirects(5)
+```
+
+#### `HttpClientBuilder.cacheOptions()`
+
+Set the cache options of the request 
+from [`http-cache-semantics`](https://www.npmjs.com/package/http-cache-semantics):
+
+```typescript
+import { HttpClientBuilder, type CacheOptions } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+const cacheOptions: CacheOptions = {
+  shared: true,
+  immutableMinTimeToLive: 1000,
+}
+
+builder.cacheOptions(cacheOptions)
+```
+
+#### `HttpClientBuilder.cache()`
+
+A cache adapter instance for storing cached response data:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const cache = new Map()
+const builder = new HttpClientBuilder()
+
+builder.cache(cache)
+```
+
+#### `HttpClientBuilder.throwHttpErrors()`
+
+Determines if an error is thrown for unsuccessful 
+responses.
+
+If this is disabled, requests that encounter an error 
+status code will be resolved with the `response` instead 
+of throwing. This may be useful if you are checking for 
+resource availability and are expecting error responses:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.throwHttpErrors(false)
+```
+
+#### `HttpClientBuilder.username()`
+
+Username for Basic Authentication:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.username('jlenon7')
+```
+
+#### `HttpClientBuilder.password()`
+
+Password for Basic Authentication:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.username('12345')
+```
+
+#### `HttpClientBuilder.allowGetBody()`
+
+Set this to `true` to allow sending body for 
+the `GET` method. However, the 
+[HTTP/2 specification](https://tools.ietf.org/html/rfc7540#section-8.1.3) 
+says that `An HTTP GET request includes request header fields and no payload body`, 
+therefore when using the HTTP/2 protocol this option will 
+have no effect. This option is only meant to interact with 
+non-compliant servers when you have no other choice.
+
+**Note:**
+The [RFC 7231](https://tools.ietf.org/html/rfc7231#section-4.3.1) 
+doesn't specify any particular behavior for the GET method 
+having a payload, therefore __it's considered an 
+[anti-pattern](https://en.wikipedia.org/wiki/Anti-pattern)__.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.allowGetBody(true)
+```
+
+#### `HttpClientBuilder.methodRewriting()`
+
+Specifies if the HTTP request method should be 
+[rewritten as `GET`](https://tools.ietf.org/html/rfc7231#section-6.4) 
+on redirects.
+
+As the [specification](https://tools.ietf.org/html/rfc7231#section-6.4) 
+prefers to rewrite the HTTP method only on `303` responses, 
+this is Got's default behavior.
+Setting `methodRewriting` to `true` will also rewrite `301` 
+and `302` responses, as allowed by the spec. This is the 
+behavior followed by `curl` and browsers.
+
+**Note:** 
+
+> HttpClient never performs method rewriting on `307` and 
+> `308` responses, as this is [explicitly prohibited by the 
+> [specification](https://www.rfc-editor.org/rfc/rfc7231#section-6.4.7).
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.methodRewriting(true)
+```
+
+#### `HttpClientBuilder.dnsLookupIpVersion()`
+
+Indicates which DNS record family to use.
+
+Values:
+  - `undefined`: IPv4 (if present) or IPv6
+  - `4`: Only IPv4
+  - `6`: Only IPv6
+  
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.dnsLookupIpVersion(6)
+```
+
+#### `HttpClientBuilder.parseJson()`
+
+Define a function to parse JSON responses:
+
+```typescript
+import Bourne from '@hapi/bourne'
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.parseJson(text => Bourne.parse(text))
+```
+
+#### `HttpClientBuilder.stringifyJson()`
+
+Define a function to stringify JSON requests:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.stringifyJson(object => JSON.stringify(object))
+```
+
+#### `HttpClientBuilder.retry()`
+
+An object representing `limit`, `calculateDelay`, 
+`methods`, `statusCodes`, `maxRetryAfter` and 
+`errorCodes` fields for maximum retry count, retry 
+handler, allowed methods, allowed status codes, 
+maximum [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) 
+time and allowed error codes.
+
+Delays between retries counts with function 
+`1000 * Math.pow(2, retry) + Math.random() * 100`, 
+where `retry` is attempt number (starts from 1).
+
+The `calculateDelay` property is a `function` that 
+receives an object with `attemptCount`, `retryOptions`, 
+`error` and `computedValue` properties for current retry 
+count, the retry options, error and default computed value.
+The function must return a delay in milliseconds 
+(or a Promise resolving with it) (`0` return value cancels 
+retry).
+
+By default, it retries *only* on the specified methods, 
+status codes, and on these network errors:
+
+- `ETIMEDOUT`: One of the [timeout](#timeout) limits were reached.
+- `ECONNRESET`: Connection was forcibly closed by a peer.
+- `EADDRINUSE`: Could not bind to any free port.
+- `ECONNREFUSED`: Connection was refused by the server.
+- `EPIPE`: The remote side of the stream being written has been closed.
+- `ENOTFOUND`: Couldn't resolve the hostname to an IP address.
+- `ENETUNREACH`: No internet connection.
+- `EAI_AGAIN`: DNS lookup timed out.
+
+**Note:**
+> If `maxRetryAfter` is set to `undefined`, it will use 
+`options.timeout`.
+
+**Note:**
+> If [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) 
+header is greater than `maxRetryAfter`, it will cancel the 
+request.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.retry({
+  limit: 5,
+  calculateDelay: ({ attemptCount }) => {
+    return attemptCount * 1000
+  },
+  methods: ['GET'],
+  statusCodes: [[100, 199], 429, 404],
+  maxRetryAfter: 5000,
+  errorCodes: ['ETIMEDOUT'],
+})
+```
+
+#### `HttpClientBuilder.retryStrategy()`
+
+This method is just an alias to configure your own 
+retry strategy.
+
+The strategy function needs to return the delay 
+between the execution count of each request, if the 
+strategy function returns 0, the retry is canceled:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.retryStrategy((error, execCount, retryObject) => {
+  if (execCount === 3) {
+    return 0
+  }
+
+  return 2000
+})
+```
+
+#### `HttpClientBuilder.localAddress()`
+
+From `http.RequestOptions`. The IP address used to send 
+the request from.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.localAddress('192.168.0.1')
+```
+
+#### `HttpClientBuilder.createConnection()`
+
+Define a function used to retrieve a `net.Socket` instance 
+when the `agent` option is not used.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.createConnection(options => {
+  return new net.Socket(options)
+})
+```
+
+#### `HttpClientBuilder.https()`
+
+Define options to make `https` requests:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.https({
+  rejectUnauthorized: false
+})
+```
+
+#### `HttpClientBuilder.encoding()`
+
+[Encoding](https://nodejs.org/api/buffer.html#buffer_buffers_and_character_encodings) 
+to be used on `setEncoding` of the response data.
+
+To get a [`Buffer`](https://nodejs.org/api/buffer.html), you 
+need to set `responseType` to `buffer` instead. Don't set 
+this option to `null`.
+
+**Note:**
+This doesn't affect streams! Instead, you need to do 
+`HttpClientBuilder.stream(...).setEncoding(encoding)`.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.encoding('utf8')
+```
+
+#### `HttpClientBuilder.resolveBodyOnly()`
+
+When set to `true` the promise will return the response 
+body instead of the response object:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.resolveBodyOnly(true)
+```
+
+#### `HttpClientBuilder.responseType()`
+
+The parsing method. The promise also has `.text()`, 
+`.json()` and `.buffer()` methods which return another 
+HttClient promise for the parsed body.
+
+It's like setting the options to `{responseType: 'json', resolveBodyOnly: true}` 
+but without affecting the main HttpClient promise.
+
+**Note:**
+When using streams, this option is ignored.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.responseType('json')
+```
+
+#### `HttpClientBuilder.pagination()`
+
+Set pagination options to your request:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.pagination({ countLimit: 100 })
+```
+
+#### `HttpClientBuilder.setHost()`
+
+Set the host option:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.setHost(true)
+```
+
+#### `HttpClientBuilder.maxHeaderSize()`
+
+Set the maxHeaderSize option.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.maxHeaderSize(1000)
+```
+
+#### `HttpClientBuilder.enableUnixSockets()`
+
+Set the enableUnixSockets option.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.enableUnixSockets(true)
+```
+
+#### `HttpClientBuilder.stream()`
+
+Execute the request and return as stream:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+const stream = await builder.stream()
+```
+
+#### `HttpClientBuilder.paginate()`
+
+Execute the request and return as paginated response:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+const paginatedResponse = await builder.paginate()
+```
+
+#### `HttpClientBuilder.request()`
+
+Execute the request using all the options defined:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+const response = await builder.request()
+```
+
+#### `HttpClientBuilder.get()`
+
+Execute a `GET` request using all the options defined:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+const response = await builder.get()
+```
+
+#### `HttpClientBuilder.post()`
+
+Execute a `POST` request using all the options defined:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+const response = await builder.post()
+```
+
+#### `HttpClientBuilder.put()`
+
+Execute a `PUT` request using all the options defined:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+const response = await builder.put()
+```
+
+#### `HttpClientBuilder.patch()`
+
+Execute a `PATCH` request using all the options defined:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+const response = await builder.patch()
+```
+
+#### `HttpClientBuilder.delete()`
+
+Execute a `DELETE` request using all the options defined:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+const response = await builder.delete()
+```
+
+#### `HttpClientBuilder.head()`
+
+Execute a `HEAD` request using all the options defined:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+const response = await builder.head()
+```
 
 ### Is
 
-Coming soon
+#### `Is::kindOf()`
+
+Validate if the value is equals to some type:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.kindOf('string', 'string') // true
+```
+
+#### `Is::Uuid()`
+
+Validate if the value is a valid UUID v4:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Uuid('adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11') // true
+Is.Uuid('adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', { prefix: 'adm' }) // true
+```
+
+#### `Is::Defined()`
+
+Validate if the value is defined:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Defined('Hello World') // true
+```
+
+#### `Is::Json()`
+
+Validate if the value is a valid JSON string:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Json('{ "name": "João Lenon" }') // true
+```
+
+#### `Is::Ip()`
+
+Validate if the value is a valid IP address:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Ip('192.168.0.1') // true
+```
+
+#### `Is::Empty()`
+
+Validate if the value is empty:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Empty(undefined) // true
+Is.Empty('') // true
+Is.Empty([]) // true
+Is.Empty({}) // true
+```
+
+#### `Is::Cep()`
+
+Validate if the value is a valid Brazil CEP:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Cep('85869-676') // true
+```
+
+#### `Is::Cpf()`
+
+Validate if the value is a valid Brazil Cpf:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Cpf('208.464.590-51') // true
+```
+
+#### `Is::Cnpj()`
+
+Validate if the value is a valid Brazil Cnpj:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Cnpj('71.151.950/0001-65') // true
+```
+
+#### `Is::Async()`
+
+Verify if a function is async:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Async(async () => {}) // true
+Is.Async(async function () {}) // true
+```
+
+#### `Is::Undefined()`
+
+Validate if the value is undefined:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Undefined(undefined) // true
+```
+
+#### `Is::Null()`
+
+Validate if the value is null:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Null(null) // true
+```
+
+#### `Is::Boolean()`
+
+Validate if the value is boolean:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Boolean(true) // true
+```
+
+#### `Is::Buffer()`
+
+Validate if the value is Buffer:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Buffer(new Buffer()) // true
+```
+
+#### `Is::Number()`
+
+Validate if the value is number:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Number(10) // true
+```
+
+#### `Is::String()`
+
+Validate if the value is string:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.String('Athenna is the best!') // true
+```
+
+#### `Is::Object()`
+
+Validate if the value is Object:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Object({ hello: 'world!' }) // true
+```
+
+#### `Is::Date()`
+
+Validate if the value is Date:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Date(new Date()) // true
+```
+
+#### `Is::Array()`
+
+Validate if the value is array:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Array([1, 2, 3, 4, 5]) // true
+```
+
+#### `Is::Regexp()`
+
+Validate if the value is Regexp:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Regexp(new RegExp()) // true
+```
+
+#### `Is::Error()`
+
+Validate if the value is error:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Error(new Error()) // true
+```
+
+#### `Is::Exception()`
+
+Validate if the value is [`Exception`](/docs/the-basics/helpers#exception)
+or any variation that extends from it:
+
+```typescript
+import { Is, Exception } from '@athenna/common'
+
+Is.Exception(new Error()) // false
+Is.Exception(new Exception()) // true
+```
+
+#### `Is::Class()`
+
+Validate if the value is class:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Class(Is) // true
+```
+
+#### `Is::Float()`
+
+Validate if the value is float:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Float(10.5) // true
+```
+
+#### `Is::ArrayOfObjects()`
+
+Validate if the value is an array of objects:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.ArrayOfObjects([{}, {}, {}]) // true
+```
 
 ### Json
 
@@ -1105,7 +2650,206 @@ Json.get(object, 'configs.theme') // dark
 
 ### Module
 
-Coming soon
+#### `Module::get()`
+
+Get the default module or the first exported module of a file:
+
+```typescript title="default.ts"
+export default {
+  name: 'João Lenon'
+}
+```
+
+```typescript title="object.ts"
+export const person = {
+  name: 'João Lenon'
+}
+```
+
+```typescript
+import { Module } from '@athenna/common'
+
+await Module.get(import('./default.js')) // { name: 'João Lenon' }
+await Module.get(import('./object.js')) // { name: 'João Lenon' }
+```
+
+#### `Module::getAll()`
+
+Get all exported modules of a path and return as array:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const modules = [import('./object.js'), import('./default.js')]
+
+await Module.getAll(modules)
+// [{ name: 'João Lenon' }, { name: 'João Lenon' }]
+```
+
+#### `Module::getFrom()`
+
+Same as [`Module::get()`](/docs/the-basics/helpers#moduleget) 
+method, but import from a path:
+
+```typescript
+import { Module } from '@athenna/common'
+
+await Module.getFrom('./default.js') // { name: 'João Lenon' }
+await Module.getFrom('./object.js') // { name: 'João Lenon' }
+```
+
+#### `Module::getAllFrom()`
+
+Same as [`Module::getAll()`](/docs/the-basics/helpers#modulegetall) 
+method, but import from a path:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const paths = ['./object.js', './default.js']
+
+await Module.getAllFrom(paths)
+// [{ name: 'João Lenon' }, { name: 'João Lenon' }]
+```
+
+#### `Module::getWithAlias()`
+
+Get the default module or the first exported module 
+of a file with alias:
+
+```typescript title="MyService.ts"
+export default class MyService {}
+```
+
+```typescript
+import { Module } from '@athenna/common'
+
+const modules = [import('./MyService.js')]
+const subAlias = 'App/Services'
+
+await Module.getWithAlias(modules, subAlias)
+// { alias: 'App/Services/MyService', module: [class MyService] }
+```
+
+#### `Module::getAllWithAlias()`
+
+Get all exported modules of a path and return as array with alias:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const modules = [import('./MyService.js')]
+const subAlias = 'App/Services'
+
+await Module.getAllWithAlias(modules, subAlias)
+// [{ alias: 'App/Services/MyService', module: { name: 'João Lenon' } }]
+```
+
+#### `Module::getFromWithAlias()`
+
+Same as [`Module::getWithAlias()`](/docs/the-basics/helpers#modulegetwithalias) 
+method, but import from a path:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const paths = ['./MyService.js']
+const subAlias = 'App/Services'
+
+await Module.getAllWithAlias(paths, subAlias)
+// [{ alias: 'App/Services/MyService', module: { name: 'João Lenon' } }]
+```
+
+#### `Module::getAllFromWithAlias()`
+
+Same as [`Module::getAllWithAlias()`](/docs/the-basics/helpers#modulegetallwithalias) 
+method, but import from a path:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const paths = ['./MyService.js']
+const subAlias = 'App/Services'
+
+await Module.getAllWithAlias(paths, subAlias)
+// [{ alias: 'App/Services/MyService', module: { name: 'João Lenon' } }]
+```
+
+#### `Module::getAllJSFilesFrom()`
+
+Get all the [`Path.ext()`](/docs/the-basics/helpers#pathext) 
+files from a path:
+
+```typescript
+import { File, Path, Module } from '@athenna/common'
+
+const files: File[] = await Module.getAllJSFilesFrom(Path.app())
+```
+
+#### `Module::import()`
+
+Import a full path using the path href to ensure 
+compatibility between OS's:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const module = await Module.import('./MyService.js')
+```
+
+#### `Module::safeImport()`
+
+Same as [`Module::import()`](/docs/the-basics/helpers#moduleimport) 
+method but return null if the module does not exist:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const module = await Module.safeImport('./notFound.js')
+```
+
+#### `Module::resolve()`
+
+Resolve the module path by meta url and import it:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const module = await Module.resolve('./MyService.js', import.meta.url)
+```
+
+#### `Module::createDirname()`
+
+Crete the old [`__dirname`](https://nodejs.org/api/modules.html#__dirname) 
+property:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const __dirname = Module.createDirname(import.meta.url)
+```
+
+#### `Module::createFilename()`
+
+Crete the old [`__filename`](https://nodejs.org/api/modules.html#__filename) 
+property:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const __filename = Module.createFilename(import.meta.url)
+```
+
+#### `Module::createRequire()`
+
+Crete the old [`require()`](https://nodejs.org/api/modules.html#requireid) 
+function:
+
+```typescript
+import { Module } from '@athenna/common'
+
+const require = Module.createRequire(import.meta.url)
+```
 
 ### Number
 
