@@ -1171,22 +1171,19 @@ Called with the plain request options, right before
 their normalization. The second argument represents 
 the current `Options` instance.
 
-**Note:**
-> This hook must be synchronous.
+:::note
 
-**Note:**
-> This is called every time options are merged.
+- This hook must be synchronous.
+- This is called every time options are merged.
+- The `options` object may not have the `url` 
+property. To modify it, use a `beforeRequest` 
+hook instead.
+- This hook is called when a new instance of 
+`Options` is created.
+Do not confuse this with the creation of 
+`Request` or `got(…)`.
 
-**Note:**
-> The `options` object may not have the `url` 
-> property. To modify it, use a `beforeRequest` 
-> hook instead.
-
-**Note:**
-> This hook is called when a new instance of 
-> `Options` is created.
-> Do not confuse this with the creation of 
-> `Request` or `got(…)`.
+:::
 
 For example, this can be used to fix typos to 
 migrate from older versions faster.
@@ -1212,14 +1209,16 @@ is especially useful in conjunction with
 `HttpClient.setBuilder(customBuilder)` when you want 
 to sign your request.
 
-**Note:**
-> Got will make no further changes to the request 
-> before it is sent.
 
-**Note:**
-> Changing `options.json` or `options.form` has no 
-> effect on the request. You should change `options.body` 
-> instead. If needed, update the `options.headers` accordingly.
+:::note
+
+- HttpClient will make no further changes to the request 
+before it is sent.
+- Changing `options.json` or `options.form` has no 
+effect on the request. You should change `options.body` 
+instead. If needed, update the `options.headers` accordingly.
+
+:::
 
 ```typescript
 import { HttpClientBuilder } from '@athenna/common'
@@ -1237,9 +1236,12 @@ builder.setBeforeRequestHook(options => {
 The equivalent of `setBeforeRequestHook` but when 
 redirecting.
 
-**Tip:**
-> This is especially useful when you want to avoid 
-> dead sites.
+:::note
+
+- This is especially useful when you want to avoid 
+dead sites.
+
+:::
 
 ```typescript
 import { HttpClientBuilder } from '@athenna/common'
@@ -1285,16 +1287,15 @@ The equivalent of `setBeforeErrorHook` but when
 retrying. Additionally, there is a second argument 
 `retryCount`, the current retry number.
 
-**Note:**
-> When using the Stream API, this hook is ignored.
+:::note
 
-**Note:**
-> When retrying, the `beforeRequest` hook is called 
-> afterwards.
+- When using the Stream API, this hook is ignored.
+- When retrying, the `beforeRequest` hook is called 
+afterwards.
+- If no retry occurs, the `beforeError` hook is called 
+instead.
 
-**Note:**
-> If no retry occurs, the `beforeError` hook is called 
-> instead.
+:::
 
 This hook is especially useful when you want to retrieve 
 the cause of a retry.
@@ -1316,15 +1317,16 @@ Each function should return the response. This is
 especially useful when you want to refresh an access 
 token.
 
-**Note:**
-> When using the Stream API, this hook is ignored.
+:::note
 
-**Note:**
-> Calling the `retryWithMergedOptions` function will 
-> trigger `beforeRetry` hooks. If the retry is successful, 
-> all remaining `afterResponse` hooks will be called. In 
-> case of an error, `beforeRetry` hooks will be called 
-> instead.
+- When using the Stream API, this hook is ignored.
+- Calling the `retryWithMergedOptions` function will 
+trigger `beforeRetry` hooks. If the retry is successful, 
+all remaining `afterResponse` hooks will be called. In 
+case of an error, `beforeRetry` hooks will be called 
+instead.
+
+:::
 
 Meanwhile, the `init`, `beforeRequest` , `beforeRedirect` 
 as well as already executed `afterResponse` hooks will be 
@@ -1390,14 +1392,15 @@ HTTP2 requests.
 It will choose either HTTP/1.1 or HTTP/2 depending on 
 the ALPN protocol:
 
-**Note:** 
-> This option requires Node.js 15.10.0 or newer as 
-> HTTP/2 support on older Node.js versions is very 
-> buggy.
+:::note
 
-**Note:** 
-> Overriding `options.request` will disable HTTP2 
-> support.
+- This option requires Node.js 15.10.0 or newer as 
+HTTP/2 support on older Node.js versions is very 
+buggy.
+- Overriding `options.request` will disable HTTP2 
+support.
+
+:::
 
 ```typescript
 import { HttpClientBuilder } from '@athenna/common'
@@ -1441,7 +1444,7 @@ builder.decompress(true)
 #### `HttpClientBuilder.timeout()`
 
 Milliseconds to wait for the server to end the response 
-before aborting the request with `got.TimeoutError` error 
+before aborting the request with a timeout error 
 (a.k.a. `request` property). By default, there's no timeout.
 
 This also accepts an `object` with the following fields to 
@@ -1543,27 +1546,23 @@ The prefix can be any valid URL, either relative or absolute.
 A trailing slash `/` is optional - one will be added 
 automatically:
 
-**Note:**
-> `prefixUrl` will be ignored if the `url` argument is 
-> a URL instance.
+:::note
 
-**Note:**
-> Leading slashes in `input` are disallowed when using 
-> this option to enforce consistency and avoid confusion.
-> For example, when the prefix URL is 
-> `https://example.com/foo` and the input is `/bar`, 
-> there's ambiguity whether the resulting URL would 
-> become `https://example.com/foo/bar` or 
-> `https://example.com/bar`. The latter is used by browsers.
+- `prefixUrl` will be ignored if the `url` argument is 
+a URL instance.
+- Leading slashes in `input` are disallowed when using 
+this option to enforce consistency and avoid confusion.
+For example, when the prefix URL is 
+`https://example.com/foo` and the input is `/bar`, 
+there's ambiguity whether the resulting URL would 
+become `https://example.com/foo/bar` or 
+`https://example.com/bar`. The latter is used by browsers.
+- You can change `prefixUrl` using hooks as long as 
+the URL still includes the `prefixUrl`. If the URL 
+doesn't include it anymore, it will throw.
 
-**Note:**
-> Useful when used with `got.extend()` to create 
-> niche-specific Got instances.
+:::
 
-**Note:**
-> You can change `prefixUrl` using hooks as long as 
-> the URL still includes the `prefixUrl`. If the URL 
-> doesn't include it anymore, it will throw.
 
 ```typescript
 import { HttpClientBuilder } from '@athenna/common'
@@ -1601,9 +1600,12 @@ builder.url('https://athenna.io/api/v1')
 
 Set the cookie jar of the request:
 
-**Note:**
-> If you provide this option, `options.headers.cookie` 
-> will be overridden.
+:::note
+
+- If you provide this option, `options.headers.cookie` 
+will be overridden.
+
+:::
 
 ```typescript
 import { HttpClientBuilder } from '@athenna/common'
@@ -1691,10 +1693,13 @@ requests to different **public** hostnames.
 `dns.lookup(...)` when the first two fail, which may lead 
 to additional delay:
 
-**Note:**
-> This should stay disabled when making requests to 
-> internal hostnames such as `localhost`, `database.local` 
-> etc.
+:::note
+
+- This should stay disabled when making requests to 
+internal hostnames such as `localhost`, `database.local` 
+etc.
+
+:::
 
 ```typescript
 import CacheableLookup from 'cacheable-lookup'
@@ -1748,7 +1753,7 @@ builder.hooks(hooks)
 Defines if redirect responses should be followed 
 automatically. Note that if a `303` is sent by 
 the server in response to any request type 
-(`POST`, `DELETE`, etc.), Got will automatically 
+(`POST`, `DELETE`, etc.), HttpClient will automatically 
 request the resource pointed to in the location 
 header via `GET`. This is in accordance with 
 [the spec](https://tools.ietf.org/html/rfc7231#section-6.4.4). 
@@ -1863,11 +1868,14 @@ therefore when using the HTTP/2 protocol this option will
 have no effect. This option is only meant to interact with 
 non-compliant servers when you have no other choice.
 
-**Note:**
-The [RFC 7231](https://tools.ietf.org/html/rfc7231#section-4.3.1) 
+:::note
+
+- The [RFC 7231](https://tools.ietf.org/html/rfc7231#section-4.3.1) 
 doesn't specify any particular behavior for the GET method 
 having a payload, therefore __it's considered an 
 [anti-pattern](https://en.wikipedia.org/wiki/Anti-pattern)__.
+
+:::
 
 ```typescript
 import { HttpClientBuilder } from '@athenna/common'
@@ -1885,16 +1893,18 @@ on redirects.
 
 As the [specification](https://tools.ietf.org/html/rfc7231#section-6.4) 
 prefers to rewrite the HTTP method only on `303` responses, 
-this is Got's default behavior.
+this is HttpClient's default behavior.
 Setting `methodRewriting` to `true` will also rewrite `301` 
 and `302` responses, as allowed by the spec. This is the 
 behavior followed by `curl` and browsers.
 
-**Note:** 
+:::note
 
-> HttpClient never performs method rewriting on `307` and 
-> `308` responses, as this is [explicitly prohibited by the 
-> [specification](https://www.rfc-editor.org/rfc/rfc7231#section-6.4.7).
+- HttpClient never performs method rewriting on `307` and 
+`308` responses, as this is [explicitly prohibited by the 
+[specification](https://www.rfc-editor.org/rfc/rfc7231#section-6.4.7).
+
+:::
 
 ```typescript
 import { HttpClientBuilder } from '@athenna/common'
@@ -1979,14 +1989,15 @@ status codes, and on these network errors:
 - `ENETUNREACH`: No internet connection.
 - `EAI_AGAIN`: DNS lookup timed out.
 
-**Note:**
-> If `maxRetryAfter` is set to `undefined`, it will use 
-`options.timeout`.
+:::note
 
-**Note:**
-> If [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) 
+- If `maxRetryAfter` is set to `undefined`, it will use 
+`options.timeout`.
+- If [`Retry-After`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After) 
 header is greater than `maxRetryAfter`, it will cancel the 
 request.
+
+:::
 
 ```typescript
 import { HttpClientBuilder } from '@athenna/common'
@@ -2079,9 +2090,13 @@ To get a [`Buffer`](https://nodejs.org/api/buffer.html), you
 need to set `responseType` to `buffer` instead. Don't set 
 this option to `null`.
 
-**Note:**
-This doesn't affect streams! Instead, you need to do 
+:::note
+
+- This doesn't affect streams! Instead, you need to do 
 `HttpClientBuilder.stream(...).setEncoding(encoding)`.
+
+:::
+
 
 ```typescript
 import { HttpClientBuilder } from '@athenna/common'
@@ -2113,8 +2128,11 @@ HttClient promise for the parsed body.
 It's like setting the options to `{responseType: 'json', resolveBodyOnly: true}` 
 but without affecting the main HttpClient promise.
 
-**Note:**
-When using streams, this option is ignored.
+:::note
+
+- When using streams, this option is ignored.
+
+:::
 
 ```typescript
 import { HttpClientBuilder } from '@athenna/common'
