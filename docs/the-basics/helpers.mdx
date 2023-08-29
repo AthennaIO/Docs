@@ -2310,6 +2310,37 @@ import { Is } from '@athenna/common'
 Is.kindOf('string', 'string') // true
 ```
 
+#### `Is.Mac()`
+
+Validate if the current OS is a MacOS:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Mac() // true
+```
+
+#### `Is.Linux()`
+
+Validate if the current OS is a distribution of 
+Linux:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Linux() // true
+```
+
+#### `Is.Windows()`
+
+Validate if the current OS is a Windows:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Windows() // true
+```
+
 #### `Is::Uuid()`
 
 Validate if the value is a valid UUID v4:
