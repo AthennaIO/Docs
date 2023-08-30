@@ -32,7 +32,7 @@ export default {
   swagger: {
     ui: {
       staticCSP: true,
-      routePrefix: '/documentation',
+      routePrefix: '/documentation'
     },
     configurations: {
       mode: 'dynamic',
@@ -43,15 +43,15 @@ export default {
         info: {
           title: Config.get('app.name'),
           version: Config.get('app.version'),
-          description: Config.get('app.description'),
+          description: Config.get('app.description')
         },
         externalDocs: {
           url: 'https://athenna.io',
-          description: 'Find more info about Athenna here',
+          description: 'Find more info about Athenna here'
         },
       },
     },
-  },
+  }
 }
 ```
 
@@ -71,9 +71,9 @@ Route.get('/hello', 'WelcomeController.show')
         schema: {
             type: 'object',
             properties: {
-                name: { type: 'string' },
+                name: { type: 'string' }
             },
-        },
+        }
     })
 ```
 

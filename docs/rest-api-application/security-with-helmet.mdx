@@ -13,4 +13,103 @@ See how to improve the security of your REST API with Helmet in Athenna.
 
 ## Introduction
 
-Coming soon
+[`Helmet`](https://www.npmjs.com/package/helmet) helps secure 
+applications by setting HTTP response headers. By default, 
+Helmet sets the following headers:
+
+- `Content-Security-Policy`: A powerful allow-list of what can 
+happen on your page which mitigates many attacks.
+- `Cross-Origin-Opener-Policy`: Helps process-isolate your 
+page.
+- `Cross-Origin-Resource-Policy`: Blocks others from loading 
+your resources cross-origin.
+- `Origin-Agent-Cluster`: Changes process isolation to be 
+origin-based.
+- `Referrer-Policy`: Controls the Referer header.
+- `Strict-Transport-Security`: Tells browsers to prefer 
+HTTPS.
+- `X-Content-Type-Options`: Avoids MIME sniffing.
+- `X-DNS-Prefetch-Control`: Controls DNS prefetching.
+- `X-Download-Options`: Forces downloads to be saved 
+(Internet Explorer only).
+- `X-Frame-Options`: Legacy header that mitigates clickjacking 
+attacks.
+- `X-Permitted-Cross-Domain-Policies`: Controls cross-domain 
+behavior for Adobe products, like Acrobat.
+- `X-Powered-By`: Info about the web server. Removed because 
+it could be used in simple attacks.
+- `X-XSS-Protection`: Legacy header that tries to mitigate XSS 
+attacks, but makes things worse, so Helmet disables it.
+
+## Basic usage
+
+Athenna uses the [`@fastify/helmet`](https://github.com/fastify/helmet) 
+plugin inside `HttpKernel`. All the configurations that 
+`@fastify/helmet` supports can be set inside `Path.config('http.ts')` 
+file in the `helmet` object:
+
+```typescript
+export default {
+  helmet: {
+    global: true
+  }
+}
+```
+
+## Configuring for specific routes
+
+In Athenna you can set specific options of helmet 
+for specific routes. You can also disable the `global` 
+option of your `helmet` configuration in `Path.config('http.ts')` 
+and set different rules in your routes:
+
+```typescript title="Path.route('http.ts')"
+Route
+  .get('/hello', 'WelcomeController.show')
+  .helmet({ frameguard: { action: 'foo' } }) 👈
+```
+
+### Usage in route groups
+
+You can also use the `helmet()` method in route groups. 
+This will set the same configuration for all routes inside 
+the group:
+
+```typescript title="Path.route('http.ts')"
+Route.group(() => {
+    Route.get('/hello', 'WelcomeController.show')
+}).helmet({ frameguard: { action: 'foo' } }) 👈
+```
+
+:::warning
+
+The `helmet()` method of route groups will never 
+subscribe the already set methods of routes. Use it 
+to create "defaults" configurations for all routes.
+
+:::
+
+### Usage in route resources
+
+Same behavior as route groups, but for resources:
+
+```typescript title="Path.route('http.ts')"
+// Set the same configurations for all routes of resource
+Route.resource('/tests', 'WelcomeController').helmet({...})
+
+// Set configuration only for that specific action of resource
+Route.resource('/tests', 'WelcomeController').helmet('index', {...})
+Route.resource('/tests', 'WelcomeController').helmet('store', {...})
+```
+
+## Disabling helmet
+
+The `HttpKernel` class will automatically disable the 
+plugin registration if the package does not exist, so 
+to disable helmet in Athenna you need to 
+remove the `@fastify/helmet` package from your 
+application:
+
+```shell
+npm remove @fastify/helmet
+```
