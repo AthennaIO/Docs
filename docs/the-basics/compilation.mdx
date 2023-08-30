@@ -13,4 +13,93 @@ Understand the TypeScript compilation process of Athenna.
 
 ## Introduction
 
-Coming soon
+One of the main objectives of the framework is to offer 
+exceptional assistance for TypeScript. This extends beyond 
+the benefits of static types and IntelliSense that enhance 
+your coding experience. Furthermore, we make certain that 
+there is no need for you to install extra build utilities 
+for code compilation, both during the development phase and 
+for production purposes.
+
+:::warning
+
+This documentation assumes that you have a basic knowledge 
+about TypeScript and the build tools available for it.
+
+:::
+
+## Compiling for development
+
+In the root path of your project you already have a 
+shell script file called `node`, This file is useful 
+for development purposes because it allows you to run 
+TypeScript files without having to add the 
+`--loader=ts-node/esm` option every time:
+
+```shell
+./node index.ts
+```
+
+This file works exactly like the `node` command, you
+can set all node flags before the path to the file you
+want to execute:
+
+```shell
+./node --watch index.ts
+```
+
+:::tip
+
+You can learn more about the `node` file in the 
+[node script file documentation section](/docs/getting-started/node-sript-file). 
+
+:::
+
+## Compiling for production
+
+When you are ready to deploy your application to 
+production, you can use the following command: 
+
+```shell
+./node artisan build
+```
+
+It performs the following operations:
+
+- Clean the existing build directory (if any).
+- Type check and compile the code using `tsc`. The tsconfig
+file path that will be used is defined inside the 
+`.athennarc.json` file under the `build.tsconfig` property.
+- Copy all the static files to the build folder. The 
+static files are registered inside the `.athennarc.json` 
+file under the `build.metaFiles` array.
+
+### Points to keep in mind
+
+After building your code, the output folder becomes 
+the root of your JavaScript application, this means two things:
+
+1. You must `cd` into the build folder and install production
+only dependencies:
+
+```shell
+cd build
+npm ci --production
+```
+
+2. You must always `cd` into the build folder and then 
+run your app:
+
+```shell
+cd build
+node --experimental-import-meta-resolve bootstrap/main.js
+```
+
+:::warning
+
+We do not copy the `.env` file to the output folder 
+(even if you add it to `build.metaFiles` array) to prevent
+issues for you. The environment variables are not transferable,
+you must define environment variables for production separately.
+
+:::
