@@ -69,10 +69,12 @@ It performs the following operations:
 - Clean the existing build directory (if any).
 - Type check and compile the code using `tsc`. The tsconfig
 file path that will be used is defined inside the 
-`.athennarc.json` file under the `build.tsconfig` property.
+`.athennarc.json` file under the `commands.build.tsconfig` 
+property.
 - Copy all the static files to the build folder. The 
 static files are registered inside the `.athennarc.json` 
-file under the `build.metaFiles` array.
+file under the `commands.build.metaFiles` array. This property
+needs to always be used to copy `package.json` and `package-lock.json`.
 
 ### Points to keep in mind
 
@@ -84,7 +86,7 @@ only dependencies:
 
 ```shell
 cd build
-npm ci --production
+npm ci --omit=dev
 ```
 
 2. You must always `cd` into the build folder and then 
@@ -98,8 +100,9 @@ node --experimental-import-meta-resolve bootstrap/main.js
 :::warning
 
 We do not copy the `.env` file to the output folder 
-(even if you add it to `build.metaFiles` array) to prevent
-issues for you. The environment variables are not transferable,
-you must define environment variables for production separately.
+(even if you add it to `commands.build.metaFiles` array) to 
+prevent issues for you. The environment variables are not 
+transferable, you must define environment variables for 
+production separately.
 
 :::
