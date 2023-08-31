@@ -25,140 +25,6 @@ in the `app/console/commands` directory; however, you are
 free to choose your own storage location as long as your
 commands can be imported.
 
-### Generating commands
-
-To create a new command, you may use the `make:command`
-Artisan command. This command will create a new command
-class in the `app/console/commands` directory and register
-it inside `commands` object of `.athennarc.json` file.
-Don't worry if this directory does not exist in your
-application—it will be created the first time you run the
-`make:command` Artisan command:
-
-```shell
-./node artisan make:command SendEmails
-```
-
-### Commands structure
-
-After generating your command, you should define
-appropriate values for the `signature` and `description`
-static properties of the class. These properties will be
-used when displaying your command on the list screen. The
-`handle` method will be called when your command is executed.
-You may place your command logic in this method.
-
-Athenna commands do not bootstrap the entire Athenna
-application, meaning that all your services will not be
-registered in the [service container](/docs/architecture-concepts/service-container).
-when running your commands. To do so, you need to set the
-`"loadApp": true` in your command settings inside
-`.athennarc.json` file. By default, Athenna commands
-generated with `make:artisan` command, will
-already define `"loadApp": true` for you:
-
-```json
-{
-  "commands": {
-    "sendEmails": {
-      "path": "#app/console/commands/SendEmails",
-      "loadApp": true
-    }
-  }
-}
-```
-
-Now we are able to request any dependencies we need using
-the `@Inject()` annotation:
-
-```typescript
-import { Inject } from '@athenna/ioc'
-import { BaseCommand } from '@athenna/artisan'
-import { MailgunService } from '#app/services/MailgunService'
-
-export class SendEmails extends BaseCommand {
-  public static signature(): string {
-      return 'mail:send'
-  }
-
-  public static description(): string {
-      return 'Send an email.'
-  }
-
-  @Inject()
-  private mailgunService: MailgunService 👈
-
-  public async handle(): Promise<void> {
-    //
-  }
-}
-```
-
-:::warning
-
-The application is bootstrapped only after your command is
-already registered, meaning that you can't use the
-automatic constructor injection with commands to resolve
-your dependencies.
-
-:::
-
-:::tip
-
-For greater code reuse, it is good practice keeping your
-console commands light and let them defer to application
-services to accomplish their tasks. In the example above,
-note that we inject a service class to do the "heavy
-lifting" of sending the e-mails.
-
-:::
-
-### Defining input expectations
-
-When writing console commands, it is common to gather
-input from the user through arguments or options. Athenna
-makes it very convenient to define the input you expect
-from the user using the `@Argument()` and `@Option()`
-annotations on your commands. See the example:
-
-```typescript
-import { Inject } from '@athenna/ioc'
-import { MailgunService } from '#app/services/MailgunService'
-import { Option, Argument, BaseCommand } from '@athenna/artisan'
-
-export class SendEmails extends BaseCommand {
-  public static signature(): string {
-      return 'mail:send'
-  }
-
-  public static description(): string {
-      return 'Send an email.'
-  }
-
-  @Argument()
-  private email: string
-
-  @Option({
-    signature: '-s, --subject <subject>',
-    default: 'Athenna',
-    description: 'Set the subject of the email.',
-  })
-  private subject: string
-
-  @Inject()
-  private mailgunService: MailgunService
-
-  public async handle(): Promise<void> {
-    const message = 'Hello from Athenna!'
-
-    await this.mailgunService.send(this.email, {
-      message,
-      subject: this.subject,
-    })
-  }
-}
-```
-
 ## Registering commands
 
 All of your console commands are registered within your
@@ -274,6 +140,168 @@ setting in your command:
 
 :::
 
+## Generating commands
+
+To create a new command, you may use the `make:command`
+Artisan command. This command will create a new command
+class in the `app/console/commands` directory and register
+it inside `commands` object of `.athennarc.json` file.
+Don't worry if this directory does not exist in your
+application—it will be created the first time you run the
+`make:command` Artisan command:
+
+```shell
+./node artisan make:command SendEmails
+```
+
+## Commands structure
+
+Athenna commands are represented as classes and always extend 
+the `BaseCommand` class. You define the command `signature` and 
+`description` as static properties on the class itself:
+
+```typescript
+export class SendEmails extends BaseCommand {
+  public static signature(): string {
+      return 'sendEmails'
+  }
+
+  public static description(): string {
+      return 'The description of sendEmails command'
+  }
+
+  public async handle(): Promise<void> {
+    //
+  }
+}
+```
+
+- `signature` - The signature is basicaly the command. You will
+always use this signature to call your command in terminal. It 
+should always be a string.
+- `description` - The description is a short description of what
+your command does, it will always be displayed in the help output.
+- `handle` - The handle method will contain the logic of your 
+command, this method will be called when executing your command.
+
+### Booting the app within the command
+
+Artisan commands do not boot your application before running 
+the command. If your command relies on the application code, 
+you must instruct the command to load the application first 
+and then execute the `handle` method:
+
+```json title=".athennarc.json"
+{
+  "commands": {
+    "sendEmails": {
+      "path": "#app/console/commands/SendEmails",
+      "loadApp": true 👈
+    }
+  }
+}
+```
+
+Now we are able to request any dependencies we need using
+the `@Inject()` annotation:
+
+```typescript
+import { Inject } from '@athenna/ioc'
+import { BaseCommand } from '@athenna/artisan'
+import { MailgunService } from '#app/services/MailgunService'
+
+export class SendEmails extends BaseCommand {
+  public static signature(): string {
+      return 'mail:send'
+  }
+
+  public static description(): string {
+      return 'Send an email.'
+  }
+
+  @Inject()
+  private mailgunService: MailgunService 👈
+
+  public async handle(): Promise<void> {
+    const msg = 'People reading this will have a wonderful day! 🥳'
+
+    await this.mailgunService.send(msg)
+  }
+}
+```
+
+### Constructor injection is not allowed
+
+The application is bootstrapped only after your command is
+already registered, meaning that you can't use the
+automatic constructor injection with commands to resolve
+your dependencies:
+
+#### ❌ Does not work
+
+```typescript
+import { Inject } from '@athenna/ioc'
+import { BaseCommand } from '@athenna/artisan'
+import { MailgunService } from '#app/services/MailgunService'
+
+export class SendEmails extends BaseCommand {
+  public static signature(): string {
+      return 'mail:send'
+  }
+
+  public static description(): string {
+      return 'Send an email.'
+  }
+
+  public constructor(private mailgunService: MailgunService) { 👈
+    super()
+  }
+
+  public async handle(): Promise<void> {
+    const msg = 'People reading this will have a wonderful day! 🥳'
+
+    await this.mailgunService.send(msg)
+  }
+}
+```
+
+#### ✅ Works
+
+```typescript
+import { Inject } from '@athenna/ioc'
+import { BaseCommand } from '@athenna/artisan'
+import { MailgunService } from '#app/services/MailgunService'
+
+export class SendEmails extends BaseCommand {
+  public static signature(): string {
+      return 'mail:send'
+  }
+
+  public static description(): string {
+      return 'Send an email.'
+  }
+
+  @Inject()
+  private mailgunService: MailgunService 👈
+
+  public async handle(): Promise<void> {
+    const msg = 'People reading this will have a wonderful day! 🥳'
+
+    await this.mailgunService.send(msg)
+  }
+}
+```
+
+:::tip
+
+For greater code reuse, it is good practice keeping your
+console commands light and let them defer to application
+services to accomplish their tasks. In the example above,
+note that we inject a service class to do the "heavy
+lifting" of sending the e-mails.
+
+:::
+
 ## Calling commands in runtime
 
 Sometimes you may wish to call other commands from an
@@ -298,3 +326,275 @@ const { stdout, stderr } = await Artisan.callInChild('make:controller TestContro
 assert.isTrue(stdout.includes('[ MAKING CONTROLLER ]'))
 assert.isUndefined(stderr)
 ```
+
+By default this method will look to the `Path.boostrap('artisan.ts')`
+file to execute your command, but you can change the file to be used
+setting the path to it as second parameter:
+
+```typescript
+const command = 'make:controller TestController'
+const artisanPath = Path.pwd(`artisan.${Path.ext()}`)
+
+await Artisan.callInChild(command, artisanPath)
+```
+
+## Defining input expectations
+
+When writing console commands, it is common to gather
+input from the user through arguments or options. Athenna
+makes it very convenient to define the input you expect
+from the user using the `@Argument()` and `@Option()`
+annotations on your commands. See the example:
+
+```typescript
+import { Inject } from '@athenna/ioc'
+import { MailgunService } from '#app/services/MailgunService'
+import { Option, Argument, BaseCommand } from '@athenna/artisan'
+
+export class SendEmails extends BaseCommand {
+  public static signature(): string {
+      return 'mail:send'
+  }
+
+  public static description(): string {
+      return 'Send an email.'
+  }
+
+  @Argument()
+  private email: string
+
+  @Option({
+    signature: '-s, --subject <subject>',
+    default: 'Athenna',
+    description: 'Set the subject of the email.',
+  })
+  private subject: string
+
+  @Inject()
+  private mailgunService: MailgunService
+
+  public async handle(): Promise<void> {
+    const message = 'Hello from Athenna!'
+
+    await this.mailgunService.send(this.email, {
+      message,
+      subject: this.subject,
+    })
+  }
+}
+```
+
+### Arguments
+
+Command arguments are positional, and they are accepted 
+in the same order as you define them in your class. 
+For example:
+
+```typescript
+import { Argument, BaseCommand } from '@athenna/artisan'
+
+export class Greet extends BaseCommand {
+  public static signature(): string {
+    return 'greet'
+  }
+
+  @Argument()
+  public name: string
+
+  @Argument()
+  public age: string
+}
+```
+
+```shell
+./node artisan greet <name> <age>
+```
+
+#### Spread/Variadic arguments
+
+The `@Argument()` annotation allows you to define a 
+catch-all argument. It is like the rest parameters 
+in JavaScript and must always be the last argument:
+
+```typescript
+import { Argument, BaseCommand } from '@athenna/artisan'
+
+export class Greet extends BaseCommand {
+  public static signature(): string {
+    return 'greet'
+  }
+
+  @Argument()
+  public age: string
+
+  @Argument({ signature: '<names...>' }) 👈
+  public names: string[] 👈
+
+  public async handle() {
+    console.log(this.age, this.names)
+  }
+}
+```
+
+```shell
+./node artisan greet 22 lenon txsoura
+```
+
+Will output:
+
+```typescript
+22 [ 'lenon', 'txsoura' ]
+```
+
+#### Arguments options
+
+The `@Argument()` annotation accept the following options:
+
+- `signature` - The signature of the argument. If not present
+the name of the class property will be used.
+- `description` - The description of the argument. This will
+be displayed in the help output.
+- `required` - Set if the argument is required or not. This
+could also be done in the `signature` using `<argName>` for 
+required and `[argName]` for optional.
+
+### Options
+
+You define the options using the `@Option()` annotation:
+
+```typescript
+import { Option, BaseCommand } from '@athenna/artisan'
+
+export class Greet extends BaseCommand {
+  public static signature(): string {
+    return 'greet'
+  }
+
+  @Option({ signature: '-n, --name <name>' })
+  public name: string
+
+  public async handle() {
+    console.log('hey', this.name)
+  }
+}
+```
+
+```shell
+./node artisan greet -n lenon
+```
+
+Will output:
+
+```typescript
+hey lenon
+```
+
+#### Negatable boolean options
+
+You can define a boolean option long name with a 
+leading `no-` to set the option value to `false` 
+when used. Defined alone this also makes the option 
+`true` by default.
+
+If you define `--foo` first, adding `--no-foo` does 
+not change the default value from what it would otherwise be:
+
+```typescript
+import { Option, BaseCommand } from '@athenna/artisan'
+
+export class AthennaPizzeria extends BaseCommand {
+  public static signature(): string {
+    return 'pizza'
+  }
+
+  @Option({ signature: '--no-sauce' })
+  public addSauce: boolean
+
+  @Option({ signature: '--cheese <flavour>' })
+  public cheeseFlavour: string
+
+  @Option({ signature: '--no-cheese' })
+  public addCheese: boolean
+
+  public async handle() {
+    const sauceStr = this.addSauce ? 'sauce' : 'no sauce'
+    const cheeseStr = (this.addCheese === false) ? 'no cheese' : `${this.chesseFlavour} cheese`;
+
+    console.log(`You ordered a pizza with ${sauceStr} and ${cheeseStr}`);
+  }
+}
+```
+
+```shell
+./node artisan pizza
+You ordered a pizza with sauce and mozzarella cheese
+
+./node artisan pizza --sauce
+error: unknown option '--sauce'
+
+./node artisan pizza --cheese=blue
+You ordered a pizza with sauce and blue cheese
+
+./node artisan pizza --no-sauce --no-cheese
+You ordered a pizza with no sauce and no cheese
+```
+
+#### Spread/Variadic options
+
+The `@Argument()` annotation allows you to define a 
+catch-all argument. It is like the rest parameters 
+in JavaScript and must always be the last argument:
+
+```typescript
+import { Option, BaseCommand } from '@athenna/artisan'
+
+export class Greet extends BaseCommand {
+  public static signature(): string {
+    return 'greet'
+  }
+
+  @Option({ signature: '--names <names...>' }) 👈
+  public names: string[] 👈
+
+  public async handle() {
+    console.log(this.names)
+  }
+}
+```
+
+```shell
+./node artisan greet --names=lenon --names=txsoura
+```
+
+Will output:
+
+```typescript
+[ 'lenon', 'txsoura' ]
+```
+
+#### Option options
+
+The `@Option()` annotation accept the following options:
+
+- `signature` - The signature of the option. If not present
+the name of the class property will be used.
+- `description` - The description of the option. This will
+be displayed in the help output.
+- `default` - Set the default value for the option if not 
+present.
+
+## Prompts
+
+Coming soon
+
+## Logger and UI
+
+Coming soon
+
+## Generating templates in commands
+
+Coming soon
+
+## Manipulating `.athennarc.json` in commands
+
+Coming soon
