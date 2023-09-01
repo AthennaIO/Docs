@@ -597,7 +597,7 @@ In the example below, we are using multiple prompts
 together:
 
 ```typescript
-import { Option, BaseCommand } from '@athenna/artisan'
+import { BaseCommand } from '@athenna/artisan'
 
 export class Greet extends BaseCommand {
   public static signature(): string {
@@ -721,6 +721,158 @@ await this.prompt.checkbox('Select your dependencies', [
 ```
 
 ## Logger and UI
+
+You can make use of the inbuilt logger to log messages 
+to the console using the `this.logger` property. Artisan
+logger extends the [`Logger`](/docs/the-basics/logging) 
+class from `@athenna/logger`, but it also adds some new 
+methods to it: 
+
+```typescript
+import { Exec } from '@athenna/common'
+import { BaseCommand } from '@athenna/artisan'
+
+export class Greet extends BaseCommand {
+  public static signature(): string {
+    return 'greet'
+  }
+
+  public async handle() {
+    this.logger.simple('Hello', 'World!')
+
+    this.logger.update('This will not', 'be rendered')
+    this.logger.update('Because we are updating', 'it here')
+
+    this.logger.rainbow('hi')
+
+    const spinner = this.logger.spinner('Loading unicorns')
+
+    spinner.start()
+
+    setTimeout(() => {
+      spinner.color = 'yellow'
+      spinner.text = 'Loading rainbows'
+    }, 1000)
+
+    await this.logger.promiseSpinner(Exec.sleep(2000), {
+      text: 'Loading',
+      successText: 'Success!',
+      failText: 'Failed!',
+    })
+
+    this.logger
+      .table()
+      .head('hello', 'world')
+      .row(['hello', 'world'])
+      .row(['hello', 'world'])
+      .render()
+
+    const data = {
+      'commander@0.6.1': 1,
+      'minimatch@0.2.14': 3,
+      'mkdirp@0.3.5': 2,
+      'sigmund@1.0.0': 3,
+    }
+
+    this.logger.column(data, { columns: ['MODULE', 'COUNT'] })
+
+    const path = 'app/Services/Service.ts'
+    const action = this.logger.action('create')
+
+    action.succeeded(path)
+    action.skipped(path, 'File already exists')
+    action.failed(path, 'Something went wrong')
+
+    this.logger
+      .instruction()
+      .head('Project Created')
+      .add(`cd ${this.paint.cyan('hello-world')}`)
+      .add(
+        `Run ${this.paint.cyan(
+          './node artisan --watch serve',
+        )} to start the server`,
+      )
+      .render()
+
+    this.logger
+      .sticker()
+      .head('Project Created')
+      .add(`cd ${this.paint.cyan('hello-world')}`)
+      .add(
+        `Run ${this.paint.cyan(
+          './node artisan --watch serve',
+        )} to start the server`,
+      )
+      .render()
+
+    await this.logger
+      .task()
+      .add('hello', async task => {
+        await Exec.sleep(1000)
+        await task.complete('world')
+      })
+      .run()
+  }
+}
+```
+
+<img 
+  src='/img/examples/artisan-ui.png' 
+  alt='Artisan UI' 
+  style={{
+    width: '400px',
+    display: 'flex',
+    marginTop: '0',
+    marginBottom: '0',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    position: 'relative', 
+    overflow: 'hidden',
+    borderRadius: '0.375rem'
+  }} 
+/>
+
+### `this.logger.simple()`
+
+Coming soon
+
+### `this.logger.update()`
+
+Coming soon
+
+### `this.logger.rainbow()`
+
+Coming soon
+
+### `this.logger.spinner()`
+
+Coming soon
+
+### `this.logger.promiseSpinner()`
+
+Coming soon
+
+### `this.logger.table()`
+
+Coming soon
+
+### `this.logger.column()`
+
+Coming soon
+
+### `this.logger.action()`
+
+Coming soon
+
+### `this.logger.instruction()`
+
+Coming soon
+
+### `this.logger.sticker()`
+
+Coming soon
+
+### `this.logger.task()`
 
 Coming soon
 
