@@ -7,6 +7,8 @@ tags:
   - Commands
 ---
 
+import ReactPlayer from 'react-player'
+
 # Commands
 
 See how to create and configure your CLI commands.
@@ -585,7 +587,136 @@ present.
 
 ## Prompts
 
-Coming soon
+Artisan has inbuilt support for creating interactive 
+prompts on the terminal. You can access the prompts 
+module using the `this.prompt` property.
+
+In the example below, we are using multiple prompts 
+together:
+
+```typescript
+import { Option, BaseCommand } from '@athenna/artisan'
+
+export class Greet extends BaseCommand {
+  public static signature(): string {
+    return 'greet'
+  }
+
+  public async handle() {
+    const name = await this.prompt.input('What is your name?')
+    const password = await this.prompt.secret('What is your password?')
+    const isRobot = await this.prompt.confirm('Are you a robot?')
+    const code = await this.prompt.editor('Write a hello world code')
+    const card = await this.prompt.list('Select your card type', [
+      'debit',
+      'credit',
+    ])
+    const roles = await this.prompt.checkbox('Select the roles', [
+      'customer',
+      'admin',
+    ])
+
+    console.log()
+
+    this.logger.success('Information successfully collected:')
+    this.logger
+      .table()
+      .head('Names', 'Password', 'Is Robot?', 'Code', 'Card', 'Roles')
+      .row([name, password, `${isRobot}`, code, card, roles.join(', ')])
+      .render()
+  }
+}
+```
+
+<ReactPlayer 
+  playing 
+  controls
+  className='react-player-center'
+  url='/videos/prompt-example.mp4' 
+/>
+
+### `this.prompt.input()`
+
+Displays the prompt to enter a input value. 
+Optionally accepts [options](https://www.npmjs.com/package/inquirer#question) 
+as the **second argument**:
+
+```typescript
+await this.prompt.input('What is your name?', {
+  validate(input: string) {
+    if (!input || input.length < 2) {
+      return 'Name is required and must be over 2 characters'
+    }
+
+    return true
+  },
+})
+```
+
+### `this.prompt.secret()`
+
+Same as `input()` but hide what the user is typing. 
+Optionally accepts 
+[options](https://www.npmjs.com/package/inquirer#question) 
+as the **second argument**:
+
+```typescript
+await this.prompt.secret('What is your password?', {
+  validate(input: string) {
+    if (!input || input.length < 2) {
+      return 'Password is required and must be over 2 characters'
+    }
+
+    return true
+  },
+})
+```
+
+### `this.prompt.confirm()`
+
+Display the prompt to select between **Yes** and 
+**No**. Optionally 
+accepts [options](https://www.npmjs.com/package/inquirer#question) 
+as the **second argument**:
+
+```typescript
+await this.prompt.confirm('Are you a robot?')
+```
+
+### `this.prompt.editor()`
+
+Open a code editor to write a bigger message, 
+usually code. Optionally accepts 
+[options](https://www.npmjs.com/package/inquirer#question) 
+as the **second argument**:
+
+```typescript
+await this.prompt.editor('Write a hello world code in Python')
+```
+
+### `this.prompt.list()`
+
+Display a list of options with the possibility to choose 
+only one. Optionally accepts 
+[options](https://www.npmjs.com/package/inquirer#question) 
+as the **third argument**:
+
+```typescript
+await this.prompt.list('Select your registry', ['npm', 'pnpm', 'yarn'])
+```
+
+### `this.prompt.checkbox()`
+
+Display a list of options with the possibility to choose 
+multiple. Optionally accepts 
+[options](https://www.npmjs.com/package/inquirer#question) 
+as the **third argument**:
+
+```typescript
+await this.prompt.checkbox('Select your dependencies', [
+  '@athenna/core', '@athenna/artisan', '@athenna/http'
+])
+```
 
 ## Logger and UI
 
