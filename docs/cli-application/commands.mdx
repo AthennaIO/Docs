@@ -637,7 +637,7 @@ export class Greet extends BaseCommand {
   url='/videos/prompt-example.mp4' 
 />
 
-### `this.prompt.input()`
+##### `this.prompt.input()`
 
 Displays the prompt to enter a input value. 
 Optionally accepts [options](https://www.npmjs.com/package/inquirer#question) 
@@ -655,7 +655,7 @@ await this.prompt.input('What is your name?', {
 })
 ```
 
-### `this.prompt.secret()`
+#### `this.prompt.secret()`
 
 Same as `input()` but hide what the user is typing. 
 Optionally accepts 
@@ -674,7 +674,7 @@ await this.prompt.secret('What is your password?', {
 })
 ```
 
-### `this.prompt.confirm()`
+#### `this.prompt.confirm()`
 
 Display the prompt to select between **Yes** and 
 **No**. Optionally 
@@ -685,7 +685,7 @@ as the **second argument**:
 await this.prompt.confirm('Are you a robot?')
 ```
 
-### `this.prompt.editor()`
+#### `this.prompt.editor()`
 
 Open a code editor to write a bigger message, 
 usually code. Optionally accepts 
@@ -696,7 +696,7 @@ as the **second argument**:
 await this.prompt.editor('Write a hello world code in Python')
 ```
 
-### `this.prompt.list()`
+#### `this.prompt.list()`
 
 Display a list of options with the possibility to choose 
 only one. Optionally accepts 
@@ -707,7 +707,7 @@ as the **third argument**:
 await this.prompt.list('Select your registry', ['npm', 'pnpm', 'yarn'])
 ```
 
-### `this.prompt.checkbox()`
+#### `this.prompt.checkbox()`
 
 Display a list of options with the possibility to choose 
 multiple. Optionally accepts 
@@ -738,12 +738,13 @@ export class Greet extends BaseCommand {
   }
 
   public async handle() {
-    this.logger.simple('Hello', 'World!')
+    this.logger.simple('({ green, bold }) Hello ({ yellow, bold, italic }) World!')
 
-    this.logger.update('This will not', 'be rendered')
-    this.logger.update('Because we are updating', 'it here')
+    this.logger.update('Hey!!')
+    await Exec.sleep(1000)
+    this.logger.update('How you doing?')
 
-    this.logger.rainbow('hi')
+    this.logger.rainbow('Athenna Framework')
 
     const spinner = this.logger.spinner('Loading unicorns')
 
@@ -762,9 +763,9 @@ export class Greet extends BaseCommand {
 
     this.logger
       .table()
-      .head('hello', 'world')
-      .row(['hello', 'world'])
-      .row(['hello', 'world'])
+      .head('HEAD 1', 'HEAD 2')
+      .row(['VALUE 1', 'VALUE 2'])
+      .row(['VALUE 1', 'VALUE 2'])
       .render()
 
     const data = {
@@ -776,7 +777,7 @@ export class Greet extends BaseCommand {
 
     this.logger.column(data, { columns: ['MODULE', 'COUNT'] })
 
-    const path = 'app/Services/Service.ts'
+    const path = 'app/services/Service.ts'
     const action = this.logger.action('create')
 
     action.succeeded(path)
@@ -787,94 +788,214 @@ export class Greet extends BaseCommand {
       .instruction()
       .head('Project Created')
       .add(`cd ${this.paint.cyan('hello-world')}`)
-      .add(
-        `Run ${this.paint.cyan(
-          './node artisan --watch serve',
-        )} to start the server`,
-      )
+      .add(`Run ${this.paint.cyan('./node artisan --watch serve')}`)
       .render()
 
     this.logger
       .sticker()
-      .head('Project Created')
-      .add(`cd ${this.paint.cyan('hello-world')}`)
-      .add(
-        `Run ${this.paint.cyan(
-          './node artisan --watch serve',
-        )} to start the server`,
-      )
+      .head('Athenna Framework')
+      .add('Follow us on Instagram: @athenna.io 🍷')
       .render()
 
     await this.logger
       .task()
-      .add('hello', async task => {
+      .add('First task', async task => {
         await Exec.sleep(1000)
-        await task.complete('world')
+        await task.complete('Completed!')
+      })
+      .add('Second task', async task => {
+        await Exec.sleep(1000)
+        await task.fail('Failed!')
       })
       .run()
   }
 }
 ```
 
-<img 
-  src='/img/examples/artisan-ui.png' 
-  alt='Artisan UI' 
-  style={{
-    width: '400px',
-    display: 'flex',
-    marginTop: '0',
-    marginBottom: '0',
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    position: 'relative', 
-    overflow: 'hidden',
-    borderRadius: '0.375rem'
-  }} 
+<ReactPlayer 
+  playing 
+  controls
+  className='react-player-center'
+  url='/videos/loggerui-example.mp4' 
 />
 
-### `this.logger.simple()`
+#### `this.logger.simple()`
 
-Coming soon
+Works like `console.log()`, but automatically handles
+the [color engine](/docs/the-basics/helpers#colorapply):
 
-### `this.logger.update()`
+```typescript
+this.logger.simple('({ green, bold }) Hello ({ yellow, bold, italic }) World!')
+```
 
-Coming soon
+#### `this.logger.update()`
 
-### `this.logger.rainbow()`
+Works like [`this.logger.simple()`](/docs/cli-application/commands#thisloggersimple),
+but if you call the method multiple times, 
+it will always update the message instead
+of printing a new one:
 
-Coming soon
+```typescript
+import { Exec } from '@athenna/common' 
 
-### `this.logger.spinner()`
+this.logger.update('Hey!!')
 
-Coming soon
+await Exec.sleep(1000)
 
-### `this.logger.promiseSpinner()`
+this.logger.update('How you doing?')
+```
 
-Coming soon
+#### `this.logger.rainbow()`
 
-### `this.logger.table()`
+Print a message with all the colors of the 
+rainbow and with [FIGfont](https://github.com/lukesampson/figlet/blob/master/figfont.txt):
 
-Coming soon
+```typescript
+this.logger.rainbow('Hello World!')
+```
 
-### `this.logger.column()`
+#### `this.logger.spinner()`
 
-Coming soon
+Creates a spinner to show a loading message.
+Very useful when running something in background
+and you want to give some feedback for your user:
 
-### `this.logger.action()`
+```typescript
+const spinner = this.logger.spinner('Loading unicorns')
 
-Coming soon
+spinner.start()
 
-### `this.logger.instruction()`
+setTimeout(() => {
+  spinner.color = 'yellow'
+  spinner.text = 'Loading rainbows'
+}, 1000)
+```
 
-Coming soon
+#### `this.logger.promiseSpinner()`
 
-### `this.logger.sticker()`
+Creates a spinner from a promise. If the promisse
+resolves show the `successText`, if fails, the `failText`,
+keep running the spinner until the task is running:
 
-Coming soon
+```typescript
+import { Exec } from '@athenna/common'
 
-### `this.logger.task()`
+await this.logger.promiseSpinner(Exec.sleep(2000), {
+  text: 'Loading',
+  successText: 'Success!',
+  failText: 'Failed!',
+})
+```
 
-Coming soon
+#### `this.logger.table()`
+
+Create text-based table suitable for console 
+output. To render the table you need to call 
+the `render()` method at the end:
+
+```typescript
+const table = this.logger.table()
+
+this.logger.head('HEAD 1', 'HEAD 2')
+
+this.logger.row(['VALUE 1', 'VALUE 2'])
+this.logger.row(['VALUE 1', 'VALUE 2'])
+
+this.logger.render()
+```
+
+#### `this.logger.column()`
+
+Create text-based columns suitable for 
+console output from objects or arrays 
+of objects:
+
+```typescript
+const data = {
+  'commander@0.6.1': 1,
+  'minimatch@0.2.14': 3,
+  'mkdirp@0.3.5': 2,
+  'sigmund@1.0.0': 3,
+}
+
+this.logger.column(data, { columns: ['MODULE', 'COUNT'] })
+```
+
+#### `this.logger.action()`
+
+Log an action that is happening. Actions has three states
+**succeeded**, **skipped** and **failed**. You can use 
+actions to explain to the user what happened to some 
+determined operation:
+
+```typescript
+const path = 'app/services/Service.ts'
+const action = this.logger.action('create')
+
+action.succeeded(path)
+action.skipped(path, 'File already exists')
+action.failed(path, 'Something went wrong')
+```
+
+#### `this.logger.instruction()`
+
+Use to display instructions for a given action
+by rendering them inside a box:
+
+```typescript
+const instruction = this.logger.instruction()
+
+instruction.head('Project Created')
+
+instruction.add(`cd ${this.paint.cyan('hello-world')}`)
+instruction.add(`Run ${this.paint.cyan('./node artisan --watch serve')}`)
+  
+instruction.render()
+```
+
+#### `this.logger.sticker()`
+
+Use to display stickers for a given 
+action by rendering them inside a box. 
+Stickers have the same API of 
+[`this.logger.instructions()`](/docs/cli-application/commands#thisloggerinstructions), 
+but the rows will not have the icon in front:
+
+```typescript
+const sticker = this.logger.sticker()
+
+sticker.head('Athenna Framework')
+sticket.add('Follow us on Instagram: @athenna.io 🍷')
+
+sticker.render()
+```
+
+#### `this.logger.task()`
+
+Create a task runner that will log the 
+status of each task. The task
+method is very useful when you need to 
+do a lot of tasks in order, giving a status 
+to all the tasks and how much time it has 
+taken to execute:
+
+```typescript
+import { Exec } from '@athenna/common'
+
+const task = this.logger.task()
+
+task.add('First task', async task => {
+  await Exec.sleep(1000)
+  await task.complete('Completed!')
+})
+
+task.add('Second task', async task => {
+  await Exec.sleep(1000)
+  await task.fail('Failed!')
+})
+
+await task.run()
+```
 
 ## Generating templates in commands
 
