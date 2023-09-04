@@ -304,42 +304,6 @@ lifting" of sending the e-mails.
 
 :::
 
-## Calling commands in runtime
-
-Sometimes you may wish to call other commands from an
-existing Artisan command or from any other part of your
-application. You may do so using the `call()` method from
-Artisan. This method accepts the command string with its
-arguments and options:
-
-```typescript
-import { Artisan } from '@athenna/artisan'
-
-await Artisan.call('make:controller TestController')
-```
-
-If you want to verify if your command has generated some
-output in `stdout` or `stderr` you can use the
-`callInChild()` method:
-
-```typescript
-const { stdout, stderr } = await Artisan.callInChild('make:controller TestController')
-
-assert.isTrue(stdout.includes('[ MAKING CONTROLLER ]'))
-assert.isUndefined(stderr)
-```
-
-By default this method will look to the `Path.boostrap('artisan.ts')`
-file to execute your command, but you can change the file to be used
-setting the path to it as second parameter:
-
-```typescript
-const command = 'make:controller TestController'
-const artisanPath = Path.pwd(`artisan.${Path.ext()}`)
-
-await Artisan.callInChild(command, artisanPath)
-```
-
 ## Defining input expectations
 
 When writing console commands, it is common to gather
@@ -1074,15 +1038,6 @@ export class MakeRepositoryCommand extends BaseCommand {
 
     return destination
   }
-
-  private getImportPath(fileName: string): string {
-    const destination = this.getDestinationPath()
-
-    return `${destination
-      .replace(Path.pwd(), '')
-      .replace(/\\/g, '/')
-      .replace('/', '#')}/${fileName}`
-  }
 }
 ```
 
@@ -1161,7 +1116,9 @@ will be available to be replaced in your template:
 #### `this.generator.make()`
 
 Finally, generate the file and return it 
-as an instance of [`File`](/docs/the-basics/helpers#file):
+as an instance of [`File`](/docs/the-basics/helpers#file).
+This method needs to always be called at the end to generate
+the file:
 
 ```typescript
 const file = await this.generator.make()
@@ -1169,4 +1126,193 @@ const file = await this.generator.make()
 
 ## Manipulating `.athennarc.json` in commands
 
-Coming soon
+You can manipulate the `.athennarc.json` file in your
+commands logic using the `this.rc` property. Let's suppose
+that in `MakeRepositoryCommand` we would like to register
+the repositories as a **service**, we could do the following:
+
+```typescript
+import { Path, String } from '@athenna/common'
+import { sep, resolve, isAbsolute } from 'node:path'
+import { BaseCommand, Argument } from '@athenna/artisan'
+
+export class MakeRepositoryCommand extends BaseCommand {
+  @Argument({
+    description: 'The repository name.',
+  })
+  public name: string
+
+  public static signature(): string {
+    return 'make:repository'
+  }
+
+  public static description(): string {
+    return 'Make a new repository file.'
+  }
+
+  public async handle() {
+    this.logger.simple('({bold,green} [ MAKING REPOSITORY ])\n')
+
+    const file = await this.generator
+      .path(this.getFilePath())
+      .template('repository')
+      .setNameProperties(true)
+      .make()
+
+    this.logger.success(
+      `Repository ({yellow} "${file.name}") successfully created.`,
+    )
+
+    const importPath = this.getImportPath(file.name)
+
+    await this.rc.pushTo('services', importPath).save() // 👈
+
+    this.logger.success(
+      `Athenna RC updated: ({dim,yellow} { services += "${signature}": "${importPath}" })`,
+    )
+  }
+
+  private getFilePath(): string {
+    return this.getDestinationPath().concat(`${sep}${this.name}.${Path.ext()}`)
+  }
+
+  private getDestinationPath(): string {
+    let destination = Config.get(
+      'rc.commands.make:repository.destination',
+      Path.repositories(),
+    )
+
+    if (!isAbsolute(destination)) {
+      destination = resolve(Path.pwd(), destination)
+    }
+
+    return destination
+  }
+
+  private getImportPath(fileName: string): string {
+    const destination = this.getDestinationPath()
+
+    return `${destination
+      .replace(Path.pwd(), '')
+      .replace(/\\/g, '/')
+      .replace('/', '#')}/${fileName}`
+  }
+}
+```
+
+:::tip
+
+Again, the example above is a little bit complex. But
+that is exactly what we do internally with other
+`make:...` commands where we need to register something
+in the `.athennarc.json` file.
+
+:::
+
+#### `this.rc.file`
+
+Manipulate the `.athennarc.json` 
+[`File`](/docs/the-basics/helpers#file) instance:
+
+```typescript
+Log.info(this.rc.file.name)
+```
+
+#### `this.rc.content`
+
+Manipulate the content of `.athennarc.json` as an
+[`ObjectBuilder`](/docs/the-basics/helpers#object-builder) 
+instance:
+
+```typescript
+this.rc.content.has('commands') // true
+```
+
+#### `this.rc.setFile()`
+
+Specify which file should be manipulated. By default
+it will always be the `.athennarc.json`, if the file doesn't
+exist, the `athenna` property of `package.json` will be used:
+
+```typescript
+this.rc.setFile(Path.pwd('.athennarc.prod.json'))
+```
+
+#### `this.rc.setTo()`
+
+Set or subscibre a **KEY:VALUE** property in some property
+of the RC configuration file.
+
+```typescript
+const rcKey = 'commands'
+const key = 'make:repository'
+const value = '#app/console/commands/UserRepository'
+
+this.rc.setTo(rcKey, key, value)
+```
+
+You can also pass any value as a second parameter to set
+multiple properties at once:
+
+```typescript
+const rcKey = 'commands'
+
+this.rc.setTo(rcKey, {
+  'make:repository': '#app/console/commands/UserRepository'
+})
+```
+
+#### `this.rc.pushTo()`
+
+Push a new value to some array property of the RC file:
+
+```typescript
+const rcKey = 'services'
+
+this.rc.pushTo(rcKey, '#app/repositories/MyRepository')
+```
+
+#### `this.rc.save()`
+
+Finally, save all the change made to the RC file. 
+This method needs to always be called at the end:
+
+```typescript
+await this.rc.save()
+```
+
+## Executing commands programmatically
+
+Sometimes you may wish to call other commands from an
+existing Artisan command or from any other part of your
+application. You may do so using the `call()` method from
+Artisan. This method accepts the command string with its
+arguments and options:
+
+```typescript
+import { Artisan } from '@athenna/artisan'
+
+await Artisan.call('make:controller TestController')
+```
+
+If you want to verify if your command has generated some
+output in `stdout` or `stderr` you can use the
+`callInChild()` method:
+
+```typescript
+const { stdout, stderr } = await Artisan.callInChild('make:controller TestController')
+
+assert.isTrue(stdout.includes('[ MAKING CONTROLLER ]'))
+assert.isUndefined(stderr)
+```
+
+By default this method will look to the `Path.boostrap('artisan.ts')`
+file to execute your command, but you can change the file to be used
+setting the path to it as second parameter:
+
+```typescript
+const command = 'make:controller TestController'
+const artisanPath = Path.pwd(`artisan.${Path.ext()}`)
+
+await Artisan.callInChild(command, artisanPath)
+```
