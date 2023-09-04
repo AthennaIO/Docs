@@ -999,7 +999,173 @@ await task.run()
 
 ## Generating templates in commands
 
-Coming soon
+Artisan has support to generate files from templates. 
+Let's create a command that generate repositories. First
+of all we need to create our template file and give it a name:
+
+```typescript title="Path.resources('templates/repository.edge')"
+export class {{ namePascal }} {
+}
+```
+
+Now we map our new template in `.athennarc.json`:
+
+```json title=".athennarc.json"
+{
+  "templates": {
+    ...
+    "repository": "./resources/templates/repository.edge"
+    ...
+  }
+}
+```
+
+And now we can run 
+`./node artisan make:command MakeRepositoryCommand` 
+to create our command that will be responsible
+to create our repositories:
+
+```typescript title="Path.commands('MakeRepositoryCommand.ts')"
+import { Path, String } from '@athenna/common'
+import { sep, resolve, isAbsolute } from 'node:path'
+import { BaseCommand, Argument } from '@athenna/artisan'
+
+export class MakeRepositoryCommand extends BaseCommand {
+  @Argument({
+    description: 'The repository name.',
+  })
+  public name: string
+
+  public static signature(): string {
+    return 'make:repository'
+  }
+
+  public static description(): string {
+    return 'Make a new repository file.'
+  }
+
+  public async handle() {
+    this.logger.simple('({bold,green} [ MAKING REPOSITORY ])\n')
+
+    const file = await this.generator
+      .path(this.getFilePath())
+      .template('repository') // 👈 Our template name
+      .setNameProperties(true)
+      .make()
+
+    this.logger.success(
+      `Repository ({yellow} "${file.name}") successfully created.`,
+    )
+  }
+
+  private getFilePath(): string {
+    return this.getDestinationPath().concat(`${sep}${this.name}.${Path.ext()}`)
+  }
+
+  private getDestinationPath(): string {
+    let destination = Config.get(
+      'rc.commands.make:repository.destination',
+      Path.repositories(),
+    )
+
+    if (!isAbsolute(destination)) {
+      destination = resolve(Path.pwd(), destination)
+    }
+
+    return destination
+  }
+
+  private getImportPath(fileName: string): string {
+    const destination = this.getDestinationPath()
+
+    return `${destination
+      .replace(Path.pwd(), '')
+      .replace(/\\/g, '/')
+      .replace('/', '#')}/${fileName}`
+  }
+}
+```
+
+:::tip
+
+The example above is a little bit complex. But
+that is exactly what we do internally with other
+`make:...` commands.
+
+:::
+
+#### `this.generator.path()`
+
+Set the file path where the file will be generated.
+Rememeber that the file name in the path will be used
+to define the name properties:
+
+```typescript
+this.generator.path(Path.repositories('UserRepository.ts'))
+```
+
+#### `this.generator.template()`
+
+Set the template name to be resolved by 
+the `@athenna/view` package that will read
+the `templates` property of `.athennarc.json`
+to find the path to your template file:
+
+```typescript
+this.generator.path('repository')
+```
+
+#### `this.generator.properties()`
+
+Set custom properties names to be replaceble inside 
+the template, check the example:
+
+```typescript
+console.log('Hello {{ name }}')
+```
+
+```typescript
+this.generator.properties({ name: 'Lenon' })
+```
+
+#### `this.generator.setNameProperties()`
+
+Define custom properties in different cases 
+from the file name:
+
+```typescript
+this.generator.setNameProperties(true)
+```
+
+If you set this to `true`, the following properties 
+will be available to be replaced in your template:
+
+```typescript
+{
+  nameUp: 'MYREPOSITORY',
+  nameCamel: 'myRepository',
+  namePlural: 'MyRepositories',
+  namePascal: 'MyRepository',
+  namePluralCamel: 'myRepositories',
+  namePluralPascal: 'MyRepositories',
+  nameUpTimestamp: 'MYREPOSITORY1675363499530',
+  nameCamelTimestamp: 'myRepository1675363499530',
+  namePluralTimestamp: 'MyRepositories1675363499530',
+  namePascalTimestamp: 'MyRepository1675363499530',
+  namePluralCamelTimestamp: 'myRepositories1675363499530',
+  namePluralPascalTimestamp: 'MyRepositories1675363499530',
+   ...properties, // <- Custom properties set with `this.generator.properties()` method.
+}
+```
+
+#### `this.generator.make()`
+
+Finally, generate the file and return it 
+as an instance of [`File`](/docs/the-basics/helpers#file):
+
+```typescript
+const file = await this.generator.make()
+```
 
 ## Manipulating `.athennarc.json` in commands
 
