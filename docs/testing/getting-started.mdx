@@ -10,3 +10,316 @@ tags:
 # Getting Started
 
 See how to create tests in an Athenna application.
+
+## Introduction
+
+Athenna is built with testing in mind. In fact, 
+support for testing with [Japa](https://japa.dev) is included out 
+of the box. The framework also ships with convenient 
+helper methods that allow you to expressively test 
+your applications.
+
+By default, your application's `tests` directory 
+contains four directories: 
+
+- `e2e` - Should contains the tests responsible to test
+a larger portion of your code, including how several
+object interact with each other or even a full HTTP
+request to a JSON endpoint.
+- `unit` - Should contains the tests responsible to test
+isolated portion of your code, focusing on a single method.
+Tests within your **unit** test directory should not boot
+your Athenna application, meaning that they should be unable 
+to access your application's database or other framework 
+services.
+
+An `e2e/AppControllerTest.ts` and 
+`unit/AppServiceTest.ts` files is provided for you
+to use as an example to start writing your own tests. After
+installing a new Athenna application, execute the following
+to run your tests:
+
+```shell
+./node artisan test
+```
+
+## Environment
+
+When running tests, Athenna will automatically set the 
+[configuration environment](/docs/getting-started/configuration) 
+to `test`, meaning that the `.env.test` file will be used when
+running your tests.
+
+You are free to define other testing environment value. To do 
+that you can use the `setNodeEnv()` method of `Runner` class 
+in your `Path.bootstrap('test.ts')` file:
+
+```typescript
+import { Runner } from '@athenna/test'
+import { request } from '@athenna/http/testing/plugins'
+import { command } from '@athenna/artisan/testing/plugins'
+
+await Runner.setTsEnv()
+  .addPlugin(assert())
+  .addPlugin(request())
+  .addPlugin(command())
+  .setNodeEnv('testing') 👈
+  .addReporter(specReporter())
+  .addPath('tests/e2e/**/*.ts')
+  .addPath('tests/unit/**/*.ts')
+  .setCliArgs(process.argv.slice(2))
+  .setGlobalTimeout(5000)
+  .run()
+```
+
+## Writing tests
+
+To create a new test case, use the `make:test` Artisan
+command. By default, tests will be placed in the `tests/e2e` 
+directory:
+
+```shell
+./node artisan make:test UserTest
+```
+
+If you would like to create a test within the `tests/unit` 
+directory, you may use the `--unit` option when executing 
+the `make:test` command:
+
+```shell
+./node artisan make:test UserTest --unit
+```
+
+:::tip
+
+You can also create a custom test for each specific 
+Athenna application:
+
+```shell title="For REST API"
+./node artisan make:test UserTest --rest
+```
+
+```shell title="For CLI"
+./node artisan make:test UserTest --cli
+```
+
+To customize the test templates check the 
+[`template:customize`](/docs/the-basics/views#customizing-make-commands-templates) 
+command.
+
+:::
+
+Oce the test has been generated, you may define your
+test methods and annotate them with the `@Test()` annotation:
+
+```typescript
+import { Test, type Context } from '@athenna/test'
+
+export default class ExampleTest {
+  @Test()
+  public async testBasicExample({ assert }: Context) {
+    assert.equal(1 + 1, 2)
+  }
+}
+```
+
+## Tests structure
+
+Athenna tests are represented as classes. Your class name will
+be used as the test suite name, while the test methods will be
+considered the test names. All the methods of the class are
+customizable, what defines if that method is a test, test hook
+or even a helper method is the annotation used:
+
+```typescript
+import { 
+  Test, 
+  BeforeAll, 
+  BeforeEach, 
+  AfterAll, 
+  AfterEach, 
+  type Context 
+} from '@athenna/test'
+
+export default class SumTest {
+  public sum(a: number, b: number): number {
+    return a + b
+  }
+
+  @BeforeAll()
+  public async beforeAll() {
+    //
+  }
+
+  @AfterAll()
+  public async afterAll() {
+    //
+  }
+
+  @BeforeEach()
+  public async beforeEach() {
+    //
+  }
+
+  @AfterEach()
+  public async afterEach() {
+    //
+  }
+
+  @Test()
+  public async 'should be considered a test!' ({ assert }: Context) {
+    assert.equal(this.sum(1, 1), 2)
+  }
+}
+```
+
+### `@Test()`
+
+The `@Test()` annotation is used to define a method 
+as a test:
+
+```typescript
+@Test()
+public async testMethod({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+```
+
+You can also define the test name by passing a string 
+to the `@Test()` annotation:
+
+```typescript
+@Test('test method!')
+public async testMethod({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+```
+
+:::tip
+
+This could also be done in class defining the 
+method name as string:
+
+```typescript
+@Test()
+public async 'test method!' ({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+```
+
+:::
+
+### `@BeforeAll()`
+
+The `@BeforeAll()` annotation is used to define that a
+method should be executed **before all** tests of that class
+**starts running**. You can define as many as you want in the
+same class:
+
+```typescript
+@BeforeAll()
+public async doSomeOp() {
+  //
+}
+
+@BeforeAll()
+public async doOtherOp() {
+  //
+}
+```
+
+### `@BeforeEach()`
+
+The `@BeforeEach()` annotation is used to define that a
+method should be executed **before each** tests of that class
+**starts running**. You can define as many as you want in the
+same class:
+
+```typescript
+@BeforeEach()
+public async doSomeOp() {
+  //
+}
+
+@BeforeEach()
+public async doOtherOp() {
+  //
+}
+```
+
+### `@AfterAll()`
+
+The `@AfterAll()` annotation is used to define that a
+method should be executed **after all** tests of that class
+**ends running**. You can define as many as you want in the
+same class:
+
+```typescript
+@AfterAll()
+public async doSomeOp() {
+  //
+}
+
+@AfterAll()
+public async doOtherOp() {
+  //
+}
+```
+
+### `@AfterEach()`
+
+The `@AfterEach()` annotation is used to define that a
+method should be executed **after each** tests of that class
+**ends running**. You can define as many as you want in the
+same class:
+
+```typescript
+@AfterEach()
+public async doSomeOp() {
+  //
+}
+
+@AfterEach()
+public async doOtherOp() {
+  //
+}
+```
+
+## Running tests
+
+To run your tests you can use the `test` Artisan command:
+
+```shell
+./node artisan test
+```
+
+Any arguments that can be passed to [Japa](https://japa.dev), 
+may also be passed to the Artisan `test` command:
+
+```shell
+./node artisan test --groups="MyClassTest" --force-exit
+```
+
+## Assertions
+
+Athenna ships with a variety of helpful assertions with the
+help of the [`@japa/assert`](https://japa.dev/docs/plugins/assert) 
+plugin. We are not going to cover
+the assertions here, but you can check the [assert documentation
+section](https://japa.dev/docs/plugins/assert#assert-1) of Japa to 
+see all the available methods for you.
+
+Their documentation is beautiful, small and precise. I swear it
+will be worth your time 😎.
+
+## Other useful annotations
+
+Coming soon
+
+## Reporting test coverage
+
+Coming soon
+
+## Creating base test classes
+
+Coming soon

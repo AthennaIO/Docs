@@ -35,6 +35,7 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
+          breadcrumbs: false,
           sidebarPath: require.resolve('./src/sidebars.js'),
           editUrl: 'https://github.com/AthennaIO/Docs/tree/main/',
         },
@@ -62,43 +63,6 @@ const config = {
             position: 'right',
           },
         ],
-      },
-      footer: {
-        style: 'dark',
-        links: [
-          {
-            title: 'Docs',
-            items: [
-              {
-                label: 'Guides',
-                to: '/docs/getting-started/installation',
-              },
-            ],
-          },
-          {
-            title: 'Community',
-            items: [
-              {
-                label: 'Discord',
-                href: 'https://discord.gg/JdEbBAKw6X',
-              },
-              {
-                label: 'Twitter',
-                href: 'https://twitter.com/athennaio',
-              },
-            ],
-          },
-          {
-            title: 'More',
-            items: [
-              {
-                label: 'GitHub',
-                href: 'https://github.com/athennaio',
-              },
-            ],
-          },
-        ],
-        copyright: `Copyright © ${new Date().getFullYear()} Athenna Framework, Inc. Built with Docusaurus.`,
       },
       prism: {
         theme: require('./lib/prism'),

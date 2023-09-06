@@ -25,7 +25,19 @@ In addition to the commands provided with Artisan, you may
 build your own custom commands. Commands are typically stored
 in the `app/console/commands` directory; however, you are
 free to choose your own storage location as long as your
-commands can be imported.
+commands can be imported and registered.
+
+To create a new command, you may use the `make:command`
+Artisan command. This command will create a new command
+class in the `app/console/commands` directory and register
+it inside `commands` object of `.athennarc.json` file.
+Don't worry if this directory does not exist in your
+application—it will be created the first time you run the
+`make:command` Artisan command:
+
+```shell
+./node artisan make:command SendEmails
+```
 
 ## Registering commands
 
@@ -142,27 +154,15 @@ setting in your command:
 
 :::
 
-## Generating commands
-
-To create a new command, you may use the `make:command`
-Artisan command. This command will create a new command
-class in the `app/console/commands` directory and register
-it inside `commands` object of `.athennarc.json` file.
-Don't worry if this directory does not exist in your
-application—it will be created the first time you run the
-`make:command` Artisan command:
-
-```shell
-./node artisan make:command SendEmails
-```
-
 ## Commands structure
 
 Athenna commands are represented as classes and always extend 
-the `BaseCommand` class. You define the command `signature` and 
-`description` as static properties on the class itself:
+the `BaseCommand` class. You define the command `signature`, 
+`description` and `commander` as static properties on the class itself:
 
 ```typescript
+import { BaseCommand, type Commander } from '@athenna/artisan'
+
 export class SendEmails extends BaseCommand {
   public static signature(): string {
       return 'sendEmails'
@@ -170,6 +170,10 @@ export class SendEmails extends BaseCommand {
 
   public static description(): string {
       return 'The description of sendEmails command'
+  }
+
+  public static commander(commander: Commander): Commander {
+    return commander
   }
 
   public async handle(): Promise<void> {
@@ -183,6 +187,8 @@ always use this signature to call your command in terminal. It
 should always be a string.
 - `description` - The description is a short description of what
 your command does, it will always be displayed in the help output.
+- `commander` - The commander method should be used when you want
+to set customized options for [commander](https://www.npmjs.com/package/commander).
 - `handle` - The handle method will contain the logic of your 
 command, this method will be called when executing your command.
 
