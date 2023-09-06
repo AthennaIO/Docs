@@ -311,12 +311,323 @@ will be worth your time 😎.
 
 ## Other useful annotations
 
-Coming soon
+Along with the annotations seen above, Athenna ships with
+other useful annotations that can be used to customize how
+your test is going to behave:
+
+#### `@Retry()`
+
+Define that a test should be retried if it fails:
+
+```typescript
+import { Test, Retry } from '@athenna/test'
+
+@Test()
+@Retry(2) 👈 // Retry the test 2 times
+public async test({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+```
+
+:::tip
+
+You can get the number of retries and in which retry
+attempt you are by the `test.options.retries` and 
+`test.options.retryAttempt` properties
+
+```typescript
+import { Log } from '@athenna/logger'
+import { Test, TestCase } from '@athenna/test'
+
+@Test()
+@Retry(2)
+public async test({ test, assert }: Context) {
+  Log.info('Retrying attempt:', test.options.retryAttempt)
+
+  assert.equal(1 + 1, 2)
+  assert.equal(test.options.retries, 2)
+}
+```
+
+:::
+
+#### `@Skip()`
+
+Skip the test when executing `test` command:
+
+```typescript
+import { Test, Skip } from '@athenna/test'
+
+@Test()
+@Skip()
+public async willNotRun({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+
+@Skip('Skipped because of some reason')
+public async willNotRunAlso({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+```
+
+#### `@Pin()`
+
+When running `test` command, only pinned tests will run
+if at least one test is pinned:
+
+```typescript
+import { Test, Pin } from '@athenna/test'
+
+@Test()
+@Pin()
+public async willRun({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+
+@Test()
+@Pin()
+public async willRunAlso({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+
+@Test()
+public async willNotRun({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+```
+
+:::tip
+
+If you want to run specific tests you can also use the 
+`--tests` option of `test` command:
+
+```shell
+./node artisan test --tests="willRun,willRunAlso"
+```
+
+:::
+
+#### `@Fails()`
+
+Define that a test is expected to fail:
+
+```typescript
+import { Test, Fails } from '@athenna/test'
+
+@Test()
+@Fails()
+public async test({ assert }: Context) {
+  assert.equal(1 + 1, 1) 👈 // Fail
+}
+```
+
+#### `@TestCase()`
+
+Define the dataset for the test case. You test will be
+invoked for each test case defined:
+
+```typescript
+import { Test, TestCase } from '@athenna/test'
+
+@Test()
+@TestCase('lenon@athenna.io')
+@TestCase('txsoura@athenna.io')
+public async test({ assert }: Context, email: string) {
+  assert.isTrue(email.includes('@athenna.io'))
+}
+```
+
+:::tip
+
+You can get all the test cases defined by the `test.dataset`
+property:
+
+```typescript
+import { Test, TestCase } from '@athenna/test'
+
+@Test()
+@TestCase('lenon@athenna.io')
+@TestCase('txsoura@athenna.io')
+public async test({ test, assert }: Context, email: string) {
+  assert.isTrue(email.includes('@athenna.io'))
+  assert.deepEqual(test.dataset, ['txsoura@athenna.io', 'lenon@athenna.io'])
+}
+```
+
+:::
+
+#### `@Timeout()`
+
+Set a timeout in MS for that specific test only:
+
+```typescript
+import { Test, Timeout } from '@athenna/test'
+
+@Test()
+@Timeout(10000) 👈 // 10 seconds
+public async test({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+```
+
+#### `@DisableTimeout()`
+
+Disable the timeout for a specific test:
+
+```typescript
+import { Test, DiableTimeout } from '@athenna/test'
+
+@Test()
+@DisableTimeout()
+public async test({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+```
+
+#### `@Tags()`
+
+Add tags to a test. Tags can be used to filter tests
+when running `test` command:
+
+```typescript
+import { Test, Tags } from '@athenna/test'
+
+@Test()
+@Tags(['run'])
+public async willRun({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+
+@Test()
+@Tags(['run'])
+public async willRunAlso({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+
+@Test()
+@Tags(['dont-run'])
+public async willNotRun({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+```
+
+Now you can select which tests to run by the tags:
+
+```shell
+./node artisan test --tags="run"
+```
+
+#### `@Cleanup()`
+
+Create a cleanup function with the purpose to 
+clean the state created by your test. This function
+will always be executed, even if your test fails:
+
+```typescript
+import { Test, Cleanup } from '@athenna/test'
+
+@Test()
+@Cleanup(() => Config.set('app.name', 'Athenna'))
+public async test({ assert }: Context) {
+  Config.set('app.name', 'MyApp')
+
+  assert.equal(Config.get('app.name'), 'MyApp')
+}
+```
+
+#### `@Setup()`
+
+`@Setup()` annotation works like `@BeforeEach()` 
+but for a specific test. The function you define 
+inside will be called before the test starts running:
+
+```typescript
+import { Test, Setup } from '@athenna/test'
+
+@Test()
+@Setup(() => Config.set('app.name', 'MyApp'))
+public async test({ assert }: Context) {
+  assert.equal(Config.get('app.name'), 'MyApp')
+}
+```
+
+#### `@Teardown()`
+
+`@Teardown()` annotation works like `@AfterEach()` 
+but for a specific test. The function you define 
+inside will be called after the test finish running:
+
+```typescript
+import { Test, Setup, Teardown } from '@athenna/test'
+
+@Test()
+@Setup(() => Config.set('app.name', 'MyApp'))
+@Teardown(() => Config.set('app.name', 'Athenna'))
+public async test({ assert }: Context) {
+  assert.equal(Config.get('app.name'), 'MyApp')
+}
+```
 
 ## Reporting test coverage
 
-Coming soon
+When running your application tests, you may want to 
+determine whether your test cases are actually covering 
+the application code and how much application code is 
+used when running your tests. 
+
+To accomplish this, you may use the [`c8`](https://www.npmjs.com/package/c8) 
+tool that already comes installed and configured for 
+you in your application. To use it, you just need to 
+call it before invoking the `test` command:
+
+```shell
+npx c8 ./node artisan test
+```
+
+:::note
+
+By default, Athenna already comes with the `test:coverage`
+npm script defined that already does this job for you:
+
+```shell
+npm run test:coverage
+```
+
+:::
 
 ## Creating base test classes
 
-Coming soon
+If you would like to define some helper methods to be defined
+in all your test classes, you can create a base test class and extend
+it in your tests:
+
+```typescript title="tests/helpers/BaseTest.ts"
+import { BeforeAll } from '@athenna/test'
+
+export class BaseTest {
+  @BeforeAll()
+  public async beforeAll() {
+    console.log('Executed before all tests that extends BaseTest!')
+  }
+
+  public getMockedData() {
+    return {
+      name: 'Lenon'
+    }
+  }
+}
+```
+
+```typescript title="tests/e2e/UserTest.ts"
+import { Test, type Context } from '@athenna/test'
+import { BaseTest } from '#tests/helpers/BaseTest'
+
+export default class UserTest extends BaseTest {
+  @Test()
+  public async test({ assert }: Context) {
+    const data = this.getMockedData()
+
+    assert.equal(data.name, 'Lenon')
+  }
+}
+```
