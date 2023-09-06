@@ -17,7 +17,7 @@ helper methods that allow you to expressively test
 your applications.
 
 By default, your application's `tests` directory 
-contains four directories: 
+contains two directories: 
 
 - `e2e` - Should contains the tests responsible to test
 a larger portion of your code, including how several
@@ -30,8 +30,8 @@ your Athenna application, meaning that they should be unable
 to access your application's database or other framework 
 services.
 
-An `e2e/AppControllerTest.ts` and 
-`unit/AppServiceTest.ts` files is provided for you
+The `e2e/AppControllerTest.ts` and 
+`unit/AppServiceTest.ts` files are provided for you
 to use as an example to start writing your own tests. After
 installing a new Athenna application, execute the following
 to run your tests:
@@ -106,7 +106,7 @@ command.
 
 :::
 
-Oce the test has been generated, you may define your
+Once the test has been generated, you may define your
 test methods and annotate them with the `@Test()` annotation:
 
 ```typescript
@@ -423,7 +423,7 @@ public async test({ assert }: Context) {
 
 #### `@TestCase()`
 
-Define the dataset for the test case. You test will be
+Define the dataset for the test case. Your test will be
 invoked for each test case defined:
 
 ```typescript
@@ -450,7 +450,10 @@ import { Test, TestCase } from '@athenna/test'
 @TestCase('txsoura@athenna.io')
 public async test({ test, assert }: Context, email: string) {
   assert.isTrue(email.includes('@athenna.io'))
-  assert.deepEqual(test.dataset, ['txsoura@athenna.io', 'lenon@athenna.io'])
+  assert.deepEqual(test.dataset, [
+    'txsoura@athenna.io', 
+    'lenon@athenna.io'
+  ])
 }
 ```
 
