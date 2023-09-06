@@ -10,4 +10,255 @@ See how to create tests for REST APIs applications in Athenna.
 
 ## Introduction
 
+Athenna provides a very fluent API for making HTTP 
+requests to your application and examining the responses. 
+For example, take a look at the e2e test defined below:
+
+```typescript
+import { Test, type Context } from '@athenna/test'
+
+export default class ExampleTest {
+  @Test()
+  public async 'test successful response'({ request }: Context) {
+    const response = await request.get('/')
+
+    response.assertStatusCode(200)
+  }
+}
+```
+
+The `request.get()` method makes a `GET` request into the application,
+while the `assertStatus()` method asserts that the returned 
+response  should have the given HTTP status code. In addition 
+to this simple assertion, Athenna also contains a variety of 
+assertions for inspecting the response headers, content, 
+JSON structure, and more.
+
+## Registering `request` plugin
+
+The `request` property in your test context will only be
+available if you register the request plugin within the
+`Runner` class. By default your Athenna application already 
+comes with the request plugin registered. But we are going 
+to cover how to register it manually if needed.
+
+Just call the `Runner.addPlugin()` static method to setup
+the request plugin imported from `@athenna/http/testing/plugins`:
+
+```typescript title="Path.bootstrap('test.ts')"
+import { request } from '@athenna/http/testing/plugins'
+import { command } from '@athenna/artisan/testing/plugins'
+import { Runner, assert, specReporter } from '@athenna/test'
+
+await Runner.setTsEnv()
+  .addPlugin(assert())
+  .addPlugin(request()) 👈
+  .addPlugin(command())
+  .addReporter(specReporter())
+  .addPath('tests/e2e/**/*.ts')
+  .addPath('tests/unit/**/*.ts')
+  .setCliArgs(process.argv.slice(2))
+  .setGlobalTimeout(5000)
+  .run()
+```
+
+## Making Requests
+
+To make a request to your application, you may invoke the 
+`request.get()`, `request.post()`, `request.put()`, 
+`request.patch()`, or `request.delete()` methods 
+within your test. These methods do not actually issue a "real" 
+HTTP request to your application. Instead, the entire network 
+request is simulated internally.
+
+Instead of returning a response instance, test request methods 
+return an instance of `TestResponse`, which provides a [variety 
+of helpful assertions](/docs/testing/rest-api-testing#response-assertions) 
+that allow you to inspect your application's 
+responses:
+
+```typescript
+import { Test, type Context } from '@athenna/test'
+
+export default class ExampleTest {
+  @Test()
+  public async testBasicRequest({ request }: Context) {
+    const response = await request.get('/')
+
+    response.assertStatusCode(200)
+  }
+}
+```
+
+### Customizing request
+
+All the request methods accept a second argument where you can
+setup the request options:
+
+```typescript
+import { type InjectOptions } from '@athenna/http'
+import { Test, type Context } from '@athenna/test'
+
+export default class ExampleTest {
+  @Test()
+  public async testBasicRequest({ request }: Context) {
+    const options: InjectOptions = {
+      headers: {
+        'X-Header': 'value'
+      },
+      body: {
+        foo: 'bar'
+      }
+    }
+
+    const response = await request.get('/', options)
+
+    response.assertStatusCode(200)
+  }
+}
+```
+
+### Debugging responses
+
+After making a test request to your application, the `response`
+returned will contain the `response` property inside with all the
+response data:
+
+```typescript
+import { Test, type Context } from '@athenna/test'
+
+export default class ExampleTest {
+  @Test()
+  public async testBasicRequest({ request }: Context) {
+    const response = await request.get('/')
+
+    console.log(response.response.status)
+
+    response.assertStatusCode(200)
+  }
+}
+```
+
+## Testing file uploads
+
+Coming soon
+
+## Response assertions
+
+Athenna's `TestResponse` class provides a variety of custom 
+assertion methods that you may utilize when testing your 
+application. These assertions may be accessed on the 
+response that is returned by the `request.get()`, `request.post()`, 
+`request.put()`, `request.patch()`, or `request.delete()` test methods:
+
+- [`assertStatusCode()`](/docs/testing/rest-api-testing#assertstatuscode)
+- [`assertIsNotStatusCode()`](/docs/testing/rest-api-testing#assertisnotstatuscode)
+- [`assertBodyContains()`](/docs/testing/rest-api-testing#assertbodycontains)
+- [`assertBodyNotContains()`](/docs/testing/rest-api-testing#assertbodynotcontains)
+- [`assertBodyContainsKey()`](/docs/testing/rest-api-testing#assertbodycontainskey)
+- [`assertBodyNotContainsKey()`](/docs/testing/rest-api-testing#assertbodynotcontainskey)
+- [`assertBodyContainsAllKeys()`](/docs/testing/rest-api-testing#assertbodycontainsallkeys)
+- [`assertBodyNotContainsAllKeys()`](/docs/testing/rest-api-testing#assertbodynotcontainsallkeys)
+- [`assertBodyDeepEqual()`](/docs/testing/rest-api-testing#assertbodydeepequal)
+- [`assertBodyNotDeepEqual()`](/docs/testing/rest-api-testing#assertbodynotdeepequal)
+- [`assertBodyNotDeepEqual()`](/docs/testing/rest-api-testing#assertbodynotdeepequal)
+- [`assertBodyIsArray()`](/docs/testing/rest-api-testing#assertbodyisarray)
+- [`assertBodyIsNotArray()`](/docs/testing/rest-api-testing#assertbodyisnotarray)
+- [`assertBodyIsObject()`](/docs/testing/rest-api-testing#assertbodyisobject)
+- [`assertBodyIsNotObject()`](/docs/testing/rest-api-testing#assertbodyisnotobject)
+- [`assertHeaderContains()`](/docs/testing/rest-api-testing#assertheadercontains)
+- [`assertHeaderNotContains()`](/docs/testing/rest-api-testing#assertheadernotcontains)
+- [`assertHeaderContainsKey()`](/docs/testing/rest-api-testing#assertheadercontainskey)
+- [`assertHeaderNotContainsKey()`](/docs/testing/rest-api-testing#assertheadernotcontainskey)
+- [`assertHeaderContainsAllKeys()`](/docs/testing/rest-api-testing#assertheadercontainsallkeys)
+- [`assertHeaderNotContainsAllKeys()`](/docs/testing/rest-api-testing#assertheadernotcontainsallkeys)
+- [`assertHeaderDeepEqual()`](/docs/testing/rest-api-testing#assertheaderdeepequal)
+- [`assertHeaderNotDeepEqual()`](/docs/testing/rest-api-testing#assertheadernotdeepequal)
+
+#### `assertStatusCode()`
+
+Coming soon
+
+#### `assertIsNotStatusCode()`
+
+Coming soon
+
+#### `assertBodyContains()`
+
+Coming soon
+
+#### `assertBodyNotContains()`
+
+Coming soon
+
+#### `assertBodyContainsKey()`
+
+Coming soon
+
+#### `assertBodyNotContainsKey()`
+
+Coming soon
+
+#### `assertBodyContainsAllKeys()`
+
+Coming soon
+
+#### `assertBodyNotContainsAllKeys()`
+
+Coming soon
+
+#### `assertBodyDeepEqual()`
+
+Coming soon
+
+#### `assertBodyNotDeepEqual()`
+
+Coming soon
+
+#### `assertBodyIsArray()`
+
+Coming soon
+
+#### `assertBodyIsNotArray()`
+
+Coming soon
+
+#### `assertBodyIsObject()`
+
+Coming soon
+
+#### `assertBodyIsNotObject()`
+
+Coming soon
+
+#### `assertHeaderContains()`
+
+Coming soon
+
+#### `assertHeaderNotContains()`
+
+Coming soon
+
+#### `assertHeaderContainsKey()`
+
+Coming soon
+
+#### `assertHeaderNotContainsKey()`
+
+Coming soon
+
+#### `assertHeaderContainsAllKeys()`
+
+Coming soon
+
+#### `assertHeaderNotContainsAllKeys()`
+
+Coming soon
+
+#### `assertHeaderDeepEqual()`
+
+Coming soon
+
+#### `assertHeaderNotDeepEqual()`
+
 Coming soon
