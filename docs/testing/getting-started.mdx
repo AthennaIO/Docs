@@ -364,6 +364,7 @@ public async willNotRun({ assert }: Context) {
   assert.equal(1 + 1, 2)
 }
 
+@Test()
 @Skip('Skipped because of some reason')
 public async willNotRunAlso({ assert }: Context) {
   assert.equal(1 + 1, 2)
