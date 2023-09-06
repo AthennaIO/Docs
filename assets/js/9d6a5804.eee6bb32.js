@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[967],{4664:e=>{e.exports=JSON.parse('{"label":"Mail","permalink":"/docs/tags/mail","allTagsPath":"/docs/tags","count":1,"items":[{"id":"digging-deeper/mail","title":"Mail","description":"See how to send emails in Athenna.","permalink":"/docs/digging-deeper/mail"}]}')}}]);

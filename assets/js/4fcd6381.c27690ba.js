@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[4980],{711:e=>{e.exports=JSON.parse('{"label":"Welcome","permalink":"/docs/tags/welcome","allTagsPath":"/docs/tags","count":1,"items":[{"id":"introduction/welcome","title":"Welcome","description":"The plug & play Node.js framework","permalink":"/docs/introduction/welcome"}]}')}}]);
