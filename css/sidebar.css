@@ -10,6 +10,11 @@
 .menu {
     background-color: #fff !important;
     padding: 2rem !important;
+    overflow: hidden !important;
+}
+
+.menu:hover {
+    overflow: auto !important;
 }
 
 [data-theme='dark'] .menu {
