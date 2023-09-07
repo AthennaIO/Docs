@@ -141,7 +141,7 @@ export default class ExampleTest {
 
 ## Testing file uploads
 
-Coming soon
+Coming soon with `@athenna/storage` package!
 
 ## Response assertions
 
@@ -152,113 +152,138 @@ response that is returned by the `request.get()`, `request.post()`,
 `request.put()`, `request.patch()`, or `request.delete()` test methods:
 
 - [`assertStatusCode()`](/docs/testing/rest-api-testing#assertstatuscode)
-- [`assertIsNotStatusCode()`](/docs/testing/rest-api-testing#assertisnotstatuscode)
 - [`assertBodyContains()`](/docs/testing/rest-api-testing#assertbodycontains)
-- [`assertBodyNotContains()`](/docs/testing/rest-api-testing#assertbodynotcontains)
 - [`assertBodyContainsKey()`](/docs/testing/rest-api-testing#assertbodycontainskey)
-- [`assertBodyNotContainsKey()`](/docs/testing/rest-api-testing#assertbodynotcontainskey)
 - [`assertBodyContainsAllKeys()`](/docs/testing/rest-api-testing#assertbodycontainsallkeys)
-- [`assertBodyNotContainsAllKeys()`](/docs/testing/rest-api-testing#assertbodynotcontainsallkeys)
 - [`assertBodyDeepEqual()`](/docs/testing/rest-api-testing#assertbodydeepequal)
-- [`assertBodyNotDeepEqual()`](/docs/testing/rest-api-testing#assertbodynotdeepequal)
-- [`assertBodyNotDeepEqual()`](/docs/testing/rest-api-testing#assertbodynotdeepequal)
 - [`assertBodyIsArray()`](/docs/testing/rest-api-testing#assertbodyisarray)
-- [`assertBodyIsNotArray()`](/docs/testing/rest-api-testing#assertbodyisnotarray)
 - [`assertBodyIsObject()`](/docs/testing/rest-api-testing#assertbodyisobject)
-- [`assertBodyIsNotObject()`](/docs/testing/rest-api-testing#assertbodyisnotobject)
 - [`assertHeaderContains()`](/docs/testing/rest-api-testing#assertheadercontains)
-- [`assertHeaderNotContains()`](/docs/testing/rest-api-testing#assertheadernotcontains)
 - [`assertHeaderContainsKey()`](/docs/testing/rest-api-testing#assertheadercontainskey)
-- [`assertHeaderNotContainsKey()`](/docs/testing/rest-api-testing#assertheadernotcontainskey)
 - [`assertHeaderContainsAllKeys()`](/docs/testing/rest-api-testing#assertheadercontainsallkeys)
-- [`assertHeaderNotContainsAllKeys()`](/docs/testing/rest-api-testing#assertheadernotcontainsallkeys)
 - [`assertHeaderDeepEqual()`](/docs/testing/rest-api-testing#assertheaderdeepequal)
-- [`assertHeaderNotDeepEqual()`](/docs/testing/rest-api-testing#assertheadernotdeepequal)
 
 #### `assertStatusCode()`
 
-Coming soon
+Assert that the response has a given HTTP status code:
 
-#### `assertIsNotStatusCode()`
+```typescript
+const statusCode = 200
 
-Coming soon
+response.assertStatusCode(statusCode)
+response.assertIsNotStatusCode(statusCode)
+```
 
 #### `assertBodyContains()`
 
-Coming soon
+Assert that the response body contains some of
+the given values:
 
-#### `assertBodyNotContains()`
+```typescript
+const partialBody = { hello: 'world' } 
 
-Coming soon
+response.assertBodyContains(partialBody)
+response.assertBodyNotContains(partialBody)
+```
 
 #### `assertBodyContainsKey()`
 
-Coming soon
+Assert that the response body contains a key with
+the given name:
 
-#### `assertBodyNotContainsKey()`
+```typescript
+const key = 'hello'
 
-Coming soon
+response.assertBodyContainsKey(key)
+response.assertBodyNotContainsKey(key)
+```
 
 #### `assertBodyContainsAllKeys()`
 
-Coming soon
+Assert that the response body contains all the keys
+with given names:
 
-#### `assertBodyNotContainsAllKeys()`
+```typescript
+const keys = ['hello']
 
-Coming soon
+response.assertBodyContainsAllKeys(keys)
+response.assertBodyNotContainsAllKeys(keys)
+```
 
 #### `assertBodyDeepEqual()`
 
-Coming soon
+Assert that the response body is deep equal and
+exactly like the given value:
 
-#### `assertBodyNotDeepEqual()`
+```typescript
+const fullBody = [{ hello: 'world' }]
 
-Coming soon
+response.assertBodyDeepEqual(fullBody)
+response.assertBodyNotDeepEqual(fullBody)
+```
 
 #### `assertBodyIsArray()`
 
-Coming soon
+Assert that the response body is an array:
 
-#### `assertBodyIsNotArray()`
-
-Coming soon
+```typescript
+response.assertBodyIsArray()
+response.assertBodyIsNotArray()
+```
 
 #### `assertBodyIsObject()`
 
-Coming soon
+Assert that the response body is an object:
 
-#### `assertBodyIsNotObject()`
-
-Coming soon
+```typescript
+response.assertBodyIsObject()
+response.assertBodyIsNotObject()
+```
 
 #### `assertHeaderContains()`
 
-Coming soon
+Assert that the response header contains some of
+the given values:
 
-#### `assertHeaderNotContains()`
+```typescript
+const partialHeader = { hello: 'world' } 
 
-Coming soon
+response.assertHeaderContains(partialHeader)
+response.assertHeaderNotContains(partialHeader)
+```
 
 #### `assertHeaderContainsKey()`
 
-Coming soon
+Assert that the response header contains a key with
+the given name:
 
-#### `assertHeaderNotContainsKey()`
+```typescript
+const key = 'hello'
 
-Coming soon
+response.assertHeaderContainsKey(key)
+response.assertHeaderNotContainsKey(key)
+```
 
 #### `assertHeaderContainsAllKeys()`
 
-Coming soon
+Assert that the response header contains all the keys
+with given names:
 
-#### `assertHeaderNotContainsAllKeys()`
+```typescript
+const keys = ['hello']
 
-Coming soon
+response.assertHeaderContainsAllKeys(keys)
+response.assertHeaderNotContainsAllKeys(keys)
+```
 
 #### `assertHeaderDeepEqual()`
 
-Coming soon
+Assert that the response header is deep equal and
+exactly like the given value:
 
-#### `assertHeaderNotDeepEqual()`
+```typescript
+const fullHeader = [{ hello: 'world' }]
 
-Coming soon
+response.assertHeaderDeepEqual(fullHeader)
+response.assertHeaderNotDeepEqual(fullHeader)
+```
