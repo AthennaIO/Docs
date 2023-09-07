@@ -10,4 +10,211 @@ See how to create tests for CLI applications in Athenna.
 
 ## Introduction
 
-Coming soon
+Athenna provides a very fluent API for running CLI 
+commands of your application and examining the output. 
+For example, take a look at the e2e test defined below:
+
+```typescript
+import { Test, type Context } from '@athenna/test'
+
+export default class ExampleTest {
+  @Test()
+  public async 'test successful output'({ command }: Context) {
+    const output = await command.run('app')
+
+    output.assertSucceeded()
+  }
+}
+```
+
+The `command.run()` method will run a child process using the 
+`Path.bootstrap('artisan.ts')` file to execute the `app` command
+and get the `stdout`, `stderr` and `exitCode` outputs,
+while the `assertSucceeded()` method asserts that the returned 
+output should have a successful exit code (`0`). In addition 
+to this simple assertion, Athenna also contains a variety of 
+assertions for inspecting the output.
+
+## Registering `command` plugin
+
+The `command` property in your test context will only be 
+available if you register the command plugin within the 
+`Runner` class. By default your Athenna application already 
+comes with the command plugin registered. But we are 
+going to cover how to register it manually if needed.
+
+Just call the `Runner.addPlugin()` static method to setup 
+the request plugin imported from `@athenna/artisan/testing/plugins`:
+
+```typescript title="Path.bootstrap('test.ts')"
+import { request } from '@athenna/http/testing/plugins'
+import { command } from '@athenna/artisan/testing/plugins'
+import { Runner, assert, specReporter } from '@athenna/test'
+
+await Runner.setTsEnv()
+  .addPlugin(assert())
+  .addPlugin(request())
+  .addPlugin(command()) 👈
+  .addReporter(specReporter())
+  .addPath('tests/e2e/**/*.ts')
+  .addPath('tests/unit/**/*.ts')
+  .setCliArgs(process.argv.slice(2))
+  .setGlobalTimeout(5000)
+  .run()
+```
+
+## Running commands
+
+To run a command to your application, you may invoke the 
+`command.run()` method within your test.
+
+This method will return a `TestOutput` instance, which 
+provides a 
+[variety of helpful assertions](/docs/testing/cli-tests#output-assertions) 
+that allow you to inspect your application's CLI output:
+
+```typescript
+import { Test, type Context } from '@athenna/test'
+
+export default class ExampleTest {
+  @Test()
+  public async testBasicCommand({ command }: Context) {
+    const output = await command.run('greet')
+
+    output.assertExitCode(0)
+  }
+}
+```
+
+## Changing Artisan file path
+
+As mentioned previously, the `command.run()` method invokes 
+a child process using the `Path.bootstrap('artisan.ts')` file.
+But for some reason you may want to change which file should be 
+used to test your commands. To do so, you can call the 
+`TestCommand.setArtisanPath()` static method before running
+your tests:
+
+```typescript title="Path.bootstrap('test.ts')"
+import { request } from '@athenna/http/testing/plugins'
+import { command, TestCommand } from '@athenna/artisan/testing/plugins'
+import { Runner, assert, specReporter } from '@athenna/test'
+
+TestCommand.setArtisanPath(Path.fixtures('artisan.ts')) 👈
+
+await Runner.setTsEnv()
+  .addPlugin(assert())
+  .addPlugin(request())
+  .addPlugin(command())
+  .addReporter(specReporter())
+  .addPath('tests/e2e/**/*.ts')
+  .addPath('tests/unit/**/*.ts')
+  .setCliArgs(process.argv.slice(2))
+  .setGlobalTimeout(5000)
+  .run()
+```
+
+## Debugging outputs
+
+After executing a test command to your application, 
+the output returned will contain the `output` property 
+inside with all the `output` data:
+
+```typescript
+import { Test, type Context } from '@athenna/test'
+
+export default class ExampleTest {
+  @Test()
+  public async testBasicCommand({ command }: Context) {
+    const output = await command.run('/')
+
+    console.log(output.output.stdout)
+    console.log(output.output.stderr)
+    console.log(output.output.exitCode)
+
+    output.assertExitCode(0)
+  }
+}
+```
+
+## Output assertions
+
+Athenna's `TestOutput` class provides a variety of custom 
+assertion methods that you may utilize when testing your 
+application. These assertions may be accessed on the 
+output that is returned by the `command.run()` test method:
+
+- [`assertExitCode()`](/docs/testing/cli-tests#assertexitcode)
+- [`assertSucceeded()`](/docs/testing/cli-tests#assertsucceeded)
+- [`assertFailed()`](/docs/testing/cli-tests#assertfailed)
+- [`assertLogged()`](/docs/testing/cli-tests#assertlogged)
+- [`assertLogMatches()`](/docs/testing/cli-tests#assertlogmatches)
+
+#### `assertExitCode()`
+
+Assert the exit code of the output:
+
+```typescript
+output.assertExitCode(0)
+output.assertIsNotExitCode(1)
+```
+
+:::tip
+
+The `0` exit code means a successful exit of the command,
+anything different then `0` means an error.
+
+:::
+
+#### `assertSucceeded()`
+
+Assert the command exits with `0` exit code:
+
+```typescript
+output.assertSucceeded()
+```
+
+#### `assertFailed()`
+
+Assert the command exits with anything different 
+from `0` exit code:
+
+```typescript
+output.assertFailed()
+```
+
+#### `assertLogged()`
+
+Assert the command has logged the expected message:
+
+```typescript
+output.assertLogged('Hello World!')
+```
+
+This method validates that the log message will be
+printed in `stdout` or `stderr`. To force the stream type
+where this log should appears you can set it as second 
+argument:
+
+```typescript
+output.assertLogged('Hello World!', 'stdout') // or stderr
+```
+
+#### `assertLogMatches()`
+
+Assert the command has logged a message that matches
+the [`RegExp`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp) 
+provided:
+
+```typescript
+output.assertLogMatches(/Hello World/)
+```
+
+This method validates that the regex will match in `stdout` 
+or `stderr`. To force the stream type
+where this log should match you can set it as second 
+argument:
+
+```typescript
+output.assertLogMatches(/Hello World/, 'stdout') // or stderr
+```
