@@ -2338,6 +2338,22 @@ import { Is } from '@athenna/common'
 Is.Windows() // true
 ```
 
+#### `Is::Module()`
+
+Validate if a path or `File` instance is a module:
+
+```typescript
+import { Is, File } from '@athenna/common'
+
+Is.Module('./hello.js') // true
+Is.Module('./hello.ts') // true
+Is.Module('./hello.json') // false
+
+Is.Module(new File('./hello.js')) // true
+Is.Module(new File('./hello.ts')) // true
+Is.Module(new File('./hello.json')) // false
+```
+
 #### `Is::Uuid()`
 
 Validate if the value is a valid UUID v4:
@@ -3967,6 +3983,26 @@ Set the `Path.dirs.stubs` value:
 import { Path } from '@athenna/common'
 
 Path.setStubs('stubs/app')
+```
+
+#### `Path::fixtures()`
+
+Merge the project root path with `Path.dirs.fixtures`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.fixtures()) // /home/user/athenna-project/tests/fixtures
+```
+
+#### `Path::setFixtures()`
+
+Set the `Path.dirs.fixtures` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setFixtures('fixtures/app')
 ```
 
 #### `Path::http()`
