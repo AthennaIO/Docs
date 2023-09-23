@@ -6,7 +6,7 @@ description: See how to create rate limiting rules for Athenna REST API applicat
 
 # Rate Limiting
 
-See how to create rate limiting rules for Athenna REST API application.
+See how to create rate-limiting rules for Athenna REST API application.
 
 ## Introduction
 
@@ -123,14 +123,21 @@ consult the [Meta article about rate limiters](https://developers.facebook.com/d
 
 ## Disabling rate limiting
 
-The `HttpKernel` class will automatically disable the 
-plugin registration if the package does not exist, so 
-to disable rate limiting in Athenna you need to 
-remove the `@fastify/rate-limit` package from your 
-application:
+The `HttpKernel` class will automatically disable the
+plugin registration if the package does not exist, so
+to disable rate-limiting in Athenna you need to remove the
+`@fastify/rate-limit` package from your application:
 
 ```shell
 npm remove @fastify/rate-limit
 ```
 
+You can also disable by setting `http.rateLimit.enabled` to `false`:
 
+```typescript title="Path.config('http.ts')"
+export default {
+  rateLimit: {
+    enabled: false
+  }
+}
+```

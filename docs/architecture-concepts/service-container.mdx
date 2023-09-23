@@ -50,21 +50,19 @@ itself.
 
 ## Simple resolution
 
-If you use the `@Service` annotation, you can instruct the container how he
-should resolve that class, or use the default resolution configurations of the
-annotation. For example, you may place the following code in your
-`Path.routes('http.ts')` file:
+You may place the following code in your `Path.routes('http.ts')`
+file:
 
 ```typescript
 import { Route } from '@athenna/http'
-import { Service } from '@athenna/ioc'
 
-@Service()
 export class AppService {
   public ok() {
     return { message: 'ok' }
   }
 }
+
+ioc.bind('appService', AppService)
 
 Route.get('/', ({ response }) => {
   const appService = ioc.use<AppService>('appService')
@@ -91,11 +89,11 @@ develop without it.
 
 The example above is just to show that we can place our services anywhere in our
 application, without depending on configuration files or any other kind of
-setup. We recommend you placing your services in a specifics directory to save
-only your service classes and not inside your route file. A good place to put
-your services is `app/services` directory, since `make:service` command will
-save your services there. But of course you can do whatever you want with
-Athenna 😎.
+setup. We recommend you placing your services in specifics directory and not
+inside your route file. A good place to put your services is `app/services`
+directory, since `make:service` command will save your services there.
+But remember that this is only a tip, at the end of the day you can do
+whatever you want with Athenna 😎.
 
 :::
 
@@ -193,6 +191,49 @@ import { StringNormalizer } from '#app/helpers/StringNormalizer'
 ioc.instance('App/Helpers/StringNormalizer', new StringNormalizer())
 ```
 
+### The `@Service()` annotation
+
+The `@Service()` annotation is just a helper that will map all the
+configurations that a service needs to be registered in the container,
+this means that this annotation does not have the responsibility to
+bind your service in the container.
+
+Let's create a simple service to understand how this annotation works:
+
+```shell
+./node artisan make:service StringNormalizer
+```
+
+The command above will create the `Path.services('StringNormalizer.ts')`
+file and will automatically register the service in the `services` property
+of the `.athennarc.json` file.
+
+Let's add some configuration to the `@Service()` annotation of
+`StringNormalizer` class:
+
+```typescript title="Path.services('StringNormalizer.ts')"
+import { Service } from '@athenna/ioc'
+
+@Service({
+  type: 'singleton',
+  camelAlias: 'stringNormalizer',
+  alias: 'App/Services/StringNormalizer',
+})
+export class StringNormalizer {
+  public run(value: string) {
+    return value.trim().toLowerCase()
+  }
+}
+```
+
+When bootstrapping the Athenna application the `StringNormalizer` class
+will be registered in the service container as a
+[singleton](/docs/architecture-concepts/service-container#binding-a-singleton)
+with the alias `App/Services/StringNormalizer` and the camel alias
+`stringNormalizer`, that is typically used in
+[automatic constructor injections](/docs/architecture-concepts/service-container#automatic-constructor-injection)
+and also by [the `@Inject()` annotation](/docs/architecture-concepts/service-container#using-inject-annotation) when no alias is provided to it.
+
 ## Resolving
 
 You may use the `use` or `safeUse` methods from the ioc global property to
@@ -236,9 +277,9 @@ export class AppController {
 }
 ```
 
-### Using `@Inject` annotation
+### Using `@Inject()` annotation
 
-You can also use the `@Inject` annotation instead of the constructor. The
+You can also use the `@Inject()` annotation instead of the constructor. The
 annotation follows the same logic of the constructor, you need to use the
 camelCase name of your dependency as the property name to be resolved properly:
 
@@ -260,7 +301,7 @@ export class AppController {
 }
 ```
 
-When using the `@Inject` annotation you could also passes as argument a
+When using the `@Inject()` annotation you could also pass as argument a
 specific alias to be resolved in the container:
 
 ```typescript

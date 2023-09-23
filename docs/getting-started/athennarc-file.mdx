@@ -276,7 +276,7 @@ Route facade:
 An array with the middlewares of your application. The
 middlewares registered in this array will be registered
 in the service container to be accessed easily by your
-Route facade:
+`Route` facade:
 
 ```json
 {
@@ -287,9 +287,21 @@ Route facade:
 }
 ```
 
+Athenna expects that the middlewares set in this property
+to be annotated with `@Middleware()`, `@Interceptor()` or `@Terminator()`
+annotations, this is not mandatory, but you will only
+be able to set the name of the middleware or if it is global or not using
+the annotations.
+
+If you are not using TypeScript in your application, you can use the
+[`namedMiddlewares`](/docs/getting-started/athennarc-file#the-namedmiddlewares-property)
+property to register named middlewares and the
+[`globalMiddlewares`](/docs/getting-started/athennarc-file#the-globalmiddlewares-property)
+property to register global middlewares.
+
 :::tip
 
-More information about commands could be found at
+More information about middlewares could be found at
 [http middlewares documentation section](https://athenna.io/docs/rest-api-application/middlewares).
 
 :::
@@ -329,3 +341,30 @@ in any request of your application:
   ]
 }
 ```
+
+## The `artisan` property
+
+An object with a variety of Artisan configurations.
+At this point the only configurations accepted are `artisan.child.executor`
+and `artisan.child.path`. Both configurations are used to define
+how the `Artisan.callInChild()` method will behave when no options
+are set to it as second argument:
+
+```json
+{
+  "artisan": {
+    "child": {
+      "executor": "node --inspect",
+      "path": "./bin/artisan.ts"
+    }
+  }
+}
+```
+
+:::tip
+
+Athenna will automatically parse the `artisan.child.path` using
+the `Path.ext()` method, so you don't need to worry about if the
+extension is `.js` or `.ts`.
+
+:::

@@ -99,14 +99,24 @@ Route.resource('/tests', 'WelcomeController').helmet('index', {...})
 Route.resource('/tests', 'WelcomeController').helmet('store', {...})
 ```
 
-## Disabling helmet
+## Disabling Helmet
 
-The `HttpKernel` class will automatically disable the 
-plugin registration if the package does not exist, so 
-to disable helmet in Athenna you need to 
-remove the `@fastify/helmet` package from your 
+The `HttpKernel` class will automatically disable the
+plugin registration if the package does not exist, so
+to disable helmet in Athenna you need to
+remove the `@fastify/helmet` package from your
 application:
 
 ```shell
 npm remove @fastify/helmet
+```
+
+You can also disable by setting `http.helmet.enabled` to `false`:
+
+```typescript title="Path.config('http.ts')"
+export default {
+  helmet: {
+    enabled: false
+  }
+}
 ```

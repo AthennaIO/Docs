@@ -10,4 +10,90 @@ Understand how to mock dependencies and functions in Athenna.
 
 ## Introduction
 
-Coming soon
+When testing Athenna applications, you may wish to "mock" 
+certain aspects of your application so they are not actually 
+executed during a given test. For example, when testing a 
+controller that calls a service, you may wish to mock the 
+service, so they are not actually executed during the test.
+This allows you to only test the controller's HTTP response 
+without worrying about the execution of the service since 
+the service can be tested in their own test case.
+
+## Mocking objects
+
+Coming soon...
+
+## Mocking services
+
+Mocking a single service method could be a difficult thing to do
+if your service is not going to be registered as a singleton in your
+application. The best way to mock a service is by instantiating
+a new instance of the service, registering it in the container
+and then mocking the method you want in each test case:
+
+```typescript
+import { AppService } from '#app/services/AppService'
+import { BaseRestTest } from '@athenna/core/testing/BaseRestTest'
+import { Test, type Context, BeforeAll, Mock, AfterEach } from '@athenna/test'
+
+export default class AppControllerTest extends BaseRestTest {
+  public appService = new AppService()
+
+  @BeforeAll()
+  public async beforeAll() {
+    ioc.instance('App/Services/AppService', this.appService)
+  }
+
+  @AfterEach()
+  public async afterEach() {
+    Mock.restoreAll()
+  }
+
+  @Test()
+  public async shouldBeAbleToMock({ request }: Context) {
+    const mock = Mock.when(this.appService, 'findOne').return({ fake: true })
+
+    const response = await request.get('/api/v1')
+
+    response.assertStatusCode(200)
+    response.assertBodyContains({ fake: true })
+    assert.called(mock)
+  }
+}
+```
+
+### Replacing the entire service
+
+If you prefer you can also replace the entire service with
+a mocked version of your service using the `ioc.fake()` method
+
+```typescript
+import { Test, BeforeAll, type Context } from '@athenna/test'
+import { AppServiceMock } from '#tests/fixtures/AppServiceMock'
+import { BaseRestTest } from '@athenna/core/testing/BaseRestTest'
+
+export default class AppControllerTest extends BaseRestTest {
+  @BeforeAll()
+  public beforeAll() {
+    ioc
+      .fake('App/Services/AppService', AppServiceMock)
+      .alias('appService', 'App/Services/AppService')
+  }
+
+  @Test()
+  public async shouldBeAbleToMock({ request }: Context) {
+    const response = await request.get('/api/v1')
+
+    response.assertStatusCode(200)
+    response.assertBodyContains({ fake: true })
+  }
+}
+```
+
+### Using the `@InjectMock()` annotation
+
+Coming soon...
+
+## Mocking facades
+
+Coming soon...
