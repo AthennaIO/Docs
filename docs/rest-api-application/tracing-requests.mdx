@@ -70,15 +70,17 @@ to disable tracer in Athenna you need to remove the
 npm remove cls-rtracer
 ```
 
-You can also disable the tracer by setting `http.trace` to `false`:
+You can also disable by setting `http.rTracer.enabled` to `false`:
 
 ```typescript title="Path.config('http.ts')"
 export default {
-  trace: false
+  rTracer: {
+    enabled: false
+  }
 }
 ```
 
-Or by setting the `tracer` option as `false` when booting the 
+Or by setting the `trace` option as `false` when booting the
 server in `Ignite.httpServer()` method:
 
 ```typescript title="Path.bootstrap('main.ts')"

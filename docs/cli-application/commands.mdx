@@ -245,7 +245,6 @@ your dependencies:
 #### ❌ Does not work
 
 ```typescript
-import { Inject } from '@athenna/ioc'
 import { BaseCommand } from '@athenna/artisan'
 import { MailgunService } from '#app/services/MailgunService'
 
@@ -273,9 +272,8 @@ export class SendEmails extends BaseCommand {
 #### ✅ Works
 
 ```typescript
-import { Inject } from '@athenna/ioc'
 import { BaseCommand } from '@athenna/artisan'
-import { MailgunService } from '#app/services/MailgunService'
+import type { MailgunService } from '#app/services/MailgunService'
 
 export class SendEmails extends BaseCommand {
   public static signature(): string {
@@ -286,13 +284,12 @@ export class SendEmails extends BaseCommand {
       return 'Send an email.'
   }
 
-  @Inject()
-  private mailgunService: MailgunService 👈
-
   public async handle(): Promise<void> {
+    const mailgunService = ioc.safeUse<MailgunService>('App/Services/MailgunService')
+
     const msg = 'People reading this will have a wonderful day! 🥳'
 
-    await this.mailgunService.send(msg)
+    await mailgunService.send(msg)
   }
 }
 ```
@@ -454,7 +451,7 @@ export class Greet extends BaseCommand {
 
 Will output:
 
-```typescript
+```console
 hey lenon
 ```
 

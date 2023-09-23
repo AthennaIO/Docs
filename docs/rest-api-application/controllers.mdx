@@ -125,7 +125,8 @@ is used to resolve all Athenna controllers. As a result,
 you are able to use any dependencies your controller may
 need using `@Inject()` annotation or in its constructor.
 The declared dependencies will automatically be resolved
-and injected into the controller instance:
+and injected into the controller instance when receiving
+a request from the server:
 
 ```typescript
 import { Inject } from '@athenna/ioc'

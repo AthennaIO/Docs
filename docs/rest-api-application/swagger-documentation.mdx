@@ -137,12 +137,22 @@ Route.resource('/tests', 'WelcomeController').swagger('store', {...})
 
 ## Disabling Swagger
 
-The `HttpKernel` class will automatically disable the 
-plugin registration if the package does not exist, so 
-to disable Swagger in Athenna you need to remove the 
-`@fastify/swagger` and `@fastify/swagger-ui` packages from your 
+The `HttpKernel` class will automatically disable the
+plugin registration if the package does not exist, so
+to disable Swagger in Athenna you need to remove the
+`@fastify/swagger` and `@fastify/swagger-ui` packages from your
 application:
 
 ```shell
 npm remove @fastify/swagger @fastify/swagger-ui
+```
+
+You can also disable by setting `http.swagger.enabled` to `false`:
+
+```typescript title="Path.config('http.ts')"
+export default {
+  swagger: {
+    enabled: false
+  }
+}
 ```
