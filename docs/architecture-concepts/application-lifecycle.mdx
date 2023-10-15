@@ -125,11 +125,11 @@ bellow:
 it depends on service providers to register your controllers, services,
 middlewares, routes, etc.
 
-- The `cli` application and Artisan commands does not fire the foundation
-because commands do not depends on registering providers, loading
+- The `CLI` application and Artisan commands does not fire the foundation
+because commands do not depend on registering providers, loading
 environment variables and configuration files, for example. But, if your
-command got the `loadApp` equals true in `.athennarc.json`, the foundation
-will be fired before executing your command.
+command got the `loadApp` setting equals to `true` in `.athennarc.json`,
+the foundation will be fired before executing your command.
 
 :::
 
