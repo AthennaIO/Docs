@@ -134,7 +134,7 @@ First, let's use the following command to create a new [service provider](/docs/
 to resolve our dependency inside the [service container](/docs/architecture-concepts/service-container):
 
 ```shell
-./node artisan make:provider HelperProvider
+node artisan make:provider HelperProvider
 ```
 
 Now let's register all of our helpers inside the `register()` method:
@@ -163,7 +163,7 @@ will need to register it inside the `.athennarc.json` file, inside the
 Artisan can generate a new facade via the `make:facade` command:
 
 ```shell
-./node artisan make:facade String
+node artisan make:facade String
 ```
 
 The facade file will be generated inside the `providers/facades` directory.

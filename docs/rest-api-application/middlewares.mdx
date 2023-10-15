@@ -31,7 +31,7 @@ To create a new middleware, use the `make:middleware`
 command:
 
 ```shell
-./node artisan make:middleware EnsureApiKeyIsValid
+node artisan make:middleware EnsureApiKeyIsValid
 ```
 
 This command will place a new `EnsureApiKeyIsValid` class
@@ -177,7 +177,7 @@ the HTTP response has been sent to the client. For this
 To create one, you can use the following command:
 
 ```shell
-./node artisan make:interceptor InterceptMiddleware
+node artisan make:interceptor InterceptMiddleware
 ```
 
 Just like `make:middleware`, Athenna will auto register the
@@ -226,7 +226,7 @@ the HTTP response has been sent to the client. For this
 To create one, you can use the following command:
 
 ```shell
-./node artisan make:terminator TerminateMiddleware
+node artisan make:terminator TerminateMiddleware
 ```
 
 Just like `make:middleware`, Athenna will auto register the

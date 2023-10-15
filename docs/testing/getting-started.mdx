@@ -37,7 +37,7 @@ installing a new Athenna application, execute the following
 to run your tests:
 
 ```shell
-./node artisan test
+node artisan test
 ```
 
 ## Environment
@@ -76,7 +76,7 @@ command. By default, tests will be placed in the `tests/e2e`
 directory:
 
 ```shell
-./node artisan make:test UserTest
+node artisan make:test UserTest
 ```
 
 If you would like to create a test within the `tests/unit` 
@@ -84,7 +84,7 @@ directory, you may use the `--unit` option when executing
 the `make:test` command:
 
 ```shell
-./node artisan make:test UserTest --unit
+node artisan make:test UserTest --unit
 ```
 
 :::tip
@@ -93,11 +93,11 @@ You can also create a custom test for each specific
 Athenna application:
 
 ```shell title="For REST API"
-./node artisan make:test UserTest --rest
+node artisan make:test UserTest --rest
 ```
 
 ```shell title="For CLI"
-./node artisan make:test UserTest --cli
+node artisan make:test UserTest --console
 ```
 
 To customize the test templates check the 
@@ -287,14 +287,14 @@ public async doOtherOp() {
 To run your tests you can use the `test` Artisan command:
 
 ```shell
-./node artisan test
+node artisan test
 ```
 
 Any arguments that can be passed to [Japa](https://japa.dev), 
 may also be passed to the Artisan `test` command:
 
 ```shell
-./node artisan test --groups="MyClassTest" --force-exit
+node artisan test --groups="MyClassTest" --force-exit
 ```
 
 ## Assertions
@@ -403,7 +403,7 @@ If you want to run specific tests you can also use the
 `--tests` option of `test` command:
 
 ```shell
-./node artisan test --tests="willRun,willRunAlso"
+node artisan test --tests="willRun,willRunAlso"
 ```
 
 :::
@@ -518,7 +518,7 @@ public async willNotRun({ assert }: Context) {
 Now you can select which tests to run by the tags:
 
 ```shell
-./node artisan test --tags="run"
+node artisan test --tags="run"
 ```
 
 #### `@Cleanup()`
@@ -585,7 +585,7 @@ you in your application. To use it, you just need to
 call it before invoking the `test` command:
 
 ```shell
-npx c8 ./node artisan test
+npx c8 node artisan test
 ```
 
 :::note
