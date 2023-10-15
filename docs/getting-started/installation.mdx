@@ -12,12 +12,25 @@ How to install and set up your first Athenna project.
 
 ### Prerequisites
 
-First, you need to install [Node.js](https://nodejs.org/). We
+First, you need to install [Node.js](https://nodejs.org/) v20.x. We
 recommend using [nvm](https://github.com/nvm-sh/nvm) to do
 that.
 
 > [Click here to install nvm and get npm and Node.js
 running on your machine.](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+After you install `nvm`, you can install Node.js v20.x by running:
+
+```shell
+nvm install 20
+```
+
+We recommend setting Node.js v20.x as the default version, to do
+so with `nvm` run:
+
+```shell
+nvm alias default 20.8.0
+```
 
 ### Installing via package manager
 
@@ -61,7 +74,7 @@ talk about it later.
 In your project root, run the following command:
 
 ```bash
-./node --watch artisan serve
+node --watch artisan serve
 ```
 
 - The `watch` flag is meant to watch the file system for

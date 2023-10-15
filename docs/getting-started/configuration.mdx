@@ -80,13 +80,13 @@ Athenna will load the `.env` file by default if it exists.
 Running providing `--env` flag in Artisan:
 
 ```bash
-./node artisan serve --env=local
+node artisan serve --env=local
 ```
 
 Running providing `NODE_ENV` externally:
 
 ```bash
-NODE_ENV=local ./node artisan serve
+NODE_ENV=local node artisan serve
 ```
 
 Let's check some practical examples. This is the default
@@ -547,7 +547,7 @@ structure.
 
 Athenna got multiple types of applications, while using the framework
 you will notice that some times you could end up igniting your application
-twice. Let's suppose you are using `./node artisan serve` command to start
+twice. Let's suppose you are using `node artisan serve` command to start
 your application, this command will first ignite your application by Artisan
 and them by the HTTP server.
 
