@@ -19,7 +19,214 @@ This allows you to only test the controller's HTTP response
 without worrying about the execution of the service since 
 the service can be tested in their own test case.
 
-## Mocking objects
+## The `Mock` class
+
+### The `Mock::when()` method
+
+This method is responsible for mocking the return
+value of a given object method:
+
+```typescript
+import { Test, Mock, type Context, AfterEach } from '@athenna/test'
+
+export default class MockTest {
+  public object = {
+    hello: () => undefined
+  }
+
+  @AfterEach()
+  public afterEach() {
+    Mock.restoreAll()
+  }
+
+  @Test()
+  public async shouldBeAbleToMockAnObjectMethod({ assert }: Context) {
+    Mock.when(this.object, 'hello').return('hello world')
+
+    assert.equal(this.object.hello(), 'hello world')
+  }
+}
+```
+
+You can also use this method to throw an error when the
+given method is called:
+
+```typescript
+@Test()
+public async shouldBeAbleToMockAnObjectMethod({ assert }: Context) {
+  Mock.when(this.object, 'hello').throw(new Error('hello world'))
+
+  assert.throw(() => this.object.hello(), 'hello world')
+}
+```
+
+For promises, you can use the `resolve()` or `reject()` methods:
+
+```typescript
+@Test()
+public async shouldBeAbleToMockAnObjectMethod({ assert }: Context) {
+  // Resolving a promise
+  Mock.when(this.object, 'hello').resolve('hello world')
+  assert.equal(await this.object.hello(), 'hello world')
+
+  // Rejecting a promise
+  Mock.when(this.object, 'hello').reject(new Error('hello world'))
+  await assert.rejects(() => this.object.hello(), 'hello world')
+}
+```
+
+If you don't have access to the method you want to mock, you can
+save the return of `Mock::when()` method and use it to make your
+assertions:
+
+```typescript
+@Test()
+public async shouldBeAbleToMockAnObjectMethod({ assert }: Context) {
+  const helloMock = Mock.when(this.object, 'hello').resolve('hello world')
+
+  await this.someMethodThatCallsHelloMethod()
+
+  assert.isTrue(helloMock.called)
+}
+```
+
+#### Mocking a class method
+
+There are two ways to mock a class method. The first one is
+mocking the class instance directly:
+
+```typescript
+import { AppService } from '#app/services/AppService'
+import { Test, Mock, type Context, AfterEach } from '@athenna/test'
+
+export default class MockTest {
+  public appService = new AppService()
+
+  @AfterEach()
+  public afterEach() {
+    Mock.restoreAll()
+  }
+
+  @Test()
+  public async shouldBeAbleToMockAClassMethod({ assert }: Context) {
+    Mock.when(this.appService, 'findOne').return({ fake: true })
+
+    assert.equal(this.appService.findOne(), { fake: true })
+  }
+}
+```
+
+With this approach, you can only mock the method for the current
+instance. If another instance of `AppService` is created, that
+one will not be mocked.
+
+To mock a class method for all instances of a given class, you
+need to mock the class `prototype`:
+
+```typescript
+import { AppService } from '#app/services/AppService'
+import { Test, Mock, type Context, AfterEach } from '@athenna/test'
+
+export default class MockTest {
+  @AfterEach()
+  public afterEach() {
+    Mock.restoreAll()
+  }
+
+  @Test()
+  public async shouldBeAbleToMockAClassMethod({ assert }: Context) {
+    Mock.when(AppService.prototype, 'findOne').return({ fake: true })
+
+    assert.equal(new AppService().findOne(), { fake: true })
+  }
+}
+```
+
+:::caution
+
+Never forget to restore all mocks after each test case. If you don't
+restore it, the mock will be kept in memory and will affect your other
+tests. Test cases should be isolated from each other, so always try to
+create your mocks inside your test cases to avoid problems when your
+application gets bigger.
+
+:::
+
+### The `Mock::spy()` method
+
+This method is responsible for spying on a given object method.
+Different from `Mock::when()`, this method will not change the
+behavior of the method, it will only spy it and allow you to verify
+if the given method was called, how many times, and with which params:
+
+```typescript
+import { AppService } from '#app/services/AppService'
+import { Test, Mock, type Context, AfterEach } from '@athenna/test'
+
+export default class MockTest {
+  @AfterEach()
+  public afterEach() {
+    Mock.restoreAll()
+  }
+
+  @Test()
+  public async shouldBeAbleToSpyAClassMethod({ assert }: Context) {
+    Mock.spy(AppService.prototype, 'findOne')
+
+    const appService = new AppService()
+
+    appService.findOne()
+
+    assert.calledOnce(appService.findOne)
+  }
+}
+```
+
+Just like `Mock::when()`, if you don't have access to the method
+you want to spy, you can save the return of `Mock::spy()` method
+and use it to make your assertions:
+
+```typescript
+@Test()
+public async shouldBeAbleToSpyAClassMethod({ assert }: Context) {
+  const findOneSpy = Mock.spy(AppService.prototype, 'findOne')
+
+  await this.someMethodThatCallsAppServiceFindOne()
+
+  assert.calledOnce(findOneSpy)
+}
+```
+
+:::tip
+
+For more assertions like `assert.calledOnce()` method, check the
+[assertion in mocks](/docs/testing/mocking#assertion-in-mocks)
+documentation section.
+
+:::
+
+Since `Mock::spy()` does not change the behavior of the method,
+but only spies it, you can use it to spy all the methods of a
+given object:
+
+```typescript
+@Test()
+public async shouldBeAbleToSpyAnEntireClass({ assert }: Context) {
+  Mock.spy(AppService.prototype)
+
+  const appService = new AppService()
+
+  appService.findOne()
+
+  assert.calledOnce(appService.findOne)
+}
+```
+
+### The `Mock::fake()` method
+
+Coming soon...
+
+### The `Mock::stub()` method
 
 Coming soon...
 
@@ -102,6 +309,6 @@ Coming soon...
 
 Coming soon...
 
-## Mocking inside Artisan child processes
+## Mocking commands
 
 Coming soon...
