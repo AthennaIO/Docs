@@ -256,7 +256,7 @@ The Kernel is also responsible for registering your commands defined in your
 `.athennarc.json` file. By default, Athenna will always use the default
 implementation `ConsoleKernel` class imported from `@athenna/http` package. If
 you prefer, you can create your custom Kernel implementation, extending the
-default ConsoleKernel class and registering it in your `Ignite.artisan` method
+default ConsoleKernel class and registering it in your `Ignite.console()` method
 call:
 
 ```typescript
@@ -283,7 +283,7 @@ const ignite = await new Ignite().load(import.meta.url, {
   bootLogs: false
 })
 
-await ignite.artisan({ kernelPath: '#app/http/CustomKernel' })
+await ignite.console({ kernelPath: '#app/http/CustomKernel' })
 ```
 
 ### Execution

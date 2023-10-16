@@ -938,7 +938,7 @@ sticker.render()
 
 Create a task runner that will log the 
 status of each task. The task
-method is very useful when you need to 
+method is beneficial when you need to
 do a lot of tasks in order, giving a status 
 to all the tasks and how much time it has 
 taken to execute:
@@ -956,6 +956,27 @@ task.add('First task', async task => {
 task.add('Second task', async task => {
   await Exec.sleep(1000)
   await task.fail('Failed!')
+})
+
+await task.run()
+```
+
+You can also use the `task.addPromise()` method to don't
+mind about calling `task.complete()` or `task.fail()` method.
+This method will automatically call it for you if the promise
+resolves or rejects:
+
+```typescript
+import { Exec } from '@athenna/common'
+
+const task = this.logger.task()
+
+task.addPromise('First task', async () => {
+    await Exec.sleep(1000)
+})
+
+task.addPromise('Second task', async () => {
+    await Exec.sleep(1000)
 })
 
 await task.run()
@@ -1052,7 +1073,7 @@ that is exactly what we do internally with other
 #### `this.generator.path()`
 
 Set the file path where the file will be generated.
-Rememeber that the file name in the path will be used
+Remember that the file name in the path will be used
 to define the name properties:
 
 ```typescript
