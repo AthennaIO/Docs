@@ -65,11 +65,62 @@ commands available.
 
 :::
 
+## Extending REPL Context
+
+When running your REPL session, it could be painful to
+keep declaring the same variables over and over again. To
+avoid that you can use the `repl.setIntContext()` method,
+and it will be available in all your REPL sessions:
+
+```typescript title="Path.bootstrap('repl.ts')"
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url, { bootLogs: false })
+
+const repl = await ignite.repl()
+
+repl.setInContext('helloWorld', 'Hello World!')
+repl.setInContext('appService', ioc.safeUse('App/Services/AppService'))
+```
+
+## Custom REPL commands
+
+You can create custom REPL commands like `.ls` and `.clean`
+to make your life easier when running your REPL session:
+
+```typescript title="Path.bootstrap('repl.ts')"
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url, { bootLogs: false })
+
+const repl = await ignite.repl()
+
+repl
+    .command('greet')
+    .help('Greet someone')
+    .action(function action(name: string) {
+        this.clearBufferedCommand()
+        console.log(`Hello ${name}!`)
+        this.displayPrompt()
+    })
+    .register()
+```
+
+Now the `.greet` command will always be available in your
+REPL sessions:
+
+```shell
+.greet Antoine
+> Hello Antoine!
+```
+
 ## Pre-importing modules
 
-You can pre-import modules in your REPL session to avoid keep
-importing them everytime inside your REPL session. You can do that
-in your `Path.bootstrap('repl.ts')` file:
+### Pre-importing module
+
+Like declaring variables in the REPL context, it could be painful
+to import modules in your everytime in your REPL sessions. To avoid
+it you can use the `repl.import()` method:
 
 ```typescript
 import { Ignite } from '@athenna/core'
@@ -78,19 +129,43 @@ const ignite = await new Ignite().load(import.meta.url, { bootLogs: false })
 
 const repl = await ignite.repl()
 
-await import('@athenna/common').then(common => {
-  Object.keys(common).forEach(key => (
-    repl.context[key] = common[key] 👈
-  ))
-})
+await repl.import('common', '@athenna/common')
+```
 
-repl.context.helloWorld = 'Hello World!' 👈
-repl.context.appService = ioc.safeUse('App/Services/AppService') 👈
+Now you are able to use the `common` variable in your REPL sessions:
+
+```typescript
+common.Path.pwd()
+```
+
+### Pre-importing modules names as keys
+
+Sometimes a module exports a variety of classes, functions, etc.
+Like `@athenna/common`, that exports a variety of helpers, and would
+be easier if we could directly use the helper name instead
+of the `common` variable as we have created in the example above.
+With `repl.importAll()` you can import the module names as keys to
+the REPL context:
+
+```typescript
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url, { bootLogs: false })
+
+const repl = await ignite.repl()
+
+await repl.importAll('@athenna/common')
+```
+
+Now you are able to use the `Path` helper directly in your REPL sessions:
+
+```typescript
+Path.pwd()
 ```
 
 :::info
 
-As you can see in the implementation above, by default Athenna
-pre-imports all the `@athenna/common` helpers to your REPL session.
+By default, your `Path.bootstrap('repl.ts')` file already
+imports all the `@athenna/common` helpers to your REPL session 🤩.
 
 :::

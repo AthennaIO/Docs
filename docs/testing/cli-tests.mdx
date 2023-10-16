@@ -39,11 +39,11 @@ assertions for inspecting the output.
 
 The `command` property in your test context will only be 
 available if you register the command plugin within the 
-`Runner` class. By default your Athenna application already 
+`Runner` class. By default, your Athenna application already
 comes with the command plugin registered. But we are 
 going to cover how to register it manually if needed.
 
-Just call the `Runner.addPlugin()` static method to setup 
+Just call the `Runner.addPlugin()` static method to set up
 the request plugin imported from `@athenna/artisan/testing/plugins`:
 
 ```typescript title="Path.bootstrap('test.ts')"
@@ -88,9 +88,11 @@ export default class ExampleTest {
 
 ## Changing Artisan file path
 
+### Changing the default Artisan file path
+
 As mentioned previously, the `command.run()` method invokes 
 a child process using the `Path.bootstrap('artisan.ts')` file.
-But for some reason you may want to change which file should be 
+But for some reason, you may want to change which file should be
 used to test your commands. To do so, you can call the 
 `TestCommand.setArtisanPath()` static method before running
 your tests:
@@ -114,6 +116,62 @@ await Runner.setTsEnv()
   .run()
 ```
 
+### Changing Artisan file path per command
+
+When running your tests, you may want to create a different behavior
+for a specific command, like mocking the prompts to not block your test
+execution or adding some different value for an `Env` or `Config`.
+
+Since the `command.run()` method invokes a child process, you can't do
+this kind of customization in your tests:
+
+```typescript
+import { Config } from '@athenna/config'
+import { Test, type Context } from '@athenna/test'
+
+export default class ExampleTest {
+  @Test()
+  public async testConfigCommand({ command }: Context) {
+    Config.set('app.name', 'MyAppName')
+
+    const output = await command.run('greet')
+
+    output.assertLogged('Hello from MyAppName!') // ❌
+  }
+```
+
+To solve this problem, you can use a different `artisan` file
+for each `command.run()` call. Let's first create a new `artisan`
+file and save it in our `fixtures` path:
+
+```typescript title="Path.fixtures('consoles/artisan-set-app-name.ts')"
+import { Ignite } from '@athenna/core'
+import { Config } from '@athenna/config'
+
+const ignite = await new Ignite().load(import.meta.url, { bootLogs: false })
+
+Config.set('app.name', 'MyAppName')
+
+await ignite.console(process.argv, { displayName: 'Artisan' })
+```
+
+Now, we can use this new `artisan` file to run our command:
+
+```typescript
+import { Path } from '@athenna/common'
+import { Test, type Context } from '@athenna/test'
+
+export default class ExampleTest {
+  @Test()
+  public async testConfigCommand({ command }: Context) {
+    const output = await command.run('greet', {
+      path: Path.fixtures('consoles/artisan-set-app-name.ts') 👈
+    })
+
+    output.assertLogged('Hello from MyAppName!') // ✅
+  }
+```
+
 ## Debugging outputs
 
 After executing a test command to your application, 
@@ -126,7 +184,7 @@ import { Test, type Context } from '@athenna/test'
 export default class ExampleTest {
   @Test()
   public async testBasicCommand({ command }: Context) {
-    const output = await command.run('/')
+    const output = await command.run('basic')
 
     console.log(output.output.stdout)
     console.log(output.output.stderr)
@@ -189,6 +247,7 @@ Assert the command has logged the expected message:
 
 ```typescript
 output.assertLogged('Hello World!')
+output.assertNotLogged('Hello World!')
 ```
 
 This method validates that the log message will be
@@ -198,6 +257,7 @@ argument:
 
 ```typescript
 output.assertLogged('Hello World!', 'stdout') // or stderr
+output.assertNotLogged('Hello World!', 'stdout') // or stderr
 ```
 
 #### `assertLogMatches()`
@@ -208,13 +268,15 @@ provided:
 
 ```typescript
 output.assertLogMatches(/Hello World/)
+output.assertLogNotMatches(/Hello World/)
 ```
 
 This method validates that the regex will match in `stdout` 
 or `stderr`. To force the stream type
-where this log should match you can set it as second 
+where this log should match, you can set it as second
 argument:
 
 ```typescript
 output.assertLogMatches(/Hello World/, 'stdout') // or stderr
+output.assertLogNotMatches(/Hello World/, 'stdout') // or stderr
 ```

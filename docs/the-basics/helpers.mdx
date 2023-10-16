@@ -295,18 +295,56 @@ Execute some command of your OS in a child process:
 ```typescript
 import { Exec } from '@athenna/common'
 
-const { stdout } = await Exec.command('ls -la')
+const { stdout, stderr } = await Exec.command('ls -la')
 ```
 
-If your command fails, Athenna will throw the 
-`NodeCommandException`, to avoid this you can set the 
-`ignoreErrors` option:
+You can add as second parameter an object with some options:
+
+```typescript
+import { Exec, type CommandInput } from '@athenna/common'
+
+const options: CommandInput = {}
+
+const { stdout, stderr } = await Exec.command('ls -la', options)
+```
+
+#### `Exec::shell()`
+
+Same as `Exec::command()` method, but works only for shell consoles:
 
 ```typescript
 import { Exec } from '@athenna/common'
 
-const { stdout, stderr } = await Exec.command('ls -la', {
-  ignoreErrors: true
+const { stdout, stderr } = await Exec.shell('ls -la')
+```
+
+#### `Exec::node()`
+
+Execute some Node.js script in a child process:
+
+```typescript
+#!/usr/bin/env node
+
+import { Exec } from '@athenna/common'
+
+Exec.artisan('./index.ts', {
+  nodeOptions: ['--import=@athenna/tsconfig']
+})
+```
+
+#### `Exec::artisan()`
+
+This method was created specially to execute `artisan` scripts
+in child processes. Under the hood it calls `Exec::node()` method
+but with predefined options:
+
+```typescript
+#!/usr/bin/env node
+
+import { Exec } from '@athenna/common'
+
+Exec.artisan('./bootstrap/artisan.js', {
+  nodeOptions: ['--enable-source-maps', '--import=@athenna/tsconfig']
 })
 ```
 
@@ -3553,6 +3591,44 @@ console.log(Path.ext()) // ts
 process.env.IS_TS = 'false'
 
 console.log(Path.ext()) // js
+```
+
+#### `Path::parseExt()`
+
+Parse a path extension relying on the `IS_TS` environment variable:
+
+```typescript
+const tsPath = 'app/services/MyService.ts'
+const jsPath = 'app/services/MyService.js'
+
+process.env.IS_TS = 'true'
+console.log(Path.parseExt(tsPath)) // app/services/MyService.ts
+console.log(Path.parseExt(jsPath)) // app/services/MyService.ts
+
+process.env.IS_TS = 'false'
+console.log(Path.parseExt(tsPath)) // app/services/MyService.js
+console.log(Path.parseExt(jsPath)) // app/services/MyService.js
+```
+
+#### `Path::toURL()`
+
+Parse a path to a URL instance:
+
+```typescript
+import type { URL } from 'node:url'
+import { Path } from '@athenna/common'
+
+const url: URL = Path.toURL('https://athenna.io')
+```
+
+#### `Path::toHref()`
+
+Parse a path to a URL href string:
+
+```typescript
+import { Path } from '@athenna/common'
+
+const href = Path.toHref('https://athenna.io')
 ```
 
 #### `Path::pwd()`
