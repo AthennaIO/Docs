@@ -19,7 +19,7 @@ This allows you to only test the controller's HTTP response
 without worrying about the execution of the service since 
 the service can be tested in their own test case.
 
-## The `Mock` class
+## Mocking API
 
 ### The `Mock::when()` method
 
@@ -224,11 +224,36 @@ public async shouldBeAbleToSpyAnEntireClass({ assert }: Context) {
 
 ### The `Mock::fake()` method
 
-Coming soon...
+This method is responsible for creating a fake object that
+you can in parallel with `Mock::when()` method:
 
-### The `Mock::stub()` method
+```typescript
+import { AppService } from '#app/services/AppService'
+import { Test, Mock, type Context, AfterEach } from '@athenna/test'
 
-Coming soon...
+export default class MockTest {
+  @AfterEach()
+  public afterEach() {
+    Mock.restoreAll()
+  }
+
+  @Test()
+  public async shouldBeAbleToMockTheReturnOfAClassMethod({ assert }: Context) {
+    Mock.when(AppService.prototype, 'findOne').return({
+      hello: Mock.fake()
+    })
+
+    const appService = new AppService()
+
+    const result = appService.findOne()
+
+    result.hello()
+
+    assert.calledOnce(result.hello)
+    assert.calledOnce(appService.findOne)
+  }
+}
+```
 
 ## Mocking services
 
