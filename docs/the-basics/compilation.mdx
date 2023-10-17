@@ -31,11 +31,19 @@ If you are using `artisan` to run your application,
 it will already compile the code for you in run time,
 thanks to the `ts-node/esm` loader.
 
-However, if you want to run a simple script file using
-`node`, you can use the `--import=@athenna/tsconfig`:
+However, you may want to run a different TypeScript
+file using `node`.
+
+For Node.js v20.x or higher:
 
 ```shell
 node --import=@athenna/tsconfig index.ts
+```
+
+For Node.js v19.x or lower:
+
+```shell
+node --loader=ts-node/esm index.ts
 ```
 
 ## Compiling for production
