@@ -51,7 +51,7 @@ node artisan make:provider AppProvider
 As mentioned previously, within the `register` method, you should only bind
 things into the service container. You should never attempt to register any
 piece of functionality within the `register` method. Otherwise, you may
-accidentally use a service that is provided by a service provider which has
+accidentally use a service provided by a service provider which has
 not loaded yet.
 
 Let's take a look at a basic service provider. Within any of your service
@@ -98,7 +98,7 @@ export default class AppProvider extends ServiceProvider {
 ### The `shutdown` method
 
 The `shutdown` method will be called when the application is going down for
-some reason. This method is extremely useful for gracefully shutdown the
+some reason. This method is extremely useful for graceful shutdown the
 application, and it's used in providers such as `HttpServerProvider` and
 `DatabaseProvider`:
 

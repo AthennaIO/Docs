@@ -136,7 +136,7 @@ export default class ExampleTest {
 
     const output = await command.run('greet')
 
-    output.assertLogged('Hello from MyAppName!') // ❌
+    output.assertLogged('Hello from MyAppName!') ❌
   }
 ```
 
@@ -168,7 +168,7 @@ export default class ExampleTest {
       path: Path.fixtures('consoles/artisan-set-app-name.ts') 👈
     })
 
-    output.assertLogged('Hello from MyAppName!') // ✅
+    output.assertLogged('Hello from MyAppName!') ✅
   }
 ```
 
@@ -220,7 +220,7 @@ output.assertIsNotExitCode(1)
 :::tip
 
 The `0` exit code means a successful exit of the command,
-anything different then `0` means an error.
+anything different from `0` means an error.
 
 :::
 
@@ -252,7 +252,7 @@ output.assertNotLogged('Hello World!')
 
 This method validates that the log message will be
 printed in `stdout` or `stderr`. To force the stream type
-where this log should appears you can set it as second 
+where this log should appear, you can set it as second
 argument:
 
 ```typescript
