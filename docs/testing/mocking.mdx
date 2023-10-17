@@ -40,7 +40,7 @@ export default class MockTest {
   }
 
   @Test()
-  public async shouldBeAbleToMockAnObjectMethod({ assert }: Context) {
+  public async mockAnObjectMethod({ assert }: Context) {
     Mock.when(this.object, 'hello').return('hello world')
 
     assert.equal(this.object.hello(), 'hello world')
@@ -64,7 +64,7 @@ For promises, you can use the `resolve()` or `reject()` methods:
 
 ```typescript
 @Test()
-public async shouldBeAbleToMockAnObjectMethod({ assert }: Context) {
+public async mockAnObjectMethod({ assert }: Context) {
   // Resolving a promise
   Mock.when(this.object, 'hello').resolve('hello world')
   assert.equal(await this.object.hello(), 'hello world')
@@ -81,7 +81,7 @@ assertions:
 
 ```typescript
 @Test()
-public async shouldBeAbleToMockAnObjectMethod({ assert }: Context) {
+public async mockAnObjectMethod({ assert }: Context) {
   const helloMock = Mock.when(this.object, 'hello').resolve('hello world')
 
   await this.someMethodThatCallsHelloMethod()
@@ -96,11 +96,11 @@ There are two ways to mock a class method. The first one is
 mocking the class instance directly:
 
 ```typescript
-import { AppService } from '#app/services/AppService'
+import { ApiHelper } from '#app/helpers/ApiHelper'
 import { Test, Mock, type Context, AfterEach } from '@athenna/test'
 
 export default class MockTest {
-  public appService = new AppService()
+  public apiHelper = new ApiHelper()
 
   @AfterEach()
   public afterEach() {
@@ -108,23 +108,23 @@ export default class MockTest {
   }
 
   @Test()
-  public async shouldBeAbleToMockAClassMethod({ assert }: Context) {
-    Mock.when(this.appService, 'findOne').return({ fake: true })
+  public async mockAClassMethod({ assert }: Context) {
+    Mock.when(this.apiHelper, 'findOne').return({ fake: true })
 
-    assert.equal(this.appService.findOne(), { fake: true })
+    assert.deepEqual(this.apiHelper.findOne(), { fake: true })
   }
 }
 ```
 
 With this approach, you can only mock the method for the current
-instance. If another instance of `AppService` is created, that
+instance. If another instance of `ApiHelper` is created, that
 one will not be mocked.
 
 To mock a class method for all instances of a given class, you
 need to mock the class `prototype`:
 
 ```typescript
-import { AppService } from '#app/services/AppService'
+import { ApiHelper } from '#app/helpers/ApiHelper'
 import { Test, Mock, type Context, AfterEach } from '@athenna/test'
 
 export default class MockTest {
@@ -134,10 +134,10 @@ export default class MockTest {
   }
 
   @Test()
-  public async shouldBeAbleToMockAClassMethod({ assert }: Context) {
-    Mock.when(AppService.prototype, 'findOne').return({ fake: true })
+  public async mockAClassMethod({ assert }: Context) {
+    Mock.when(ApiHelper.prototype, 'findOne').return({ fake: true })
 
-    assert.equal(new AppService().findOne(), { fake: true })
+    assert.deepEqual(new ApiHelper().findOne(), { fake: true })
   }
 }
 ```
@@ -160,7 +160,7 @@ behavior of the method, it will only spy it and allow you to verify
 if the given method was called, how many times, and with which params:
 
 ```typescript
-import { AppService } from '#app/services/AppService'
+import { ApiHelper } from '#app/helpers/ApiHelper'
 import { Test, Mock, type Context, AfterEach } from '@athenna/test'
 
 export default class MockTest {
@@ -170,14 +170,14 @@ export default class MockTest {
   }
 
   @Test()
-  public async shouldBeAbleToSpyAClassMethod({ assert }: Context) {
-    Mock.spy(AppService.prototype, 'findOne')
+  public async spyAClassMethod({ assert }: Context) {
+    Mock.spy(ApiHelper.prototype, 'findOne')
 
-    const appService = new AppService()
+    const apiHelper = new ApiHelper()
 
-    appService.findOne()
+    apiHelper.findOne()
 
-    assert.calledOnce(appService.findOne)
+    assert.calledOnce(apiHelper.findOne)
   }
 }
 ```
@@ -188,10 +188,10 @@ and use it to make your assertions:
 
 ```typescript
 @Test()
-public async shouldBeAbleToSpyAClassMethod({ assert }: Context) {
-  const findOneSpy = Mock.spy(AppService.prototype, 'findOne')
+public async spyAClassMethod({ assert }: Context) {
+  const findOneSpy = Mock.spy(ApiHelper.prototype, 'findOne')
 
-  await this.someMethodThatCallsAppServiceFindOne()
+  await this.someMethodThatCallsApiHelperFindOne()
 
   assert.calledOnce(findOneSpy)
 }
@@ -211,14 +211,14 @@ given object:
 
 ```typescript
 @Test()
-public async shouldBeAbleToSpyAnEntireClass({ assert }: Context) {
-  Mock.spy(AppService.prototype)
+public async spyAnEntireClass({ assert }: Context) {
+  Mock.spy(ApiHelper.prototype)
 
-  const appService = new AppService()
+  const apiHelper = new ApiHelper()
 
-  appService.findOne()
+  apiHelper.findOne()
 
-  assert.calledOnce(appService.findOne)
+  assert.calledOnce(apiHelper.findOne)
 }
 ```
 
@@ -226,6 +226,39 @@ public async shouldBeAbleToSpyAnEntireClass({ assert }: Context) {
 
 This method is responsible for creating a fake object that
 you can in parallel with `Mock::when()` method:
+
+```typescript
+import { ApiHelper } from '#app/helpers/ApiHelper'
+import { Test, Mock, type Context, AfterEach } from '@athenna/test'
+
+export default class MockTest {
+  @AfterEach()
+  public afterEach() {
+    Mock.restoreAll()
+  }
+
+  @Test()
+  public async mockReturnOfClassMethod({ assert }: Context) {
+    Mock.when(ApiHelper.prototype, 'findOne').return({
+      hello: Mock.fake()
+    })
+
+    const apiHelper = new ApiHelper()
+
+    const result = apiHelper.findOne()
+
+    result.hello()
+
+    assert.calledOnce(result.hello)
+    assert.calledOnce(apiHelper.findOne)
+  }
+}
+```
+
+## Mocking services
+
+Mocking a service is the same process of mocking a simple class
+using the `prototype` property:
 
 ```typescript
 import { AppService } from '#app/services/AppService'
@@ -238,30 +271,20 @@ export default class MockTest {
   }
 
   @Test()
-  public async shouldBeAbleToMockTheReturnOfAClassMethod({ assert }: Context) {
-    Mock.when(AppService.prototype, 'findOne').return({
-      hello: Mock.fake()
-    })
+  public async mockServiceMethod({ assert }: Context) {
+    Mock.when(AppService.prototype, 'findOne').return({ fake: true }) 👈
 
-    const appService = new AppService()
-
-    const result = appService.findOne()
-
-    result.hello()
-
-    assert.calledOnce(result.hello)
-    assert.calledOnce(appService.findOne)
+    assert.deepEqual(new AppService().findOne(), { fake: true })
   }
 }
 ```
 
-## Mocking services
+### Replacing the entire service
 
-Mocking a single service method could be a difficult thing to do
-if your service is not going to be registered as a singleton in your
-application. The best way to mock a service is by instantiating
-a new instance of the service, registering it in the container
-and then mocking the method you want in each test case:
+Sometimes you may want to have more control over the service
+instance; for this scenario, we recommend you to create a new instance
+of the service within your test class, registering it in the service
+container and then mocking the method you want in each test case:
 
 ```typescript
 import { AppService } from '#app/services/AppService'
@@ -273,7 +296,7 @@ export default class AppControllerTest extends BaseHttpTest {
 
   @BeforeAll()
   public async beforeAll() {
-    ioc.instance('App/Services/AppService', this.appService)
+    ioc.instance('App/Services/AppService', this.appService) 👈
   }
 
   @AfterEach()
@@ -282,8 +305,8 @@ export default class AppControllerTest extends BaseHttpTest {
   }
 
   @Test()
-  public async shouldBeAbleToMock({ assert, request }: Context) {
-    Mock.when(this.appService, 'findOne').return({ fake: true })
+  public async mockServiceMethod({ assert, request }: Context) {
+    Mock.when(this.appService, 'findOne').return({ fake: true }) 👈
 
     const response = await request.get('/api/v1')
 
@@ -294,39 +317,127 @@ export default class AppControllerTest extends BaseHttpTest {
 }
 ```
 
-### Replacing the entire service
+:::warning
 
-If you prefer you can also replace the entire service with
-a mocked version of your service using the `ioc.fake()` method
+Keep in mind that if you change your service alias in the
+`@Service()` annotation, you will also need to use the same
+value in the `ioc.instance()` method.
 
-```typescript
-import { Test, BeforeAll, type Context } from '@athenna/test'
-import { AppServiceMock } from '#tests/fixtures/AppServiceMock'
-import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
+For more information, check the [`@Service()`](/docs/architecture-concepts/service-container#the-service-annotation)
+annotation documentation section.
 
-export default class AppControllerTest extends BaseHttpTest {
-  @BeforeAll()
-  public beforeAll() {
-    ioc
-      .fake('App/Services/AppService', AppServiceMock)
-      .alias('appService', 'App/Services/AppService')
-  }
+:::
 
-  @Test()
-  public async shouldBeAbleToMock({ request }: Context) {
-    const response = await request.get('/api/v1')
+With `ioc.instance()` method, you can also create an entire different
+implementation of your service that will be used only for testing:
 
-    response.assertStatusCode(200)
-    response.assertBodyContains({ fake: true })
+```typescript title="Path.fixtures('services/FakeAppService.ts')"
+import { AppServiceInterface } from '#app/interfaces/AppServiceInterface'
+
+export class FakeAppService implements AppServiceInterface {
+  public findOne() {
+    return { fake: true }
   }
 }
 ```
 
-### Using the `@InjectMock()` annotation
+And now let's use it in our test class:
+
+```typescript
+import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
+import { FakeAppService } from '#tests/fixtures/services/FakeAppService'
+import { Test, type Context, BeforeAll, Mock, AfterEach } from '@athenna/test'
+
+export default class AppControllerTest extends BaseHttpTest {
+  @BeforeAll()
+  public async beforeAll() {
+    ioc.instance('App/Services/AppService', new FakeAppService()) 👈
+  }
+
+  @AfterEach()
+  public async afterEach() {
+    Mock.restoreAll()
+  }
+
+  @Test()
+  public async mockServiceMethod({ request }: Context) {
+    const response = await request.get('/api/v1')
+
+    response.assertStatusCode(200)
+    response.assertBodyContains({ fake: true }) 👈
+  }
+}
+```
+
+:::tip
+
+Taste the power of dependency injection! 🚀🧙‍♂️
+
+:::
+
+## Mocking facades
+
+When testing, you may often want to mock a call to
+an Athenna facade that occurs in your code logic.
+For example, consider the following controller action:
+
+```typescript
+import { Mail } from '@athenna/mail'
+import { Controller, type Context } from '@athenna/http'
+
+@Controller()
+export class UserController {
+  public async store({ response }: Context) {
+    const user = {
+      name: 'Antoine Du Hamel',
+      email: 'duhamelantoine1995@gmail.com'
+    }
+
+    await Mail.from('lenon@athenna.io')
+        .to(user.email)
+        .subject(`Welcome ${user.name} to Athenna!`)
+        .html('<h1>Welcome to Athenna!</h1>')
+        .send()
+
+    return response.status(200).send(user)
+  }
+}
+```
+
+We can mock the call to the `Mail` facade by using the
+`when()` method, check the example:
+
+```typescript
+import { Mail } from '@athenna/mail'
+import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
+import { Test, type Context, Mock, AfterEach } from '@athenna/test'
+
+export default class AppControllerTest extends BaseHttpTest {
+  @AfterEach()
+  public async afterEach() {
+    Mock.restoreAll()
+  }
+
+  @Test()
+  public async mockMailSendMethod({ assert, request }: Context) {
+    Mail.when('send').resolve(undefined) 👈
+
+    const response = await request.post('/api/v1/users')
+
+    assert.calledOnce(Mail.send) 👈
+    response.assertStatusCode(200)
+    response.assertBodyContains([
+        // ...
+    ])
+  }
+}
+```
+
+### Facade stubs
 
 Coming soon...
 
-## Mocking facades
+### Facade spies
 
 Coming soon...
 

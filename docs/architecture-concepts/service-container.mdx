@@ -208,8 +208,7 @@ The command above will create the `Path.services('StringNormalizer.ts')`
 file and will automatically register the service in the `services` property
 of the `.athennarc.json` file.
 
-Let's add some configuration to the `@Service()` annotation of
-`StringNormalizer` class:
+Let's add some configuration to it:
 
 ```typescript title="Path.services('StringNormalizer.ts')"
 import { Service } from '@athenna/ioc'
@@ -226,13 +225,27 @@ export class StringNormalizer {
 }
 ```
 
-When bootstrapping the Athenna application the `StringNormalizer` class
-will be registered in the service container as a
-[singleton](/docs/architecture-concepts/service-container#binding-a-singleton)
-with the alias `App/Services/StringNormalizer` and the camel alias
-`stringNormalizer`, that is typically used in
-[automatic constructor injections](/docs/architecture-concepts/service-container#automatic-constructor-injection)
-and also by [the `@Inject()` annotation](/docs/architecture-concepts/service-container#using-inject-annotation) when no alias is provided to it.
+The following operations will be done in `StringNormalizer` class
+when bootstrapping the Athenna application:
+
+1. The class will be registered in the container with the
+alias `App/Services/StringNormalizer`.
+2. The registration type will be [singleton](/docs/architecture-concepts/service-container#binding-a-singleton), meaning
+that the same instance of the class will be resolved from
+the container everytime it is requested.
+3. The camel alias of the class will be `stringNormalizer`,
+that is typically used in [automatic constructor injections](/docs/architecture-concepts/service-container#automatic-constructor-injection)
+and also by [the `@Inject()` annotation](/docs/architecture-concepts/service-container#using-inject-annotation)
+to resolve the class from the container.
+
+:::note
+
+By default, the `@Service()` annotation will always register
+your services as [transient](/docs/architecture-concepts/service-container#binding-transients),
+meaning that a new instance of your class will be resolved from the container
+everytime.
+
+:::
 
 ## Resolving
 
