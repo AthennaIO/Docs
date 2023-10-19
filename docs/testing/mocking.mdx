@@ -19,44 +19,51 @@ This allows you to only test the controller's HTTP response
 without worrying about the execution of the service since 
 the service can be tested in their own test case.
 
-## Mocking API
+This API uses [sinon](https://sinonjs.org/) library under
+the hood to integrate with the Athenna ecosystem. If you need
+to create more complex mocks, we recommend you to check their
+documentation.
 
-### The `Mock::when()` method
+## Mocking objects
 
-This method is responsible for mocking the return
-value of a given object method:
+The most convenient way to mock an object and change
+it behavior is by using the `Mock::when()` method:
 
 ```typescript
-import { Test, Mock, type Context, AfterEach } from '@athenna/test'
+import { Test, Mock, type Context } from '@athenna/test'
 
 export default class MockTest {
   public object = {
-    hello: () => undefined
-  }
-
-  @AfterEach()
-  public afterEach() {
-    Mock.restoreAll()
+    foo: () => undefined
   }
 
   @Test()
   public async mockAnObjectMethod({ assert }: Context) {
-    Mock.when(this.object, 'hello').return('hello world')
+    Mock.when(this.object, 'foo').return('bar') 👈
 
-    assert.equal(this.object.hello(), 'hello world')
+    assert.equal(this.object.foo(), 'bar')
   }
 }
 ```
+
+:::tip
+
+The `Mock::when()` method is a shorthand for `Mock::stub()`.
+If you want to learn more about stubs and their API, check
+[the stub documentation](https://sinonjs.org/releases/latest/stubs/)
+from sinon.
+
+:::
 
 You can also use this method to throw an error when the
 given method is called:
 
 ```typescript
 @Test()
-public async shouldBeAbleToMockAnObjectMethod({ assert }: Context) {
-  Mock.when(this.object, 'hello').throw(new Error('hello world'))
+public async mockAnObjectMethod({ assert }: Context) {
+  Mock.when(this.object, 'foo').throw(new Error()) 👈
 
-  assert.throw(() => this.object.hello(), 'hello world')
+  assert.throw(() => this.object.foo(), Error)
 }
 ```
 
@@ -66,134 +73,52 @@ For promises, you can use the `resolve()` or `reject()` methods:
 @Test()
 public async mockAnObjectMethod({ assert }: Context) {
   // Resolving a promise
-  Mock.when(this.object, 'hello').resolve('hello world')
-  assert.equal(await this.object.hello(), 'hello world')
+  Mock.when(this.object, 'foo').resolve('bar')
+  assert.equal(await this.object.bar(), 'bar')
 
   // Rejecting a promise
-  Mock.when(this.object, 'hello').reject(new Error('hello world'))
-  await assert.rejects(() => this.object.hello(), 'hello world')
+  Mock.when(this.object, 'foo').reject(new Error())
+  await assert.rejects(() => this.object.foo(), Error)
 }
 ```
 
-If you don't have access to the method you want to mock, you can
+If you don't have access to the method you are mocking, you can
 save the return of `Mock::when()` method and use it to make your
 assertions:
 
 ```typescript
 @Test()
 public async mockAnObjectMethod({ assert }: Context) {
-  const helloMock = Mock.when(this.object, 'hello').resolve('hello world')
+  const fooMock = Mock.when(this.object, 'foo').resolve('bar')
 
-  await this.someMethodThatCallsHelloMethod()
+  await this.someMethodThatCallsFooMethod()
 
-  assert.isTrue(helloMock.called)
+  assert.isTrue(fooMock.called)
 }
 ```
 
-#### Mocking a class method
-
-There are two ways to mock a class method. The first one is
-mocking the class instance directly:
+To deal with more complex objects while using
+`Mock::when()`, you can use the `Mock::fake()`
+method that creates a fake method that you can
+replace by the original one:
 
 ```typescript
-import { ApiHelper } from '#app/helpers/ApiHelper'
-import { Test, Mock, type Context, AfterEach } from '@athenna/test'
+import { Test, Mock, type Context } from '@athenna/test'
 
 export default class MockTest {
-  public apiHelper = new ApiHelper()
-
-  @AfterEach()
-  public afterEach() {
-    Mock.restoreAll()
+  public object = {
+    foo: () => ({ bar: () => undefined })
   }
 
   @Test()
-  public async mockAClassMethod({ assert }: Context) {
-    Mock.when(this.apiHelper, 'findOne').return({ fake: true })
+  public async fakeAnObjectMethod({ assert }: Context) {
+    const barFake = Mock.fake()
+    Mock.when(this.object, 'foo').return({ bar: barFake }) 👈
 
-    assert.deepEqual(this.apiHelper.findOne(), { fake: true })
+    this.object.foo().bar()
+
+    assert.calledOnce(barFake)
   }
-}
-```
-
-With this approach, you can only mock the method for the current
-instance. If another instance of `ApiHelper` is created, that
-one will not be mocked.
-
-To mock a class method for all instances of a given class, you
-need to mock the class `prototype`:
-
-```typescript
-import { ApiHelper } from '#app/helpers/ApiHelper'
-import { Test, Mock, type Context, AfterEach } from '@athenna/test'
-
-export default class MockTest {
-  @AfterEach()
-  public afterEach() {
-    Mock.restoreAll()
-  }
-
-  @Test()
-  public async mockAClassMethod({ assert }: Context) {
-    Mock.when(ApiHelper.prototype, 'findOne').return({ fake: true })
-
-    assert.deepEqual(new ApiHelper().findOne(), { fake: true })
-  }
-}
-```
-
-:::caution
-
-Never forget to restore all mocks after each test case. If you don't
-restore it, the mock will be kept in memory and will affect your other
-tests. Test cases should be isolated from each other, so always try to
-create your mocks inside your test cases to avoid problems when your
-application gets bigger.
-
-:::
-
-### The `Mock::spy()` method
-
-This method is responsible for spying on a given object method.
-Different from `Mock::when()`, this method will not change the
-behavior of the method, it will only spy it and allow you to verify
-if the given method was called, how many times, and with which params:
-
-```typescript
-import { ApiHelper } from '#app/helpers/ApiHelper'
-import { Test, Mock, type Context, AfterEach } from '@athenna/test'
-
-export default class MockTest {
-  @AfterEach()
-  public afterEach() {
-    Mock.restoreAll()
-  }
-
-  @Test()
-  public async spyAClassMethod({ assert }: Context) {
-    Mock.spy(ApiHelper.prototype, 'findOne')
-
-    const apiHelper = new ApiHelper()
-
-    apiHelper.findOne()
-
-    assert.calledOnce(apiHelper.findOne)
-  }
-}
-```
-
-Just like `Mock::when()`, if you don't have access to the method
-you want to spy, you can save the return of `Mock::spy()` method
-and use it to make your assertions:
-
-```typescript
-@Test()
-public async spyAClassMethod({ assert }: Context) {
-  const findOneSpy = Mock.spy(ApiHelper.prototype, 'findOne')
-
-  await this.someMethodThatCallsApiHelperFindOne()
-
-  assert.calledOnce(findOneSpy)
 }
 ```
 
@@ -205,71 +130,157 @@ documentation section.
 
 :::
 
-Since `Mock::spy()` does not change the behavior of the method,
-but only spies it, you can use it to spy all the methods of a
-given object:
+### Restoring mocks
+
+When you mock a method, you are changing its behavior, so
+is important to restore the default behavior of the method
+and also reset the mock history after your test finishes.
+
+To do so you can use the `Mock::restore()` method within
+`@AfterEach()` hook:
 
 ```typescript
-@Test()
-public async spyAnEntireClass({ assert }: Context) {
-  Mock.spy(ApiHelper.prototype)
-
-  const apiHelper = new ApiHelper()
-
-  apiHelper.findOne()
-
-  assert.calledOnce(apiHelper.findOne)
-}
-```
-
-### The `Mock::fake()` method
-
-This method is responsible for creating a fake object that
-you can in parallel with `Mock::when()` method:
-
-```typescript
-import { ApiHelper } from '#app/helpers/ApiHelper'
-import { Test, Mock, type Context, AfterEach } from '@athenna/test'
+import { Test, Mock, AfterEach, type Context } from '@athenna/test'
 
 export default class MockTest {
+  public object = {
+    foo: () => undefined
+  }
+
   @AfterEach()
   public afterEach() {
-    Mock.restoreAll()
+    Mock.restore(this.object.foo) 👈
   }
 
   @Test()
-  public async mockReturnOfClassMethod({ assert }: Context) {
-    Mock.when(ApiHelper.prototype, 'findOne').return({
-      hello: Mock.fake()
-    })
+  public async mockAnObjectMethod({ assert }: Context) {
+    Mock.when(this.object, 'foo').return('bar')
 
-    const apiHelper = new ApiHelper()
-
-    const result = apiHelper.findOne()
-
-    result.hello()
-
-    assert.calledOnce(result.hello)
-    assert.calledOnce(apiHelper.findOne)
+    assert.equal(this.object.foo(), 'bar')
   }
 }
 ```
 
-## Mocking services
+Restoring each mock individually can be a tedious task, so
+to be more convenient for you, use the `Mock::restoreAll()`
+method to restore all everything that has been mocked using
+`Mock` class to default:
 
-Mocking a service is the same process of mocking a simple class
+```typescript
+@AfterEach()
+public afterEach() {
+ Mock.restoreAll()
+}
+```
+
+### Spying objects
+
+Sometimes you might need to only spy a given method
+without changing its behavior. For this scenario, you
+can use the `Mock::spy()` method:
+
+```typescript
+import { Test, Mock, type Context } from '@athenna/test'
+
+export default class MockTest {
+  public object = {
+    foo: () => 'bar'
+  }
+
+  @Test()
+  public async spyAnObjectMethod({ assert }: Context) {
+    const spy = Mock.spy(this.object, 'foo') 👈
+
+    assert.equal(this.object.foo(), 'bar')
+    assert.isTrue(spy.called) 👈
+  }
+}
+```
+
+You can also spy an entire object using `Mock::spy()`:
+
+```typescript
+@Test()
+public async spyAnObjectMethod({ assert }: Context) {
+  Mock.spy(this.object) 👈
+
+  assert.equal(this.object.foo(), 'bar')
+  assert.isTrue(this.object.foo.called) 👈
+}
+```
+
+Just like `Mock::when()`, if you don't have access to the method
+you want to spy, you can save the return of `Mock::spy()` method
+and use it to make your assertions:
+
+```typescript
+@Test()
+public async spyAnObjectMethod({ assert }: Context) {
+  Mock.spy(this.object) 👈
+
+  await this.someMethodThatCallsObjectFoo()
+
+  assert.calledOnce(this.object.foo) 👈
+}
+```
+
+## Mocking classes
+
+Mocking classes is the same of mocking objects. But you need
+to be aware when you are mocking a class instance or all instances
+of it (`prototype`).
+
+Let's see how to mock a single class instance:
+
+```typescript
+import { ApiHelper } from '#app/helpers/ApiHelper'
+import { Test, Mock, type Context  } from '@athenna/test'
+
+export default class MockTest {
+  public apiHelper = new ApiHelper()
+
+  @Test()
+  public async mockAClassMethod({ assert }: Context) {
+    Mock.when(this.apiHelper, 'findOne').return({ fake: true })
+
+    assert.deepEqual(this.apiHelper.findOne(), { fake: true })
+  }
+}
+```
+
+As mentioned before, with this approach, you can only mock
+the method for the current instance. If another instance of
+`ApiHelper` is created, that one will not be mocked.
+
+To mock a class method for all instances of a given class, you
+need to mock the class `prototype`:
+
+```typescript
+import { ApiHelper } from '#app/helpers/ApiHelper'
+import { Test, Mock, type Context } from '@athenna/test'
+
+export default class MockTest {
+  @Test()
+  public async mockAClassMethod({ assert }: Context) {
+    Mock.when(ApiHelper.prototype, 'findOne').return({ fake: true })
+
+    assert.deepEqual(new ApiHelper().findOne(), { fake: true })
+  }
+}
+```
+
+### Mocking services
+
+Since the default registration type of services is [transient](/docs/architecture-concepts/service-container#binding-transients),
+mocking a service from the [service container](/docs/architecture-concepts/service-container)
+is the same process of mocking a simple class
 using the `prototype` property:
 
 ```typescript
 import { AppService } from '#app/services/AppService'
-import { Test, Mock, type Context, AfterEach } from '@athenna/test'
+import { Test, Mock, type Context } from '@athenna/test'
 
 export default class MockTest {
-  @AfterEach()
-  public afterEach() {
-    Mock.restoreAll()
-  }
-
   @Test()
   public async mockServiceMethod({ assert }: Context) {
     Mock.when(AppService.prototype, 'findOne').return({ fake: true }) 👈
@@ -279,7 +290,15 @@ export default class MockTest {
 }
 ```
 
-### Replacing the entire service
+:::tip
+
+If your service is registered as a [singleton](/docs/architecture-concepts/service-container#binding-singletons)
+check the [inversion of control](/docs/architecture-concepts/service-container#inversion-of-control)
+documentation section.
+
+:::
+
+### Inversion of control
 
 Sometimes you may want to have more control over the service
 instance; for this scenario, we recommend you to create a new instance
@@ -289,7 +308,7 @@ container and then mocking the method you want in each test case:
 ```typescript
 import { AppService } from '#app/services/AppService'
 import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
-import { Test, type Context, BeforeAll, Mock, AfterEach } from '@athenna/test'
+import { Test, type Context, BeforeAll, Mock } from '@athenna/test'
 
 export default class AppControllerTest extends BaseHttpTest {
   public appService = new AppService()
@@ -297,11 +316,6 @@ export default class AppControllerTest extends BaseHttpTest {
   @BeforeAll()
   public async beforeAll() {
     ioc.instance('App/Services/AppService', this.appService) 👈
-  }
-
-  @AfterEach()
-  public async afterEach() {
-    Mock.restoreAll()
   }
 
   @Test()
@@ -312,7 +326,7 @@ export default class AppControllerTest extends BaseHttpTest {
 
     response.assertStatusCode(200)
     response.assertBodyContains({ fake: true })
-    assert.calledOnce(this.appService.findOne)
+    assert.calledOnce(this.appService.findOne) 👈
   }
 }
 ```
@@ -344,19 +358,14 @@ export class FakeAppService implements AppServiceInterface {
 And now let's use it in our test class:
 
 ```typescript
+import { Test, BeforeAll, type Context } from '@athenna/test'
 import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
 import { FakeAppService } from '#tests/fixtures/services/FakeAppService'
-import { Test, type Context, BeforeAll, Mock, AfterEach } from '@athenna/test'
 
 export default class AppControllerTest extends BaseHttpTest {
   @BeforeAll()
   public async beforeAll() {
     ioc.instance('App/Services/AppService', new FakeAppService()) 👈
-  }
-
-  @AfterEach()
-  public async afterEach() {
-    Mock.restoreAll()
   }
 
   @Test()
@@ -409,15 +418,10 @@ We can mock the call to the `Mail` facade by using the
 
 ```typescript
 import { Mail } from '@athenna/mail'
+import { Test, type Context } from '@athenna/test'
 import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
-import { Test, type Context, Mock, AfterEach } from '@athenna/test'
 
 export default class AppControllerTest extends BaseHttpTest {
-  @AfterEach()
-  public async afterEach() {
-    Mock.restoreAll()
-  }
-
   @Test()
   public async mockMailSendMethod({ assert, request }: Context) {
     Mail.when('send').resolve(undefined) 👈
@@ -433,18 +437,250 @@ export default class AppControllerTest extends BaseHttpTest {
 }
 ```
 
-### Facade stubs
+### Restoring facades
 
-Coming soon...
+To restore a mocked facade to it default behavior, you
+can use the `restore()` method:
 
-### Facade spies
+```typescript
+@AfterEach()
+public afterEach() {
+  Mail.restore()
+}
+```
 
-Coming soon...
+:::warning
+
+When mocking facades, calling `Mock::restoreAll()` method
+will restore the facade to its default behavior, but it
+will leave the facade using the same instance for all calls. IOW,
+the facade is converted to a [singleton](/docs/architecture-concepts/service-container#binding-singleton).
+
+This could lead to unexpected behavior in your tests, so it is recommended
+to restore each facade individually:
+
+```typescript
+@AfterEach()
+public afterEach() {
+  Mail.restore()
+  Mock.restoreAll()
+}
+```
+
+:::
+
+### Spying facades
+
+If you would like to spy on a facade, you may call
+the `spy()` method on the corresponding facade:
+
+```typescript
+import { Mail } from '@athenna/mail'
+import { Test, type Context } from '@athenna/test'
+import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
+
+export default class AppControllerTest extends BaseHttpTest {
+  @Test()
+  public async spyMailSendMethod({ assert, request }: Context) {
+    Mail.spy('send') 👈
+
+    const response = await request.post('/api/v1/users')
+
+    assert.calledOnce(Mail.send) 👈
+    response.assertStatusCode(200)
+    response.assertBodyContains([
+        // ...
+    ])
+  }
+}
+```
+
+:::note
+
+Remember that the code above will effectively try to send
+the email since spies does not change the behavior of the
+method.
+
+:::
 
 ## Assertions in mocks
 
-Coming soon...
+Athenna's `assert` helper provides a variety of extended
+assertion methods that you may utilize when testing your
+mocks:
+
+- [`assert.called()`](/docs/mocking/assertions-in-mocks#assertcalled)
+- [`assert.calledOnce()`](/docs/mocking/assertions-in-mocks#assertcalledonce)
+- [`assert.calledTimes()`](/docs/mocking/assertions-in-mocks#assertcalledtimes)
+- [`assert.calledWith()`](/docs/mocking/assertions-in-mocks#assertcalledwith)
+- [`assert.calledOnceWith()`](/docs/mocking/assertions-in-mocks#assertcalledoncewith)
+- [`assert.calledTimesWith()`](/docs/mocking/assertions-in-mocks#assertcalledtimeswith)
+- [`assert.calledWithMatch()`](/docs/mocking/assertions-in-mocks#assertcalledwithmatch)
+- [`assert.calledBefore()`](/docs/mocking/assertions-in-mocks#assertcalledbefore)
+- [`assert.calledAfter()`](/docs/mocking/assertions-in-mocks#assertcalledafter)
+
+#### `assert.called()`
+
+Assert the mock was called at least once:
+
+```typescript
+assert.called(this.object.foo)
+assert.notCalled(this.object.foo)
+```
+
+#### `assert.calledOnce()`
+
+Assert the mock was called only once:
+
+```typescript
+assert.calledOnce(this.object.foo)
+assert.notCalledOnce(this.object.foo)
+```
+
+#### `assert.calledTimes()`
+
+Assert the mock was called the given number of times:
+
+```typescript
+assert.calledTimes(this.object.foo, 1)
+assert.notCalledTimes(this.object.foo, 1)
+```
+
+#### `assert.calledWith()`
+
+Assert the mock was called with the given arguments:
+
+```typescript
+assert.calledWith(this.object.foo, 'bar')
+assert.notCalledWith(this.object.foo, 'bar')
+```
+
+#### `assert.calledOnceWith()`
+
+Assert the mock was called only once with the given arguments:
+
+```typescript
+assert.calledOnceWith(this.object.foo, 'bar')
+assert.notCalledOnceWith(this.object.foo, 'bar')
+```
+
+#### `assert.calledTimesWith()`
+
+Assert the mock was called the given times with the given arguments:
+
+```typescript
+assert.calledTimesWith(this.object.foo, 1, 'bar')
+assert.notCalledTimesWith(this.object.foo, 1, 'bar')
+```
+
+#### `assert.calledWithMatch()`
+
+Assert the mock was called with the given arguments
+matching some of the given arguments.
+
+```typescript
+assert.calledWithMatch(this.object.foo, 'bar')
+assert.notCalledWithMatch(this.object.foo, 'bar')
+```
+
+:::tip
+
+This is an alias for the following:
+
+```typescript
+assert.calledWith(this.object.foo, Mock.match('bar'))
+```
+
+:::
+
+#### `assert.calledBefore()`
+
+Assert the mock was called before another mock:
+
+```typescript
+assert.calledBefore(this.object.foo, this.object.bar)
+assert.notCalledBefore(this.object.foo, this.object.bar)
+```
+
+#### `assert.calledAfter()`
+
+Assert the mock was called after another mock:
+
+```typescript
+assert.calledAfter(this.object.foo, this.object.bar)
+assert.notCalledAfter(this.object.foo, this.object.bar)
+```
 
 ## Mocking commands
 
-Coming soon...
+:::note
+
+Before checking how to mock commands, we recommend you
+to check the [changing Artisan file path per command
+documentation section](/docs/testing/cli-tests#changing-artisan-file-path-per-command)
+to understand how you can create an isolated test case
+for the command you wish to test.
+
+:::
+
+When testing commands, you may often want to mock some
+logic that happens inside the child process that Athenna
+creates to run your command.
+
+Let's suppose we have created a command called `greet`
+which prompts the user his name to say hy:
+
+```typescript title="Path.commands('Greet.ts')"
+import { BaseCommand } from '@athenna/artisan'
+
+export class Greet extends BaseCommand {
+  public static signature(): string {
+      return 'greet'
+  }
+
+  public async handle(): Promise<void> {
+    const name = await this.prompt.input('What is your name?')
+
+    this.logger.info(`Hello ${name}!`)
+  }
+}
+```
+
+If you try to run `greet` command in your tests it will
+exceed the timeout since the command will be waiting for
+the user input name.
+
+To solve this kind of situation and others, you can create
+your own Artisan console that will first mock the `this.prompt.input()`
+method and then boot Artisan:
+
+```typescript title="Path.fixtures('consoles/mock-greet-input.ts')"
+import { Mock } from '@athenna/test'
+import { Ignite } from '@athenna/core'
+import { Prompt } from '@athenna/artisan'
+
+const ignite = await new Ignite().load(import.meta.url, { bootLogs: false })
+
+Mock.when(Prompt.prototype, 'input').resolve('Valmir Barbosa')
+
+await ignite.console(process.argv, { displayName: 'Artisan' })
+```
+
+Now, we can use this new Artisan console file to run the command
+in our test cases:
+
+```typescript
+import { Path } from '@athenna/common'
+import { Test, type Context } from '@athenna/test'
+
+export default class GreetTest {
+  @Test()
+  public async testGreet({ command }: Context) {
+    const output = await command.run('greet', {
+      path: Path.fixtures('consoles/mock-greet-input.ts') 👈
+    })
+
+    output.assertLogged('Hello Valmir Barbosa!') ✅
+  }
+}
+```
