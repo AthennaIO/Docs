@@ -752,7 +752,7 @@ export class Greet extends BaseCommand {
       .instruction()
       .head('Project Created')
       .add(`cd ${this.paint.cyan('hello-world')}`)
-      .add(`Run ${this.paint.cyan('node artisan --watch serve')}`)
+      .add(`Run ${this.paint.cyan('node artisan serve --watch')}`)
       .render()
 
     this.logger
@@ -912,7 +912,7 @@ const instruction = this.logger.instruction()
 instruction.head('Project Created')
 
 instruction.add(`cd ${this.paint.cyan('hello-world')}`)
-instruction.add(`Run ${this.paint.cyan('node artisan --watch serve')}`)
+instruction.add(`Run ${this.paint.cyan('node artisan serve --watch')}`)
   
 instruction.render()
 ```
