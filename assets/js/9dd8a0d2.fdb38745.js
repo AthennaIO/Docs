@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[7054],{7275:(e,n,t)=>{t.r(n),t.d(n,{default:()=>s});var a=t(7294),c=t(6550);function s(){return a.createElement(c.l_,{to:"/docs/introduction"})}}}]);
