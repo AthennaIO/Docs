@@ -1,0 +1,408 @@
+---
+title: Getting Started 
+sidebar_position: 1
+description: See how to create database connections in Athenna Framework.
+---
+
+# Database: Getting Started 
+
+See how to create database connections in Athenna Framework.
+
+## Introduction
+
+Almost every modern application interacts with a 
+database. Athenna makes interacting with databases 
+extremely simple across a variety of supported databases 
+using a fluent query builder and the ORM.
+
+## Installation
+
+First of all you need to install `@athenna/database` package:
+
+```shell
+npm i @athenna/database
+```
+
+Artisan provides a very simple command to configure the database
+library in your project. Simply run the following:
+
+```shell
+node artisan configure @athenna/database 
+```
+
+The database configurer will do the following operations in 
+your project:
+
+- Ask you for the default database you want to use. (`mongo`, `mysql`, `sqlite` or `postgres`).
+- Create the `database.ts` configuration file.
+- Add all database providers in your `.athennarc.json` file.
+- Add all database commands in your `.athennarc.json` file.
+- Add all database template files in your `.athennarc.json` file.
+- Add database environment variables to `.env`, `.env.test` and `.env.example`.
+- Configure the service `docker-compose.yml` file acordding to the databas selected.
+
+## Configuration
+
+All the configuration options for your application's database 
+behavior is housed in the `Path.config('database.js')` 
+configuration file. This file allows you to configure your 
+application's database connections, so be sure to review each 
+of the available connections and their options. We'll review 
+a few common options below.
+
+### Available connection drivers
+
+Each database connection is powered by a "driver". The driver 
+determines how and where the data is actually transported.
+The following database connection drivers are available in 
+every Athenna application. An entry for most of these drivers 
+is already present in your application's `Path.config('database.ts')` 
+configuration file, so be sure to review this file to become
+familiar with its contents:
+
+| Driver name |                          Website |                                           Built with |
+|:------------|:--------------------------------:|-----------------------------------------------------:|
+| `mongo`     |         https://www.mongodb.com/ |   [mongoose](https://www.npmjs.com/package/mongoose) |
+| `mysql`     |           https://www.mysql.com/ |           [knex](https://www.npmjs.com/package/knex) |
+| `sqlite`    |          https://www.sqlite.org/ |           [knex](https://www.npmjs.com/package/knex) |
+| `postgres`  |      https://www.postgresql.org/ |           [knex](https://www.npmjs.com/package/knex) |
+
+### Overview of some environment variables
+
+After installing the database component using the Athenna CLI you 
+can check your `.env` file in your project root path, the Athenna 
+CLI have added some environment variables there to help you connect 
+to your database. These variables are:
+
+```dotenv
+DB_CONNECTION=postgres
+DB_HOST=127.0.0.1
+DB_PORT=5432
+DB_DEBUG=false
+DB_USERNAME=root
+DB_PASSWORD=root
+DB_DATABASE=database
+```
+
+Let's focus in **DB_CONNECTION and DB_DEBUG** variables:
+
+#### DB_CONNECTION
+
+This variable specify for Athenna what is the default connection name 
+that should be used by `Database` facade when running database operations.
+
+#### DB_DEBUG
+
+This variable is useful when running your application locally, If 
+`DB_DEBUG` is `true`, then you will be able to see all the queries
+being executed in your database.
+
+:::tip
+
+Before going through the documentation, remember to run 
+[`docker-compose up -d`](https://docs.docker.com/compose/) to 
+start up the database in your machine.
+
+:::
+
+## Database operations
+
+Once you have configured your database connection, you may communicate 
+with it using the `Database` facade. The `Database` facade provides a 
+lot of methods to perform database operations such as **creating, 
+dropping and listing databases/tables, running and reverting** 
+[**migrations**](/docs/database/migrations)**,** 
+[**transactions**](/docs/database/getting-started#id-database-transactions)**,
+queries, connecting to new databases and also closing these 
+connections.**
+
+### Creating and dropping databases
+
+```typescript
+import { Database } from '@athenna/database'
+
+await Database.createDatabase('hello')
+await Database.dropDatabase('hello')
+```
+
+You can also get all databases names as string and check if some 
+database name exists:
+
+```typescript
+const databases = await Database.getDatabases() // ['postgres']
+const current = await Database.getCurrentDatabase() // 'postgres'
+
+await Database.hasDatabase('postgres') // true
+await Database.hasDatabase('not-found') // false
+```
+
+### Creating and dropping tables
+
+```typescript
+import { Database } from '@athenna/database'
+
+await Database.createTable('products', table => {
+  table.increments('id').primary()
+})
+
+await Database.dropTable('products')
+```
+
+You can also get all tables names as string and check if some 
+table name exists:
+
+```typescript
+const tables = await Database.getTables() // ['users']
+
+await Database.hasTable('users') // true
+await Database.hasTable('not-found') // false
+```
+
+### Running and reverting migrations
+
+If you don't know what is a migration you can 
+check [`clicking here`](/docs/database/migrations)
+
+```typescript
+await Database.runMigrations()
+await Database.revertMigrations()
+```
+
+### Transactions
+
+If you don't know what is a transaction you can 
+check [`clicking here`](/docs/database/getting-started#id-database-transactions)
+
+```typescript
+import { Log } from '@athenna/logger'
+
+const trx = await Database.startTransaction()
+const query = trx.table('users')
+
+const users = [] // Imagine a lot of users to be inserted here...
+
+try {
+    await query.createMany(users)
+
+    await trx.commitTransaction()
+} catch (error) {
+    // If some user in the "users" array has been created,
+    // it will be removed if one fails to insert.
+    await trx.rollbackTransaction()
+
+    Log.error('Failed to create one of the users. Original error: %s', JSON.stringify(error))
+}
+```
+
+## Running queries
+
+You may use the `table()` method provided by the `Database` facade 
+to begin a query. The `table()` method returns a fluent query 
+builder instance for the given table, allowing you to chain more 
+constraints onto the query and then finally retrieve the results of 
+the query using one of the **executors** methods. These are the most 
+relevant methods:
+
+- `find()` 
+- `findMany()` 
+- `create()`
+- `createMany()`
+- `update()`
+- `delete()`
+
+Everytime that you use the `Database` facade you are using a different 
+instance of `DatabaseImpl` class. This means that you would need to 
+call `table()` method everytime for different queries. To get around 
+this, you can save the instance in a local
+variable:
+
+```typescript
+import { Database } from '@athenna/database'
+
+const userQuery = Database.table('users') // First instance of QueryBuilder
+const orderQuery = Database.table('orders') // Second instance of QueryBuilder
+const productsQuery = Database.table('products') // Third instance of QueryBuilder
+```
+
+#### Running a find query
+
+The `find()` method is useful to retrieve only one record that match 
+the query statements from database:
+
+```typescript
+const query = Database.table('users')
+
+const { id, name } = await query
+    .select('id', 'name')
+    .where({ id: 10 })
+    .find()
+```
+
+#### Running a findMany query
+
+The `findMany()` method is useful to retrieve more than one record 
+that match the query statements from database:
+
+```typescript
+const query = Database.table('users')
+
+const users = await query
+    .select('id', 'name')
+    .whereNull('deletedAt')
+    .whereLike('name', '%Lenon%')
+    .orderBy('name', 'DESC')
+    .findMany()
+```
+
+#### Running a create query
+
+The `create()` method is useful to create one record in database:
+
+```typescript
+const query = Database.table('users')
+
+const user = await query.create({ name: 'Victor Tesoura' })
+```
+
+#### Running a createMany query
+
+The `createMany()` method is useful to create many records in database:
+
+```typescript
+const query = Database.table('users')
+
+const users = await query.createMany([
+    { name: 'Victor Tesoura' },
+    { name: 'João Lenon' }
+])
+```
+
+#### Running an update query
+
+The `update()` method is useful to update one or more records based 
+in statements in database:
+
+```typescript
+const query = Database.table('users')
+
+const users = await query
+    .select('id', 'name')
+    .whereIn('id', [1, 2])
+    .orderBy('name', 'ASC')
+    .update({ name: 'Danrley Morais' })
+```
+
+#### Running delete query
+
+The `delete()` method is useful to delete one or more records based 
+in statements in database:
+
+```typescript
+const query = Database.table('users')
+
+await query.whereBetween('id', [1, 10]).delete()
+```
+
+## Using multiple database connections
+
+If your application defines multiple connections in your 
+`Path.config('database.ts')` configuration file, you may access each
+connection via the `connection()` method provided by the `Database` 
+facade. The connection name passed to the `connection()` method should 
+correspond to one of the connections listed in your 
+`Path.config('database.ts')` configuration file. You also need
+to explicit call the `connect()` method when working with other 
+connection that is not the default:
+
+```typescript
+const query = Database.connection('mysql').table('users')
+
+const users = await query
+    .select('id', 'name')
+    .whereNotIn('id', [1, 2])
+    .orderBy('name', 'ASC')
+    .findMany()
+```
+
+The connection created by the `connection()` method will be stored 
+inside the [`DriverFactory`](https://github.com/AthennaIO/Database/blob/develop/src/factories/DriverFactory.ts)
+class. This means that if you call the `connection()` method again, 
+it will use the same connection created that was saved in `DriverFactory`:
+
+```typescript
+await Datatabase.connection('mysql')
+    .table('users')
+    .select('id', 'name')
+    .whereNotIn('id', [1, 2])
+    .orderBy('name', 'ASC')
+    .findMany()
+```
+
+You can force `connection()` method to not save the connection 
+instance in [`DriverFactory`](https://github.com/AthennaIO/Database/blob/develop/src/factories/DriverFactory.ts)
+passing some properties to it:
+
+```typescript
+const database = Datatabase.connection('mysql', {
+    // Force the connection to be established
+    force: false,
+    // Set if connection will be saved in DriverFactory
+    // to be reused in all Database instances
+    saveOnDriver: false
+})
+
+await database
+    .table('users')
+    .select('id', 'name')
+    .whereNotIn('id', [1, 2])
+    .orderBy('name', 'ASC')
+    .findMany()
+```
+
+:::caution
+
+If you specify to `connection()` method that you don't want to save 
+the connection in driver, you will need to close the connection
+using **your** database instance. We will see next how to close a 
+database connection.
+
+:::
+
+## Closing database connections
+
+You can simply close a connection using the `close()` or `closeAll()` 
+methods of `Database` facade:
+
+```typescript
+await Database.close() // Close the default connection
+await Database.connection('mysql').close() // Close the mysql connection
+
+await Database.closeAll() // Close all the connections saved in DriverFactory
+```
+
+Remember that when creating a connection that will not be saved in 
+driver, you will need to close the connection using **your** 
+database instance:
+
+```typescript
+const database = Datatabase.connection('mysql', {
+    force: false,
+    saveOnDriver: false
+})
+
+await database
+    .table('users')
+    .select('id', 'name')
+    .whereNotIn('id', [1, 2])
+    .orderBy('name', 'ASC')
+    .findMany()
+
+// The code below will not close the connection
+// created above since DriverFactory doesn't
+// know what is your connection.
+await Database.connection('mysql').close() // DOES NOT WORK
+
+await database.close() // WORKS
+
+```
+

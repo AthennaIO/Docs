@@ -1,0 +1,139 @@
+---
+title: Migrations
+sidebar_position: 3
+description: See how to create and run database migrations in Athenna Framework.
+---
+
+# Database: Migrations 
+
+See how to create and run database migrations in Athenna Framework.
+
+## Introduction
+
+Migrations are like version control for your database, allowing your
+team to define and share the application's database schema
+definition. If you have ever had to tell a teammate to manually add a
+column to their local database schema after pulling in your changes
+from source control, you've faced the problem that database migrations
+solve.
+
+## Generating migrations
+
+You may use the `make:migration` Artisan command to generate a database migration. The new migration will be placed in your
+`Path.migrations()` directory. Each migration filename contains a
+timestamp that allows Athenna to determine the order of
+the migrations:
+
+```shell
+node artisan make:migration create_flights_table
+```
+
+:::tip
+
+Migrations templates may be customized using the
+[**template customization command**](https://athenna.io/docs/the-basics/cli/commands#id-registering-custom-templates).
+
+:::
+
+## Migration structure
+
+A migration class contains two methods: `up()` and `down()`. The `up()`
+method is used to add new tables, columns, or indexes to your
+database, while the `down()` method should reverse the operations
+performed by the `up()` method.
+
+Within both of these methods, you may use the [`knex schema builder`](https://knexjs.org/guide/schema-builder.html) to
+expressively create and modify tables. For example, the following migration creates a `flights` table:
+
+```typescript
+import { BaseMigration, type DatabaseImpl } from '@athenna/database'
+
+export class CreateFlightsTable extends BaseMigration {
+  public tableName = 'flights'
+
+  public async up(db: DatabaseImpl) {
+    return db.createTable(this.tableName, (table) => {
+      table.increments('id')
+      table.string('name')
+      table.string('airline')
+      table.timestamps(true, true, true)
+    })
+  }
+
+  public async down({ schema }: DatabaseImpl) {
+    return db.dropTableIfExists(this.tableName)
+  }
+}
+```
+
+### Setting the migration connection
+
+If your migration will be interacting with a database connection 
+other than your application's default database connection,
+you should set the static getter `connection` in your migration:
+
+```typescript
+import { BaseMigration, type DatabaseImpl } from '@athenna/database'
+
+export class CreateFlightsTable extends BaseMigration { 
+  public static connection() {
+    return 'postgres'
+  }
+
+  public async up(db: DatabaseImpl) {
+    // ...
+  }
+
+  public async down(db: DatabaseImpl) {
+    // ...
+  }
+}
+```
+
+## Running migrations 
+
+To run all of your outstanding migrations, execute the 
+`migration:run` Artisan command:
+
+```shell
+node artisan migration:run
+```
+
+You can use the `--connection` option to run migrations 
+for a specific connection:
+
+```shell
+node artisan migration:run --connection=postgres
+```
+
+:::warning
+
+If `postgres` is your default connection than all the migrations 
+using the `default` value in the static `connection()` method
+will run too.
+
+:::
+
+## Reverting
+
+To revert all your migrations, you may use the `migration:revert` 
+Artisan command. This command will revert all your migrations:
+
+```shell
+node artisan migration:revert
+```
+
+You can use the `--connection` option to revert migrations for a 
+specific connection:
+
+```shell
+node artisan migration:revert --connection=postgres
+```
+
+:::warning
+
+If `postgres` is your default connection than all the migrations 
+using the `default` value in the static `connection()` method
+will be reverted too.
+
+:::
