@@ -1,0 +1,10 @@
+{
+  "label": "ORM",
+  "position": 9,
+  "collapsed": true,
+  "link": {
+    "type": "generated-index",
+    "slug": "/orm",
+    "description": "See how to configure a model in Athenna Framework."
+  }
+}

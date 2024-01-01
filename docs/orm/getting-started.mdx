@@ -1,0 +1,413 @@
+---
+title: Getting Started 
+sidebar_position: 1
+description: See how to create models in Athenna Framework.
+---
+
+# ORM: Getting Started
+
+## Introduction
+
+Athenna has an object-relational mapper (ORM) that makes it enjoyable 
+to interact with your database. When using the Athenna ORM, each database 
+table has a corresponding "Model" that is used to interact with that 
+table. In addition to retrieving records from the database table, the 
+models allow you to insert, update, and delete records from the table 
+as well.
+
+:::tip
+
+Before getting started, be sure to configure a database connection in 
+your application's `Path.config('database.ts')` configuration file.
+For more information on configuring your database, check out 
+[`the database configuration documentation.`](/docs/database/getting-started)
+
+:::
+
+
+## Generating models
+
+To get started, let's create a model. Models typically live in the 
+`app/models` directory (`Path.models()`) and extend the [`BaseModel`](https://github.com/AthennaIO/Database/blob/develop/src/models/BaseModel.ts) 
+class. You may use the `make:model` Artisan command to generate a 
+new model:
+
+```shell
+node artisan make:model Flight
+```
+
+## Columns
+
+You will have to define your database columns as properties on the 
+class and annotate them using the `@Column()` annotation. Any property
+annotate with it could be distinguished between standard class properties
+and database columns. Let's see an example of defining the flight table
+columns as properties on the `Flight` model:
+
+```typescript
+import { Column, BaseModel } from '@athenna/database'
+
+export class Flight extends BaseModel { 
+  @Column()
+  public id: number
+
+  @Column()
+  public from: string
+
+  @Column()
+  public to: string
+
+  @Column({ isCreateDate: true })
+  public createdAt: Date
+
+  @Column({ isUpdateDate: true })
+  public updatedAt: Date
+}
+```
+
+### Column options
+
+#### `name`
+
+Map which will be the name of your column in database:
+
+```typescript
+@Column({ name: 'my_name' })
+public name: string
+```
+
+The default value of this property will be the name of
+your class property as **camelCase**.
+
+#### `type`
+
+Map the type of your column. This property is usefull
+only to synchronize your model with database:
+
+```typescript
+@Column({ type: Number })
+public id: string
+```
+
+By default the type of your model will be set as the
+type of your class property, in the example above, if
+we remove the `type` property, it would automatically
+be set as `String`.
+
+#### `length`
+
+Map the column length in database. This property is 
+usefull only when synchronizing your model with database:
+
+```typescript
+@Column({ length: 10 })
+public name: string
+```
+
+#### `defaultTo`
+
+This property doesn't change the behavior in your database,
+they are used only when the class property is undefined or 
+null before running your model `create()`, `createMany()`, 
+`update()` and `createOrUpdate()` methods:
+
+```typescript
+@Column({ defaultTo: null })
+public deletedAt: Date
+```
+
+:::warn
+
+The value set to `defaulTo` property will only be used when
+the value for the specified column was not provided when calling
+the above methods and also when it was not set in static `attributes()`
+method of your model.
+
+:::
+
+#### `isPrimary`
+
+Set if the column is a primary key:
+
+```typescript
+@Column({ isPrimary: true })
+public id: number
+```
+
+#### `isHidden`
+
+Set if the column should be hidden when retrieving it from database:
+
+```typescript
+@Column({ isHidden: true })
+public password: string
+```
+
+#### `isUnique`
+
+Set if the column needs to have a unique value in database:
+
+```typescript
+@Column({ isUnique: true })
+public email: string
+```
+
+:::note
+
+If you try to create duplicated values Athenna will throw an 
+exception until it gets in your database. This means that you 
+migration could have or not the unique index defined
+
+:::
+
+#### `isNullable`
+
+Set if the column is nullable or not:
+
+```typescript
+@Column({ isNullable: false })
+public name: string
+```
+
+:::note
+
+Just like `isUnique` property, if `isNullable` is set to false
+and you try to create a model with null or undefined `name`, it
+will throw an exception.
+
+:::
+
+
+#### `isIndex`
+
+Set if the column is an index:
+
+```typescript
+@Column({ isIndex: true })
+public email: string
+```
+
+#### `isSparse`
+
+Set if the column is an index sparse:
+
+```typescript
+@Column({ isSparse: true })
+public email: string
+```
+
+#### `persist`
+
+Set if the column should be persist in database
+or not. If set as `false`, Athenna will remove this
+column from operations like create or update, but it
+will still me available in listing operations:
+
+```typescript
+@Column({ persist: false })
+public name: string
+```
+
+#### `isCreateDate`
+
+Set if the column is a createdAt column. If this option
+is `true`, Athenna will automatically set a `new Date()`
+value in the column when creating it:
+
+```typescript
+@Column({ isCreateDate: true })
+public createdAt: Date
+```
+
+#### `isUpdateDate`
+
+Set if the column is an updatedAt column. If this option
+is `true`, Athenna will automatically set a `new Date()`
+value in the column when creating it:
+
+```typescript
+@Column({ isUpdateDate: true })
+public updatedAt: Date
+```
+
+#### `isDeleteDate`
+
+Set if the column is a deletedAt column and also if the model
+is using soft delete approach. If this option is `true`, Athenna
+will automatically set a `new Date()` value in the column when 
+deleting it:
+
+```typescript
+@Column({ isDeleteDate: true })
+public deletedAt: Date
+```
+
+## Model conventions
+
+Models generated by the `make:model` command will be placed in the 
+`Path.models()` directory. Let's examine a basic model class and 
+discuss some of Model's key conventions:
+
+```typescript
+import { BaseModel } from '@athenna/database'
+
+export class Flight extends BaseModel {
+  @Column()
+  public id: number
+
+  public static attributes(): Partial<Flight> {
+    return {}
+  }
+
+  public static async definition(): Promise<Partial<Flight>> {
+    return {
+      id: this.faker.number.int()
+    }
+  }
+}
+```
+
+### Table names
+
+After glancing at the example above, you may have noticed that we 
+did not tell the model which database table corresponds to our `Flight` 
+model. By convention, the "snake_case", plural name of the class will 
+be used as the table name unless another name is explicitly specified. 
+So, in this case, the model will assume the `Flight` model stores records 
+in the `flights` table, while an `AirTrafficController` model would store 
+records in an `air_traffic_controllers` table.
+
+If your model's corresponding database table does not fit this convention, you may manually specify the model's table name by
+defining a static getter `table` on the model:
+
+```typescript
+import { BaseModel } from '@athenna/database'
+
+export class Flight extends BaseModel {
+  public static table() {
+    return 'my_flights'
+  }
+
+  /*...*/
+}
+```
+
+### Primary keys
+
+The model will also assume that each model's corresponding database 
+table has a primary key column named `id` if using a SQL driver and 
+`_id` if using mongo driver. If necessary, you may define 
+a property `isMainPrimary` as true in one of your model columns to 
+specify a different column that serves as your model's main primary 
+key:
+
+```typescript
+import { Column, BaseModel } from '@athenna/database'
+
+export class Flight extends BaseModel {
+  @Column({ isMainPrimary: true })
+  public id: number
+
+  /*...*/
+}
+```
+
+### Default attributes values
+
+By default, a newly instantiated model instance will not contain any 
+attribute values. If you would like to define the default values
+for some of your model's attributes, you may define a static method 
+`attributes()` on your model:
+
+```typescript
+import { Uuid } from '@athenna/common'
+import { BaseModel } from '@athenna/database'
+
+export class Flight extends BaseModel {
+  public static attributes(): Partial<Flight> {
+    return {
+      id: Uuid.generate() 
+    }
+  }
+
+  /*...*/
+}
+```
+
+As you can see we are defining an `id` property in our static method 
+`attributes()`. This property will have the value of a generated
+uuid randomly everytime that Athenna calls the `attributes()` method. 
+Athenna will call the `attributes()` method everytime that `create()`, 
+`createMany()`, `update()` and `createOrUpdate()` methods are called, 
+this means that a new uuid will be generated for each call:
+
+```typescript
+import { Flight } from '#app/models/Flight'
+
+const flight1 = await Flight.create()
+const flight2 = await Flight.query().create()
+
+console.log(flight1.id) // 43bf66ec-658a-4f59-8f89-2aac5ae96e6a
+console.log(flight2.id) // cbe35c9c-60f3-11ed-9b6a-0242ac120002
+```
+
+:::tip
+
+But always remember that if you have already set the property in 
+one of these methods, the `attributes()` method will not overwrite
+them:
+
+```typescript
+import { Flight } from '#app/models/Flight'
+
+// Setting my own id attribute
+const flight = await Flight.create({ 
+  id: '299dabf8-60f4-11ed-9b6a-0242ac120002' 
+})
+
+console.log(flight.id) // 299dabf8-60f4-11ed-9b6a-0242ac120002
+```
+
+:::
+
+### Database connections
+
+By default, all models will use the default database connection that 
+is configured for your application. If you would like to specify a 
+different connection that should be used when interacting with a 
+particular model, you should define a static `connection()` method on 
+the model:
+
+```typescript
+import { BaseModel } from '@athenna/database'
+
+export class Article extends BaseModel {
+  public static connection() {
+    return 'mysql'
+  }
+
+  /*...*/
+}
+```
+
+## Retrieving models
+
+Once you have created a model and its associated database table, you 
+are ready to start retrieving data from your database. You can think 
+of each model as a powerful query builder allowing you to fluently 
+query the database table associated with the model. The model's 
+`findMany()` method will retrieve all the records from the model's 
+associated database table:
+
+```typescript
+import { Flight } from '#app/models/Flight'
+
+const flights = await Flight.findMany()
+
+flights.forEach(flight => console.log(flight.name))
+```
+
+### Building queries
+
+Coming soon...
+
