@@ -1,0 +1,229 @@
+---
+title: Annotations
+sidebar_position: 5
+description: Check all available ORM annotations and it options.
+---
+
+# ORM: Annotations 
+
+Check all available ORM annotations and it options.
+
+## `@Column()`
+
+The `@Column()` annotations marks a model property as a database column:
+
+```typescript
+import { Column, BaseModel } from '@athenna/database'
+
+export class Flight extends BaseModel {
+  @Column()
+  public id: number
+
+  @Column()
+  public from: string
+
+  @Column()
+  public to: string
+
+  @Column({ isCreateDate: true })
+  public createdAt: Date
+
+  @Column({ isUpdateDate: true })
+  public updatedAt: Date
+}
+```
+
+You can also define any of the following optional properties:
+
+
+#### `name`
+
+Map which will be the name of your column in database:
+
+```typescript
+@Column({ name: 'my_name' })
+public name: string
+```
+
+The default value of this property will be the name of
+your class property as **camelCase**.
+
+#### `type`
+
+Map the type of your column. This property is usefull
+only to synchronize your model with database:
+
+```typescript
+@Column({ type: Number })
+public id: string
+```
+
+By default the type of your model will be set as the
+type of your class property, in the example above, if
+we remove the `type` property, it would automatically
+be set as `String`.
+
+#### `length`
+
+Map the column length in database. This property is 
+usefull only when synchronizing your model with database:
+
+```typescript
+@Column({ length: 10 })
+public name: string
+```
+
+#### `defaultTo`
+
+This property doesn't change the behavior in your database,
+they are used only when the class property is undefined or 
+null before running your model `create()`, `createMany()`, 
+`update()` and `createOrUpdate()` methods:
+
+```typescript
+@Column({ defaultTo: null })
+public deletedAt: Date
+```
+
+:::warn
+
+The value set to `defaulTo` property will only be used when
+the value for the specified column was not provided when calling
+the above methods and also when it was not set in static `attributes()`
+method of your model.
+
+:::
+
+#### `isPrimary`
+
+Set if the column is a primary key:
+
+```typescript
+@Column({ isPrimary: true })
+public id: number
+```
+
+#### `isHidden`
+
+Set if the column should be hidden when retrieving it from database:
+
+```typescript
+@Column({ isHidden: true })
+public password: string
+```
+
+#### `isUnique`
+
+Set if the column needs to have a unique value in database:
+
+```typescript
+@Column({ isUnique: true })
+public email: string
+```
+
+:::note
+
+If you try to create duplicated values Athenna will throw an 
+exception until it gets in your database. This means that you 
+migration could have or not the unique index defined
+
+:::
+
+#### `isNullable`
+
+Set if the column is nullable or not:
+
+```typescript
+@Column({ isNullable: false })
+public name: string
+```
+
+:::note
+
+Just like `isUnique` property, if `isNullable` is set to false
+and you try to create a model with null or undefined `name`, it
+will throw an exception.
+
+:::
+
+
+#### `isIndex`
+
+Set if the column is an index:
+
+```typescript
+@Column({ isIndex: true })
+public email: string
+```
+
+#### `isSparse`
+
+Set if the column is an index sparse:
+
+```typescript
+@Column({ isSparse: true })
+public email: string
+```
+
+#### `persist`
+
+Set if the column should be persist in database
+or not. If set as `false`, Athenna will remove this
+column from operations like create or update, but it
+will still me available in listing operations:
+
+```typescript
+@Column({ persist: false })
+public name: string
+```
+
+#### `isCreateDate`
+
+Set if the column is a createdAt column. If this option
+is `true`, Athenna will automatically set a `new Date()`
+value in the column when creating it:
+
+```typescript
+@Column({ isCreateDate: true })
+public createdAt: Date
+```
+
+#### `isUpdateDate`
+
+Set if the column is an updatedAt column. If this option
+is `true`, Athenna will automatically set a `new Date()`
+value in the column when creating it:
+
+```typescript
+@Column({ isUpdateDate: true })
+public updatedAt: Date
+```
+
+#### `isDeleteDate`
+
+Set if the column is a deletedAt column and also if the model
+is using soft delete approach. If this option is `true`, Athenna
+will automatically set a `new Date()` value in the column when 
+deleting it:
+
+```typescript
+@Column({ isDeleteDate: true })
+public deletedAt: Date
+```
+
+## `@HasOne()`
+
+Comming soon...
+
+## `@HasMany()`
+
+Comming soon...
+
+## `@BelongsTo()`
+
+Comming soon...
+
+## `@BelongsToMany()`
+
+Comming soon...
+
