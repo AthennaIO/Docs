@@ -92,7 +92,7 @@ Route.get('/welcome', ({ request }) => {
 
 With this getter, you will be able to get the host url of
 the request concatenating the host:port of your application
-and the [`originalUrl`](/docs/the-basics/http/context#id-the-originalUrl-getter)
+and the [`originalUrl`](/docs/the-basics/http/context#the-originalUrl-getter)
 of the request:
 
 ```typescript
@@ -451,7 +451,7 @@ Athenna uses the `InterceptContext`. This context is quite
 the same of `Context`, but it has additional properties
 `body` and `status`.
 
-### Terminate middleware context {#id-terminate-middleware}
+### Terminate middleware context
 
 In [terminators](/docs/rest-api-application/middlewares#terminate-middleware)
 Athenna set the `TerminateContext`. This context is quite
