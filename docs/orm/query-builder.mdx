@@ -8,6 +8,542 @@ description: See how to retrieve, insert, update and delete models using the que
 
 See how to retrieve, insert, update and delete models using the query builder in Athenna Framework.
 
-## Introduction
+## Retrieving models
 
-Coming soon...
+Once you have created a model and its associated database table, you 
+are ready to start retrieving data from your database.
+
+:::note
+
+To see how to create and configure your model check the 
+[getting started documentation section](/docs/orm/getting-started)
+of the ORM.
+
+:::
+
+You can think of each model as a powerful query builder allowing you to 
+fluently query the database table associated with the model. The model's 
+`findMany()` method will retrieve all the records from the model's 
+associated database table:
+
+```typescript
+import { Flight } from '#app/models/Flight'
+
+const where = { active: 1 }
+const flights = await Flight.findMany(where)
+
+flights.forEach(flight => console.log(flight.name))
+```
+
+### Building queries
+
+The model `findMany()` method will return all the results in the model's 
+table. However, since each model serves as a query builder, you may 
+invoke the `query()` method first and add additional constraints to 
+queries and then invoke the `findMany()` method to retrieve the results:
+
+```typescript
+const flights = await Flight.query()
+  .where('active', 1)
+  .orderBy('name')
+  .limit(10)
+  .findMany()
+```
+
+:::tip
+
+Since models are query builders, you should review all the methods 
+provided by [`Athenna's query builder`](https://athenna.io/docs/database/query-builder).
+You may use any of these methods when writing your model queries.
+
+:::
+
+### Hidding fields
+
+Sometimes you might need to hide some sensitive field from your model 
+queries, to do so, you can set the `isHidden` property to true in your
+`@Column()` annotation:
+
+```typescript
+import { BaseModel } from '@athenna/database'
+
+export class User extends BaseModel {
+  @Column({ isHidden: true })
+  public password: string
+
+  /*...*/
+}
+```
+
+Everytime you call the `query()` method of your models, Athenna will 
+automatically select all the columns from your model but never the 
+ones where the `isHidden` property is true.
+
+#### Retrieve hidden fields
+
+Is possible to bypass the `isHidden` validation using the 
+`select()` method from the query builder:
+
+```typescript
+const { password } = await User.query()
+  .select('id')
+  .select('password') 👈
+  .find()
+```
+
+If you wish to get all the hidden fields for a specify use case you 
+can use the `withHidden()` method:
+
+```typescript
+const { password } = await User.query()
+  .withHidden()
+  .find()
+```
+
+## Collections 
+
+As we have seen, the models method `findMany()` retrieve multiple 
+records from the database. However, the Athenna model has a 
+`collection()` method that will also retrieve multiple records from 
+the database but return it as an instance of the 
+[`Collection`](/docs/digging-deeper/collections) class.
+
+The Collection class provides a variety of helpful methods for 
+interacting with data collections. For example, the `reject()` method 
+may be used to remove models from a collection based on the results 
+of an invoked closure:
+
+```typescript
+const where = { destination: 'Paris' }
+const flights = await Flight.collection(where)
+
+const availableFlights = flights.reject(flight => flight.cancelled)
+```
+
+And of course, if you need to add more scecific constraints to your 
+query you can also use the `collection()` method when working 
+directly with the model query builder:
+
+```typescript
+const flights = await Flight.query()
+  .select('name', 'destination', 'cancelled')
+  .where('destination', 'Paris')
+  .collection()
+
+const availableFlights = flights.reject(flight => flight.cancelled)
+```
+
+## Pagination
+
+The Athenna models also has a `paginate()` method that works exact like 
+the [`paginate method from the query builder:`](/docs/database/query-builder#id-pagination)
+
+```typescript
+const page = 0
+const limit = 10
+const resourceUrl = '/flights'
+const where = { active: 1 }
+
+const {
+  data,
+  meta,
+  links 
+} = await Flight.paginate(page, limit, resourceUrl, where)
+```
+
+You can also use the `paginate()` method when working with the 
+`query()` method:
+
+```typescript
+const page = 0
+const limit = 10
+const resourceUrl = '/flights'
+
+const { data, meta, links } = await Flight.query()
+  .where({ active: 1 })
+  .paginate(page, limit, resourceUrl)
+```
+
+## Retrieve single models & Aggregates 
+
+In addition to retrieving all the records matching a given query, you 
+may also retrieve single records using the `find()` method. Instead of 
+returning an array or collection of models, this method return a single 
+model instance:
+
+```typescript
+const flight = await Flight.find({ id: 1 })
+const flight = await Flight.find({ active: 1 })
+const flight = await Flight.query().where('active', 1).find()
+```
+
+Sometimes you may wish to perform some other action if no results are 
+found. The `findOr()` method will return a single model instance or, 
+if no results are found, execute the given closure. The value returned 
+by the closure **will be considered the result of the method:**
+
+```typescript
+const flight = await Flight.findOr({ id: 1 }, async () => {
+    // ...
+})
+
+const flight = await Flight.query()
+  .where('legs', '>', 3)
+  .findOr(async () => {
+    // ...
+  })
+```
+
+### Not found exceptions 
+
+Sometimes you may wish to throw an exception if a model is not found. 
+This is particularly useful in routes or controllers. The `findOrFail()` 
+method will retrieve the first result of the query; however, if no 
+result is found, an `NotFoundDataException` will be thrown:
+
+```typescript
+const flight = await Flight.findOrFail({ id: 1 })
+const flight = await Flight.query().where('legs', '>', 3).findOrFail()
+```
+
+### Retrieving aggregates 
+
+When interacting with models, you may also use the `count()`, `sum()`, 
+`max()`, and other aggregate methods provided by the 
+[`Athenna query builder`](/docs/database/query-builder).
+As you might expect, these methods return a scalar value instead of 
+a model instance:
+
+```typescript
+const count = await Flight.query().where('active', 1).count()
+
+const max = await Flight.query().where('active', 1).max('price')
+```
+
+:::warning
+
+Aggregate methods will not exist directly in your models, you will 
+always need to call the `query()` method first and then execute it 
+using one of then.
+
+:::
+
+## Inserting & Updating models
+
+### Inserts
+
+Of course, when using the models, we don't only need to retrieve then 
+from the database. We also need to insert new records. Thankfully, the 
+models makes it simple. To insert a new record into the database, you 
+should instantiate a new model instance and set attributes on the model. 
+Then, call the `save()` method on the model instance:
+
+```typescript
+const flight = new Flight()
+
+flight.name = 'Brazil to Ukraine'
+
+await flight.save()
+```
+
+In this example, we assign the `name` field to the name attribute of 
+the `#app/models/Flight` model instance. When we call the `save()` 
+method, a record will be inserted into the database. The model's 
+`createdAt` and `updatedAt` timestamps will automatically be set 
+when the `save()` method is called, so there is no need to set them 
+manually.
+
+Alternatively, you may use the `create()` method to "save" a new model 
+using a single statement. The inserted model instance will be returned 
+to you by the `create()` method:
+
+```typescript
+const flight = await Flight.create({ name: 'Brazil to Angola' })
+```
+
+However, we highly recommend that before using the `create()` method, 
+you specify the `persist` field as `false` in fields you dont want to 
+be persisted. This property will help your models to get protected against mass assignment 
+vulnerabilities. To learn more about mass assignment, please consult 
+the [`mass assignment documentation.`](/docs/orm/getting-started#mass-assignment)
+
+### Updates
+
+The `save()` method may also be used to update models that already exist 
+in the database. To update a model, you should retrieve it and set any 
+attributes you wish to update. Then, you should call the model's `save()` 
+method. Again, the `updatedAt` timestamp will automatically be updated, 
+so there is no need to manually set its value:
+
+```typescript
+const flight = await Flight.query()
+  .where({ id: 1 })
+  .find()
+
+flight.name = 'Paris to London'
+
+await flight.save()
+```
+
+#### Mass updates 
+
+Updates can also be performed against models that match a given query. 
+In this example, all flights that are `active` and have a `destination` 
+of `San Diego` will be marked as delayed:
+
+```typescript
+await Flight.query()
+  .where('active', 1)
+  .where('destination', 'San Diego')
+  .update({ delayed: 1 })
+```
+
+The `update()` method expects a record of columns and value pairs 
+representing the columns that should be updated. The `update()` method 
+will always return one instance of your model if your query only modifies 
+one value. If you query modifies more than one the `update()` method will 
+return an array of your models instance.
+
+### Mass assignment
+
+You may use the `create()` method to "save" a new model using a single 
+statement. The inserted model instance will be returned to you by the 
+method:
+
+```typescript
+const flight = await Flight.create({
+  name: 'London to Korea',
+})
+```
+
+However, before using the `create()` method, we extremely recommend 
+you to specify which fields on your model class should not be persisted 
+in database. This property are will help you to stay protected against 
+mass assignment vulnerabilities.
+
+A mass assignment vulnerability occurs when a user passes an unexpected 
+field using some object and that field changes a column in your 
+database that you did not expect. For example, a malicious user might 
+send an `isAdmin` parameter through an HTTP request, which is then passed 
+to your model's `create()` method, allowing the user to escalate 
+themselves to an administrator.
+
+So, to get started, you should define which model properties you dont 
+want to be persisted in database. You may do this using by setting the 
+`persist` property to false in your `@Column()` annotation. For example, 
+let's make the `isAdmin` attribute a filed that could not be persisted: 
+
+```typescript
+import { BaseModel } from '@athenna/database'
+
+export class Flight extends BaseModel {
+  @Column() // By default persist is already `true`
+  public name: string
+
+  @Colum({ persist: false })
+  public isAdmin: boolean
+
+  /*...*/
+}
+```
+
+Once you have specified which attributes are mass assignable or not, 
+you may  use the `create()` method to insert a new record in the database. The 
+`create()` method returns the newly created model instance:
+
+```typescript
+const flight = await Flight.create({ name: 'London to Paris' })
+```
+
+#### Allowing mass assignment for some calls
+
+You can also allow mass assignment when calling your `create()`, 
+`createMany()`, `createOrUpdate()` and `update()` methods:
+
+```typescript
+const data = { name: 'Brazil to Mexico' }
+const where = { active: 1 }
+const cleanPersist = false 
+
+await Flight.create(data, cleanPersist)
+await Flight.query().create(data, cleanPersist)
+
+await Flight.createMany([data], cleanPersist)
+await Flight.query().createMany([data], cleanPersist)
+
+await Flight.createOrUpdate(where, data, cleanPersist)
+await Flight.query().createOrUpdate(where, data, cleanPersist)
+
+await Flight.update(where, data, cleanPersist)
+await Flight.query().update(where, data, cleanPersist)
+```
+
+### Insert or update (Upserts)
+
+Occasionally, you may need to update an existing model or create a 
+new model if no matching model exists. The `createOrUpdate()` method 
+will update the model if some record is found by the query that you 
+have built, otherwise the record will be created.
+
+In the example below, if a flight exists with a `departure` location 
+of `Oakland` and a `destination` location of `San Diego`, its `price` 
+and `discounted` columns will be updated. If no such flight exists, 
+a new flight will be created:
+
+```typescript
+const where = {
+  departure: 'Oakland',
+  destination: 'San Diego'
+}
+const data = {
+  price: 99,
+  discounted: 1,
+  departure: 'Oakland',
+  destination: 'San Diego'
+}
+
+await Flight.createOrUpdate(where, data)
+```
+
+Or you can use the query builder instead:
+
+```typescript
+await Flight.query()
+  .where('departure', 'Oakland')
+  .where('destination', 'San Diego')
+  .createOrUpdate({
+    price: 99,
+    discounted: 1,
+    departure: 'Oakland',
+    destination: 'San Diego'
+  })
+```
+
+## Deleting models
+
+To delete a model, you may call the `delete()` method on the model 
+instance:
+
+```typescript
+import { Flight } from '#app/models/Flight'
+
+const where = { id: 1 }
+await Flight.delete(where)
+```
+
+You can also delete an instance directly:
+
+```typescript
+import { Flight } from '#app/models/Flight'
+
+const where = { id: 1 }
+const flight = await Flight.find(where)
+
+await flight.delete()
+```
+
+You may call the `truncate()` method to delete all the model's associated 
+database records. The `truncate` operation will also reset any 
+auto-incrementing IDs on the model's associated table:
+
+```typescript
+await Flight.truncate()
+```
+
+## Soft deleting
+
+In addition to actually removing records from your database, the ORM 
+can also "soft delete" models. When models are soft deleted, they are 
+not actually removed from your database. Instead, a `deletedAt` 
+attribute is set on the model indicating the date and time at which 
+the model was "deleted". To enable soft deletes for a model, you just 
+need to set up one column with `isDeleteDate` as true:
+
+```typescript
+export class Flight extends BaseModel {
+  @Column({ isDeleteDate: true }) 
+  public deletedAt: Date
+
+  /*...*/
+}
+```
+
+Now, when you call the `delete()` method on the model, Athenna will 
+update your model with the current date and time in your `deletedAt` 
+column. However, the model's database record will be left in the table. 
+When querying a model that uses soft deletes, the soft deleted models 
+will automatically be excluded from all query results:
+
+```typescript
+const where = { id: 1 }
+const flight = await Flight.find(where)
+
+await flight.delete()
+
+// The flight with id = 1 will not be inside the above array.
+const flights = await Flight.findMany()
+```
+
+To determine if a given model instance has been soft deleted, you may 
+use the `isTrashed()` method:
+
+```typescript
+if (flight.isTrashed()) {
+    //
+}
+```
+
+### Restoring soft delete models
+
+Sometimes you may wish to "un-delete" a soft deleted model. To restore 
+a soft deleted model, you may call the `restore()` method on a model 
+instance. The `restore()` method will set the model's `deletedAt` column 
+to `null`:
+
+```typescript
+await flight.restore()
+```
+
+You may also use the `restore()` method in a query to restore multiple 
+models:
+
+```typescript
+const flights = await Flight.query()
+  .where('airlineId', 1)
+  .restore()
+```
+
+### Permanently deleting a model
+
+Sometimes you may need to truly remove a model from your database. You 
+may use the `delete()` method with a `true` value in the first argument 
+to permanently remove a soft deleted model from the database table:
+
+```typescript
+const force = true
+await flight.delete(force)
+```
+
+### Querying soft delete models
+
+As noted above, soft deleted models will automatically be excluded from 
+query results. However, you may force soft deleted models to be included 
+in a query's results by calling the `withTrashed()` method on the query:
+
+```typescript
+const flights = await Flight.query()
+  .withTrashed()
+  .where('airlineId', 1)
+  .findMany()
+```
+
+#### Retrieving only soft deleted models
+
+The `onlyTrashed()` method will retrieve only soft deleted models:
+
+```typescript
+const flights = await Flight.query()
+  .onlyTrashed()
+  .where('airlineId', 1)
+  .findMany()
+```

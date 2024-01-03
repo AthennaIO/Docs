@@ -8,6 +8,175 @@ description: See how to create relations between models in Athenna Framework.
 
 See how to create relations between models in Athenna Framework.
 
-## Introduction
+## Defining relationships
 
-Coming soon...
+Database tables are often related to one another. For example, a 
+blog post may have many comments or an order could be related to 
+the user who placed it. Athenna makes managing and working with 
+these relationships easy, and supports a variety of common 
+relationships that are defined as properties on your model classes
+using annotations:
+
+```typescript
+import {
+  Column,
+  HasOne,
+  HasMany,
+  BaseModel,
+  BelongsTo,
+  BelongsToMany,
+  type Relation,
+} from '@athenna/database'
+
+import { Course } from '#app/models/Course'
+import { Profile } from '#app/models/Profile'
+import { Comment } from '#app/models/Comment'
+import { Customer } from '#app/models/Customer'
+import { UsersCourses } from '#app/models/UsersCourses'
+
+export class User extends BaseModel {
+  @Column()
+  public id: number 
+
+  @HasOne(() => Profile)
+  public profile: Relation<Profile> 
+
+  @HasMany(() => Comment)
+  public comments: Relation<Comment[]> 
+
+  @BelongsTo(() => Customer)
+  public customer: Relation<Customer> 
+
+  @BelongsToMany(() => Course, () => UsersCourses) 
+  public courses: Relation<Course[]> 
+}
+```
+
+:::tip
+
+Check the full documentation of relationships annotations:
+
+- [`@HasOne()`](/docs/orm/annotations#has-one)
+- [`@HasMany()`](/docs/orm/annotations#has-many)
+- [`@BelongsTo()`](/docs/orm/annotations#belongs-to)
+- [`@BelongsToMany()`](/docs/orm/annotations#belongs-to-many)
+
+:::
+
+On this documentation you will see how to setup the following
+relationships using the above annotations:
+
+- [One To One](/docs/orm/relationships#one-to-one)
+- [One To Many](/docs/orm/relationships#one-to-many)
+- [Many To Many](/docs/orm/relationships#many-to-many)
+
+## One To One
+
+A one-to-one relationship is a very basic type of database relationship. 
+For example, a `User` model might be associated with one `Phone` model. 
+To define this relationship, we will place a `phone` property on the `User` 
+model and annotate it with the `@HasOne()` annotation:
+
+```typescript
+import { Phone } from '#app/models/Phone'
+import { Column, BaseModel, HasOne, type Relation } from '@athenna/database'
+
+export class User extends BaseModel {
+  @Column()
+  public id: number
+
+  @HasOne(() => Phone)
+  public phone: Relation<Phone> 
+}
+```
+
+The first argument passed to the `@HasOne()` annotation is closure
+that return the related model class. Once the relationship is defined, 
+we may retrieve the related record using the `wieth()` method of the
+model query builder:
+
+```typescript
+const { phone } = await User.query()
+  .with('phone')
+  .find()
+```
+
+Athenna determines the foreign key of the relationship based on the 
+parent model name. In this case, the `Phone` model is automatically 
+assumed to have a `userId` foreign key. If you wish to override this 
+convention, you may pass a second argument to the `@HasOne()` annotation:
+
+```typescript
+@HasOne(() => Phone, { foreignKey: 'foreignKey' })
+public phone: Relation<Phone> 
+```
+
+Additionally, Athenna assumes that the foreign key should have a 
+value matching the primary key column of the parent. In other words, 
+Athenna will look for the value of the user's id column in the `userId` 
+column of the `Phone` record. If you would like the relationship to 
+use a primary key value other than `id`, you may pass a `primaryKey`
+property to the options in the second argument:
+
+```typescript
+@HasOne(() => Phone, {
+  primaryKey: 'primaryKey',
+  foreignKey: 'foreignKey'
+})
+public phone: Relation<Phone> 
+```
+
+### Defining the inverse of the relationship
+
+So, we can access the `Phone` model from our `User` model. 
+Next, let's define a relationship on the `Phone` model that 
+will let us access the user that owns the phone. We can define 
+the inverse of a `@HasOne()` relationship using the `@BelongsTo()` 
+annotation:
+
+```typescript
+import { User } from '#app/models/User'
+import { Column, BelongsTo, BaseModel, type Relation } from '@athenna/database'
+
+export class Phone extends BaseModel {
+  @Column()
+  public id: number
+
+  @BelongsTo(() => User)
+  public user: Relation<User> 
+}
+```
+
+When invoking the `with('user')` method, Athenna will attempt to find 
+a `User` model that has an id which matches the `userId` column on the 
+`Phone` model.
+
+Athenna determines the foreign key name by examining the name of the 
+relationship method and suffixing the method name with `Id`. So, in 
+this case, Athenna assumes that the `Phone` model has a `userId` 
+column. However, if the foreign key on the `Phone` model is not `userId`, 
+you may pass a custom key name as the second argument to the `@BelongsTo()`
+annotation:
+
+```typescript
+@BelongsTo(() => User, { foreignKey: 'foreignKey' })
+public user: Relation<User> 
+```
+
+If the parent model does not use `id` as its primary key, or you wish 
+to find the associated model using a different column, you may pass a 
+third argument to the `@BelongsTo()` method specifying the parent 
+table's custom key:
+
+```typescript
+@BelongsTo(() => User, { 
+  primaryKey: 'primaryKey',
+  foreignKey: 'foreignKey' 
+})
+public user: Relation<User> 
+```
+
+## One To Many
+
+Comming soon...
+
