@@ -339,5 +339,191 @@ public post: Relation<Post[]>
 
 ## Many To Many
 
+Many-to-many relations are slightly more complicated than one-to-one 
+and one-to-many relationships. An example of a many-to-many relationship 
+is a user that has many roles and those roles are also shared by other 
+users in the application. For example, a user may be assigned the role 
+of "Author" and "Editor"; however, those roles may also be assigned to 
+other users as well. So, a user has many roles and a role has many users.
+
+### Table structure
+
+To define this relationship, three database tables are needed: `users`, 
+`roles`, and `roles_users`. The `roles_users` table is derived from the 
+alphabetical order of the related model names and contains `userId` 
+and `roleId` columns. This table is used as an intermediate table 
+linking the users and roles.
+
+Remember, since a role can belong to many users, we cannot simply 
+place a `userId` column on the `roles` table. This would mean that a 
+role could only belong to a single user. In order to provide support 
+for roles being assigned to multiple users, the `roles_users` table 
+is needed. We can summarize the relationship's table structure like so:
+
+```typescript
+users
+    id - integer
+    name - string
+ 
+roles
+    id - integer
+    name - string
+ 
+roles_users
+    userId - integer
+    roleId - integer
+```
+
+### Model structure
+
+Many-to-many relationships are defined by defining a property annotated
+with the `@BelongsToMany()` annotation. But before we check how to define
+this annotation, we need to first create our `RolesUsers` pivot model:
+
+```typescript
+import { Role } from '#app/models/Role'
+import { User } from '#app/models/User'
+import type { Relation } from '@athenna/database'
+import { Column, BaseModel, BelongsTo } from '@athenna/database'
+
+export class RolesUsers extends BaseModel {
+  @Column()
+  public id: number
+
+  @Column()
+  public roleId: number
+
+  @Column()
+  public userId: number
+
+  @BelongsTo(() => Role)
+  public role: Relation<Role> 
+
+  @BelongsTo(() => User)
+  public user: Relation<User> 
+
+}
+```
+
+And now let's define the roles relation on our `User` model. The first 
+argument passed to the annotations is a closure that returns the related 
+model class and the second argument is a closure that returns the pivot 
+model:
+
+```typescript
+import { Role } from '#app/models/Role'
+import type { Relation } from '@athenna/database'
+import { RolesUsers } from '#app/models/RolesUsers'
+import { Column, BaseModel, BelongsToMany } from '@athenna/database'
+
+export class User extends BaseModel {
+  @Column()
+  public id: number
+
+  @Column()
+  public name: string
+
+  @BelongsToMany(() => Role, () => RolesUsers)
+  public roles: Relation<Role[]> 
+}
+```
+
+Once the relationship is defined, you may access the user's roles using 
+the `with()` or `load()` methods:
+
+```typescript
+const user = await User.query()
+  .with('roles', query => query.select('id'))
+  .find()
+
+// Or
+
+const user = await User.find()
+
+await user.load('roles', query => query.select('id'))
+
+console.log(user.roles)
+```
+
+To determine the table name of the relationship's pivot table, 
+Athenna will call the `table()` method of the pivot model. However, you 
+are free to override this convention. You may do so by passing a third 
+argument to the `@BelongsToMany()` annotation:
+
+```typescript
+@BelongsToMany(() => Role, () => RolesUsers, {
+  pivotTable: 'roles_users'
+})
+public roles: Relation<Roles[]>
+```
+
+In addition to customizing the name of the pivot table, you may also 
+customize the column names of the keys on the table by passing additional 
+arguments to the options:
+
+```typescript
+@BelongsToMany(() => Role, () => RolesUsers, {
+  pivotTable: 'roles_users',
+  primaryKey: 'id',
+  foreignKey: 'userId',
+  relationPrimaryKey: 'id',
+  relationForeignKey: 'roleId'
+})
+public roles: Relation<Roles[]>
+```
+
+### Defining the inverse of the relationship
+
+To define the "inverse" of a many-to-many relationship, is basically
+the same process of defining on the parent model. To complete our 
+user / role example, let's define the `users` property on the `Role` 
+model:
+
+```typescript
+import { User } from '#app/models/User'
+import type { Relation } from '@athenna/database'
+import { RolesUsers } from '#app/models/RolesUsers'
+import { Column, BaseModel, BelongsToMany } from '@athenna/database'
+
+export class Role extends BaseModel {
+  @Column()
+  public id: number
+
+  @Column()
+  public name: string
+
+  @BelongsToMany(() => User, () => RolesUsers)
+  public users: Relation<User[]> 
+}
+```
+
+As you can see, the relationship is defined exactly the same as its `User` 
+model counterpart with the exception of referencing the `User` model. 
+Since we're reusing the `@BelongsToMany()` annotation, all of the usual 
+table and key customization options are available when defining the 
+"inverse" of many-to-many relationships.
+
+### Retrieving pivot table data
+
+As you have already learned, working with many-to-many relations requires 
+the presence of a pivot table and it pivot model, meaning that if you need
+to retrieve the data from the pivot table, you can simply use the pivot model:
+
+```typescript
+const user = await User.find()
+const role = await Role.find()
+
+const rolesUsers = await RolesUsers.query()
+  .where('userId', user.id)
+  .where('roleId', role.id)
+  .findMany()
+```
+
+## Eager loading
+
+Comming soon...
+
+## Inserting & updating related models
+
 Comming soon...
 

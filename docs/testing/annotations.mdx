@@ -8,6 +8,118 @@ description: Check all available testing annotations and it options.
 
 Check all available testing annotations and it options.
 
+## `@Test()`
+
+The `@Test()` annotation is used to define a method 
+as a test:
+
+```typescript
+@Test()
+public async testMethod({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+```
+
+You can also define the test name by passing a string 
+to the `@Test()` annotation:
+
+```typescript
+@Test('test method!')
+public async testMethod({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+```
+
+:::tip
+
+This could also be done in class defining the 
+method name as string:
+
+```typescript
+@Test()
+public async 'test method!' ({ assert }: Context) {
+  assert.equal(1 + 1, 2)
+}
+```
+
+:::
+
+## `@BeforeAll()`
+
+The `@BeforeAll()` annotation is used to define that a
+method should be executed **before all** tests of that class
+**starts running**. You can define as many as you want in the
+same class:
+
+```typescript
+@BeforeAll()
+public async doSomeOp() {
+  //
+}
+
+@BeforeAll()
+public async doOtherOp() {
+  //
+}
+```
+
+## `@BeforeEach()`
+
+The `@BeforeEach()` annotation is used to define that a
+method should be executed **before each** tests of that class
+**starts running**. You can define as many as you want in the
+same class:
+
+```typescript
+@BeforeEach()
+public async doSomeOp() {
+  //
+}
+
+@BeforeEach()
+public async doOtherOp() {
+  //
+}
+```
+
+## `@AfterAll()`
+
+The `@AfterAll()` annotation is used to define that a
+method should be executed **after all** tests of that class
+**ends running**. You can define as many as you want in the
+same class:
+
+```typescript
+@AfterAll()
+public async doSomeOp() {
+  //
+}
+
+@AfterAll()
+public async doOtherOp() {
+  //
+}
+```
+
+## `@AfterEach()`
+
+The `@AfterEach()` annotation is used to define that a
+method should be executed **after each** tests of that class
+**ends running**. You can define as many as you want in the
+same class:
+
+```typescript
+@AfterEach()
+public async doSomeOp() {
+  //
+}
+
+@AfterEach()
+public async doOtherOp() {
+  //
+}
+```
+
 ## `@Retry()`
 
 Define that a test should be retried if it fails:
