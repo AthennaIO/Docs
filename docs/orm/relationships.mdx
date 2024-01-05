@@ -79,6 +79,7 @@ model and annotate it with the `@HasOne()` annotation:
 
 ```typescript
 import { Phone } from '#app/models/Phone'
+import type { Relation } from '@athenna/database'
 import { Column, BaseModel, HasOne, type Relation } from '@athenna/database'
 
 export class User extends BaseModel {
@@ -92,13 +93,31 @@ export class User extends BaseModel {
 
 The first argument passed to the `@HasOne()` annotation is closure
 that return the related model class. Once the relationship is defined, 
-we may retrieve the related record using the `wieth()` method of the
+we may retrieve the related record using the `with()` method of the
 model query builder:
 
 ```typescript
 const { phone } = await User.query()
   .with('phone')
   .find()
+```
+
+Since all relationships are extending `BaseModel`, you may add further 
+constraints to the relationship query by adding a closure as second argument
+of the `with()` method:
+
+```typescript
+const { phone } = await User.query()
+  .with('phone')
+  .find()
+
+// Or
+
+const user = await User.find()
+
+await user.load('phone', query => query.where('ddd', '+55'))
+
+console.log(user.phone)
 ```
 
 Athenna determines the foreign key of the relationship based on the 
@@ -136,11 +155,15 @@ annotation:
 
 ```typescript
 import { User } from '#app/models/User'
-import { Column, BelongsTo, BaseModel, type Relation } from '@athenna/database'
+import type { Relation } from '@athenna/database'
+import { Column, BelongsTo, BaseModel } from '@athenna/database'
 
 export class Phone extends BaseModel {
   @Column()
   public id: number
+
+  @Column()
+  public userId: number
 
   @BelongsTo(() => User)
   public user: Relation<User> 
@@ -152,10 +175,10 @@ a `User` model that has an id which matches the `userId` column on the
 `Phone` model.
 
 Athenna determines the foreign key name by examining the name of the 
-relationship method and suffixing the method name with `Id`. So, in 
-this case, Athenna assumes that the `Phone` model has a `userId` 
-column. However, if the foreign key on the `Phone` model is not `userId`, 
-you may pass a custom key name as the second argument to the `@BelongsTo()`
+relationship model and suffixing it with `Id`. So, in this case, 
+Athenna assume that the `Phone` model has a `userId` column. However, 
+if the foreign key on the `Phone` model is not `userId`, you may pass 
+a custom key name as the second argument to the `@BelongsTo()`
 annotation:
 
 ```typescript
@@ -178,7 +201,141 @@ public user: Relation<User>
 
 ## One To Many
 
-Comming soon...
+A one-to-many relationship is used to define relationships where a 
+single model is the parent to one or more child models. For example, 
+a blog post may have an infinite number of comments. Like all other 
+Athenna relationships, one-to-many relationships are defined by 
+defining a `@HasMany()` annotation in your model class property:
+
+```typescript
+import { Comment } from '#app/models/Comment'
+import type { Relation } from '@athenna/database'
+import { Column, BaseModel, HasMany } from '@athenna/database'
+
+export class Post extends BaseModel {
+  @Column()
+  public id: number
+
+  @HasMany(() => Comment)
+  public comments: Relation<Comment[]> 
+}
+```
+
+Remember, Athenna will automatically determine the proper foreign 
+key column for the `Comment` model. By convention, Athenna will take 
+the "camelCase" name of the parent model and suffix it with `Id`. So, 
+in this example, Athenna will assume the foreign key column on the 
+`Comment` model is `postId`.
+
+Once the relationship method has been defined, we can access the 
+data of related `comments` by using the `with()` method: 
+
+```typescript
+const { comments } = await Post.query()
+  .with('comments')
+  .find()
+```
+
+Since all relationships are extending `BaseModel`, you may add further 
+constraints to the relationship query by adding a closure as second argument
+of the `with()` method:
+
+```typescript
+const { comments } = await Post.query()
+  .with('comments', query => query.where('title', 'foo'))
+  .find()
+
+// Or
+
+const post = await Post.find()
+
+await post.load('comments', query => query.where('title', 'foo'))
+
+console.log(post.comments)
+```
+
+Like the `@HasOne()` annotation, you may also override the foreign and 
+primary keys by passing the additional options second argument to the 
+`@HasOne()` annotation:
+
+```typescript
+@HasMany(() => Comment, { 
+  foreignKey: 'foreignKey',
+  primaryKey: 'primaryKey'
+})
+public comments: Relation<Comment[]>
+```
+
+### Defining the inverse of the relationship (Many To One)
+
+Now that we can access all of a post's comments, let's define a 
+relationship to allow a comment to access its parent post. To 
+define the inverse of a `@HasMany()` relationship, define a 
+relationship property on the child model annotated with the 
+`@BelongsTo()` annotation:
+
+```typescript
+import { Post } from '#app/models/Post'
+import type { Relation } from '@athenna/database'
+import { Column, BaseModel, BelongsTo } from '@athenna/database'
+
+export class Comment extends BaseModel {
+  @Column()
+  public id: number
+
+  @Column()
+  public postId: number
+
+  @BelongsTo(() => Post)
+  public post: Relation<Post> 
+}
+```
+
+And just like the other relationships, once we have defined it in
+our class, we can retrieve a comment's parent post by using the 
+`with()` and `load()` methods:
+
+```typescript
+const { post } = await Comment.query()
+  .with('post', query => query.where('title', 'foo'))
+  .find()
+
+// Or
+
+const comment = await Comment.find()
+
+await comment.load('post', query => query.where('title', 'foo'))
+
+console.log(comment.post)
+```
+
+In the example above, Athenna will attempt to find a Post model 
+that has an id which matches the `postId` column on the Comment model.
+
+Athenna determines the foreign key name by examining the name of the 
+relationship model and suffixing it with `Id`. So, in this case, 
+Athenna assume that the `Comment` model has a `postId` column. However, 
+if the foreign key on the `Comment` model is not `postId`, you may pass 
+a custom key name as the second argument to the `@BelongsTo()`
+annotation:
+
+```typescript
+@BelongsTo(() => Post, { foreignKey: 'foreignKey' })
+public post: Relation<Post[]>
+```
+
+If your parent model does not use `id` as its primary key, or you 
+wish to find the associated model using a different column, you 
+may pass a `primaryKey` option specifying your parent table's 
+custom key:
+
+```typescript
+@BelongsTo(() => Post, {
+  foreignKey: 'foreignKey',
+  primaryKey: 'primaryKey'
+})
+public post: Relation<Post[]>
+```
 
 ## Many To Many
 
