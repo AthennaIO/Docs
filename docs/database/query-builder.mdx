@@ -1,6 +1,7 @@
 ---
 title: Query Builder
 sidebar_position: 2
+toc_max_heading_level: 2
 description: See how to use the Athenna database query builder.
 ---
 
@@ -17,7 +18,7 @@ Athenna supported database drivers.
 
 ## Running database queries
 
-#### Retrieve all rows from a table
+### Retrieve all rows from a table
 
 You may use the `table()` method provided by the `Database` facade to 
 begin a query. The `table()` method returns a fluent query builder 
@@ -59,7 +60,7 @@ collections, check out the
 
 :::
 
-#### Retrieve a single row
+### Retrieve a single row
 
 If you just need to retrieve a single row from a database table, 
 you may use the `Database` facade's `find()` method. This method 
@@ -72,7 +73,7 @@ const user = await Database.table('users')
   .find()
 ```
 
-#### Get the client and query builder of driver
+### Get the client and query builder of driver
 
 To get the vanilla client or query builder of your connection 
 driver you can use the `getClient()` and `getQueryBuilder()` 
@@ -92,7 +93,7 @@ const result = await queryBuilder
   .andWhere('status', 'PENDING')
 ```
 
-#### Agreggates
+### Agreggates
 
 The query builder also provides a variety of methods for retrieving 
 aggregate values like **count, max, min, avg,** and **sum**.
@@ -159,7 +160,7 @@ vulnerabilities using the `raw()` method.
 
 :::
 
-#### Raw methods
+### Raw methods
 
 Instead of using the `Database.raw()` method, you may also use the 
 following methods to insert a raw expression into various parts of 
@@ -229,7 +230,7 @@ const orders = await Database.table('orders')
 
 ## Joins
 
-#### Inner join clause 
+### Inner join clause 
 
 The query builder may also be used to add join clauses to your queries. 
 To perform a basic "inner join", you may use the join method on a query 
@@ -246,7 +247,7 @@ const users = await Database.table('users')
   .findMany()
 ```
 
-#### Other join clauses 
+### Other join clauses 
 
 If you would like to perform a "left join" or "right join" instead 
 of an "inner join", use the `leftJoin()` or `rightJoin()` methods. 
@@ -269,7 +270,7 @@ You can use any of the join types bellow in your queries:
 - `leftOuterJoin()`
 - `rightOuterJoin()`
 
-#### Advanced join clauses 
+### Advanced join clauses 
 
 You may also specify more advanced join clauses using the `Database` 
 facade:
@@ -282,7 +283,7 @@ const users = await Database.table('users')
 
 ## Basic where clauses 
 
-#### Where clauses 
+### Where clauses 
 
 You may use the query builder's `where()` method to add "where" clauses 
 to the query. The most basic call to the `where()` method requires three 
@@ -338,7 +339,7 @@ const users = await Database.table('users')
   .findMany()
 ```
 
-#### Or where clauses 
+### Or where clauses 
 
 When chaining together calls to the query builder's `where()` method, 
 the "where" clauses will be joined together using
@@ -353,7 +354,7 @@ const users = await Database.table('users')
   .findMany()
 ```
 
-#### Where not clauses 
+### Where not clauses 
 
 The `whereNot()` and `orWhereNot()` methods may be used to negate a 
 given constraint. For example, the following query
@@ -365,9 +366,9 @@ const products = await Database.table('products')
   .findMany()
 ```
 
-#### Additional where clauses 
+### Additional where clauses 
 
-##### `whereBetween() / orWhereBetween()`
+#### `whereBetween() / orWhereBetween()`
 
 The `whereBetween()` or `orWhereBetween()` methods verifies that a 
 column's value is between two values:
@@ -378,7 +379,7 @@ const users = await Database.table('users')
   .findMany()
 ```
 
-##### `whereNotBetween() / orWhereNotBetween()`
+#### `whereNotBetween() / orWhereNotBetween()`
 
 The `whereNotBetween()` or `orWhereNotBetween()` methods verifies that 
 a column's value lies outside two values:
@@ -389,7 +390,7 @@ const users = await Database.table('users')
   .findMany()
 ```
 
-##### `whereIn() / orWhereIn()`
+#### `whereIn() / orWhereIn()`
 
 The `whereIn()` or `orWhereIn()` methods verifies that a given column's 
 value is contained within the given array:
@@ -400,7 +401,7 @@ const users = await Database.table('users')
   .findMany()
 ```
 
-##### `whereNotIn() /  orWhereNotIn()`
+#### `whereNotIn() /  orWhereNotIn()`
 
 The `whereNotIn()` or `orWhereNotIn()` methods verifies that the given 
 column's value is not contained in the given array:
@@ -411,7 +412,7 @@ const users = await Database.table('users')
   .findMany()
 ```
 
-##### `whereNull() / orWhereNull()`
+#### `whereNull() / orWhereNull()`
 
 The `whereNull()` or `orWhereNull()` methods verifies that the value of 
 the given column is `NULL`:
@@ -422,7 +423,7 @@ const users = await Database.table('users')
   .findMany()
 ```
 
-##### `whereNotNull() / orWhereNotNull()`
+#### `whereNotNull() / orWhereNotNull()`
 
 The `whereNotNull()` or `orWhereNotNull()` methods verifies that the 
 column's value is not `NULL`:
@@ -433,7 +434,7 @@ const users = await Database.table('users')
   .findMany()
 ```
 
-#### Logical grouping
+### Logical grouping
 
 Sometimes you may need to group several "where" clauses within 
 parentheses in order to achieve your query's desired logical grouping. 
@@ -471,7 +472,7 @@ behavior when global scopes are applied.
 
 ## Advanced where clauses 
 
-#### Where exists clauses 
+### Where exists clauses 
 
 The `whereExists()`, `orWhereExists()`, `whereNotExists()` and 
 `orWhereNotExists()` methods allows you to write "where exists" SQL 
@@ -500,9 +501,9 @@ where exists (
 
 ## Ordering, grouping, limit & skip
 
-#### Ordering 
+### Ordering 
 
-##### The `orderBy()` method 
+#### The `orderBy()` method 
 
 The `orderBy()` method allows you to sort the results of the query 
 by a given column. The first argument accepted by the
@@ -526,7 +527,7 @@ const users = await Database.table('users')
   .findMany()
 ```
 
-##### The `latest()` & `oldest()` methods 
+#### The `latest()` & `oldest()` methods 
 
 The `latest()` and `oldest()` methods allow you to easily order results 
 by date. By default, the result will be ordered by the table's 
@@ -546,9 +547,9 @@ const user = await Database.table('users')
   .find()
 ```
 
-#### Grouping 
+### Grouping 
 
-##### The `groupBy()` & `having()` methods 
+#### The `groupBy()` & `having()` methods 
 
 As you might expect, the `groupBy()` and `having()` methods may be used 
 to group the query results. The having method's signature is similar 
@@ -585,7 +586,7 @@ const users = await Database.table('users')
 To build more advanced `having()` statements, see the 
 [`havingRaw()`](/docs/database/query-builder#having-raw) method.
 
-#### Limit & Offset
+### Limit & Offset
 
 You may use the `offset()` and `limit()` methods to limit the number 
 of results returned from the query or to skip a given number of results 
@@ -725,7 +726,7 @@ const users = await Database.table('users').createMany([
 ])
 ```
 
-#### Create or update (Upsert)
+### Create or update (Upsert)
 
 The `createOrUpdate()` method will insert records that do not exist 
 and update the records that already exist with new values that you 
@@ -760,7 +761,7 @@ const user = await Database.table('users')
   .update({ deletedAt: null })
 ```
 
-#### Incrementing & decrementing
+### Incrementing & decrementing
 
 The query builder also provides convenient methods for incrementing 
 or decrementing the value of a given column. Both of these methods 

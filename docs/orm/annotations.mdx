@@ -1,6 +1,7 @@
 ---
 title: Annotations
 sidebar_position: 5
+toc_max_heading_level: 2
 description: Check all available ORM annotations and it options.
 ---
 
@@ -10,7 +11,7 @@ Check all available ORM annotations and it options.
 
 ## `@Column()`
 
-The `@Column()` annotations marks a model property as a database column:
+The `@Column()` annotation marks a model property as a database column:
 
 ```typescript
 import { Column, BaseModel } from '@athenna/database'
@@ -36,7 +37,9 @@ export class Flight extends BaseModel {
 You can also define any of the following optional properties:
 
 
-#### `name`
+### `name`
+
+> Default: the name of your class property (e.g `name`).
 
 Map which will be the name of your column in database:
 
@@ -48,7 +51,9 @@ public name: string
 The default value of this property will be the name of
 your class property as **camelCase**.
 
-#### `type`
+### `type`
+
+> Default: the type of your class property (e.g `String`).
 
 Map the type of your column. This property is usefull
 only to synchronize your model with database:
@@ -63,7 +68,9 @@ type of your class property, in the example above, if
 we remove the `type` property, it would automatically
 be set as `String`.
 
-#### `length`
+### `length`
+
+> Default: `undefined`
 
 Map the column length in database. This property is 
 usefull only when synchronizing your model with database:
@@ -73,7 +80,9 @@ usefull only when synchronizing your model with database:
 public name: string
 ```
 
-#### `defaultTo`
+### `defaultTo`
+
+> Default: `null`
 
 This property doesn't change the behavior in your database,
 they are used only when the class property is undefined or 
@@ -94,7 +103,9 @@ method of your model.
 
 :::
 
-#### `isPrimary`
+### `isPrimary`
+
+> Default: `false`
 
 Set if the column is a primary key:
 
@@ -103,7 +114,9 @@ Set if the column is a primary key:
 public id: number
 ```
 
-#### `isHidden`
+### `isHidden`
+
+> Default: `false`
 
 Set if the column should be hidden when retrieving it from database:
 
@@ -112,7 +125,9 @@ Set if the column should be hidden when retrieving it from database:
 public password: string
 ```
 
-#### `isUnique`
+### `isUnique`
+
+> Default: `false`
 
 Set if the column needs to have a unique value in database:
 
@@ -129,7 +144,9 @@ migration could have or not the unique index defined
 
 :::
 
-#### `isNullable`
+### `isNullable`
+
+> Default: `true`
 
 Set if the column is nullable or not:
 
@@ -147,7 +164,9 @@ will throw an exception.
 :::
 
 
-#### `isIndex`
+### `isIndex`
+
+> Default: `false`
 
 Set if the column is an index:
 
@@ -156,7 +175,9 @@ Set if the column is an index:
 public email: string
 ```
 
-#### `isSparse`
+### `isSparse`
+
+> Default: `false`
 
 Set if the column is an index sparse:
 
@@ -165,7 +186,9 @@ Set if the column is an index sparse:
 public email: string
 ```
 
-#### `persist`
+### `persist`
+
+> Default: `false`
 
 Set if the column should be persist in database
 or not. If set as `false`, Athenna will remove this
@@ -177,7 +200,9 @@ will still me available in listing operations:
 public name: string
 ```
 
-#### `isCreateDate`
+### `isCreateDate`
+
+> Default: `false`
 
 Set if the column is a createdAt column. If this option
 is `true`, Athenna will automatically set a `new Date()`
@@ -188,7 +213,9 @@ value in the column when creating it:
 public createdAt: Date
 ```
 
-#### `isUpdateDate`
+### `isUpdateDate`
+
+> Default: `false`
 
 Set if the column is an updatedAt column. If this option
 is `true`, Athenna will automatically set a `new Date()`
@@ -199,7 +226,9 @@ value in the column when creating it:
 public updatedAt: Date
 ```
 
-#### `isDeleteDate`
+### `isDeleteDate`
+
+> Default: `false`
 
 Set if the column is a deletedAt column and also if the model
 is using soft delete approach. If this option is `true`, Athenna
@@ -213,7 +242,123 @@ public deletedAt: Date
 
 ## `@HasOne()`
 
-Comming soon...
+The `@HasOne()` annotation marks a model property as an 
+[one-to-one relation](/docs/orm/relationships#one-to-one):
+
+```typescript
+import { Pilot } from '#app/models/Pilot'
+import { Column, HasOne, BaseModel, type Relation } from '@athenna/database'
+
+export class Flight extends BaseModel {
+  @Column()
+  public id: number
+
+  @Column()
+  public from: string
+
+  @Column()
+  public to: string
+
+  @HasOne(() => Pilot)
+  public pilot: Relation<Pilot>
+
+  @Column({ isCreateDate: true })
+  public createdAt: Date
+
+  @Column({ isUpdateDate: true })
+  public updatedAt: Date
+}
+```
+
+The second argument is an object that accepts any of the following 
+options:
+
+### `isIncluded`
+
+> Default: `false`
+
+Set if the relation will be included when fetching data from the
+parent model:
+
+```typescript
+@HasOne(() => Pilot, { isIncluded: true })
+public pilot: Relation<Pilot>
+```
+
+:::tip
+
+This option is used by methods like `with()` to eager load your
+relation in the parent model:
+
+```typescript
+const flight = await Flight.query()
+  .with('pilot') // 👈 Set isIncluded to true in query schema.
+  .find()
+```
+
+This means that if you set this property to `true`, it will by 
+default load your relation every time.
+
+:::
+
+### `closure`
+
+> Default: `undefined`
+
+Set a closure that should be called when `isIncluded` is true,
+adding to possibility to call methods from the query builder
+of the relationship:
+
+```typescript
+@HasOne(() => Pilot, { 
+  isIncluded: true,
+  closure: (query) => query.select('id')
+})
+public pilot: Relation<Pilot>
+```
+
+:::tip
+
+Just like [`isIncluded` property](/docs/orm/annotations#isincluded)
+this option is used by methods like `with()` when eager loading your
+relation in your parent model:
+
+```typescript
+const flight = await Flight.query()
+  // Set isIncluded to true and add a select 
+  // statement to the relationship query builder.
+  .with('pilot', (query) => query.select('id'))
+  .find()
+```
+
+This means that if you set this property, it will by default be called
+when loading your relation without the need to set a second argument to
+the `with()` method.
+
+:::
+
+### `primaryKey`
+
+> Default: the `isMainPrimary` of the parent model (e.g `id`).
+
+Define the primary key of the relationship:
+
+```typescript
+@HasOne(() => Pilot, { primaryKey: 'myId' })
+public pilot: Relation<Pilot>
+```
+
+### `foreignKey`
+
+> Default: the main model name in camel case 
+> with an `Id` at the end (e.g `flightId`).
+
+Define the foreign key of the relationship:
+
+```typescript
+@HasOne(() => Pilot, { foreignKey: 'myFlightId' })
+public pilot: Relation<Pilot>
+```
 
 ## `@HasMany()`
 
