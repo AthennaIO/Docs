@@ -247,26 +247,15 @@ The `@HasOne()` annotation marks a model property as an
 
 ```typescript
 import { Pilot } from '#app/models/Pilot'
-import { Column, HasOne, BaseModel, type Relation } from '@athenna/database'
+import type { Relation } from '@athenna/database'
+import { Column, HasOne, BaseModel } from '@athenna/database'
 
 export class Flight extends BaseModel {
   @Column()
   public id: number
 
-  @Column()
-  public from: string
-
-  @Column()
-  public to: string
-
   @HasOne(() => Pilot)
   public pilot: Relation<Pilot>
-
-  @Column({ isCreateDate: true })
-  public createdAt: Date
-
-  @Column({ isUpdateDate: true })
-  public updatedAt: Date
 }
 ```
 
@@ -350,7 +339,7 @@ public pilot: Relation<Pilot>
 
 ### `foreignKey`
 
-> Default: the main model name in camel case 
+> Default: the parent model name in camel case 
 > with an `Id` at the end (e.g `flightId`).
 
 Define the foreign key of the relationship:
@@ -362,13 +351,383 @@ public pilot: Relation<Pilot>
 
 ## `@HasMany()`
 
-Comming soon...
+The `@HasMany()` annotation marks a model property as an 
+[one-to-many relation](/docs/orm/relationships#one-to-many):
+
+```typescript
+import { Comment } from '#app/models/Comment'
+import type { Relation } from '@athenna/database'
+import { Column, HasOne, BaseModel } from '@athenna/database'
+
+export class Post extends BaseModel {
+  @Column()
+  public id: number
+
+  @HasMany(() => Comment)
+  public comments: Relation<Comment[]>
+}
+```
+
+The second argument is an object that accepts any of the following 
+options:
+
+### `isIncluded`
+
+> Default: `false`
+
+Set if the relation will be included when fetching data from the
+parent model:
+
+```typescript
+@HasMany(() => Comment, { isIncluded: true })
+public comments: Relation<Comment[]>
+```
+
+:::tip
+
+This option is used by methods like `with()` to eager load your
+relation in the parent model:
+
+```typescript
+const post = await Post.query()
+  .with('comments') // 👈 Set isIncluded to true in query schema.
+  .find()
+```
+
+This means that if you set this property to `true`, it will by 
+default load your relation every time.
+
+:::
+
+### `closure`
+
+> Default: `undefined`
+
+Set a closure that should be called when `isIncluded` is true,
+adding to possibility to call methods from the query builder
+of the relationship:
+
+```typescript
+@HasMany(() => Comment, { 
+  isIncluded: true,
+  closure: (query) => query.select('id')
+})
+public comments: Relation<Comment[]>
+```
+
+:::tip
+
+Just like [`isIncluded` property](/docs/orm/annotations#isincluded-1)
+this option is used by methods like `with()` when eager loading your
+relation in your parent model:
+
+```typescript
+const post = await Post.query()
+  // Set isIncluded to true and add a select 
+  // statement to the relationship query builder.
+  .with('comments', (query) => query.select('id'))
+  .find()
+```
+
+This means that if you set this property, it will by default be called
+when loading your relation without the need to set a second argument to
+the `with()` method.
+
+:::
+
+### `primaryKey`
+
+> Default: the `isMainPrimary` of the parent model (e.g `id`).
+
+Define the primary key of the relationship:
+
+```typescript
+@HasMany(() => Comment, { primaryKey: 'myId' })
+public comments: Relation<Comment>
+```
+
+### `foreignKey`
+
+> Default: the parent model name in camel case 
+> with an `Id` at the end (e.g `flightId`).
+
+Define the foreign key of the relationship:
+
+```typescript
+@HasMany(() => Comment, { foreignKey: 'myPostId' })
+public comments: Relation<Comment[]>
+```
 
 ## `@BelongsTo()`
 
-Comming soon...
+The `@BelongsTo()` annotation marks a model property as the inverse side of 
+an [one-to-one relation](/docs/orm/relationships#defining-the-inverse-of-the-relationship) and
+the inverse side of an [one-to-many relation (many-to-one)](/docs/orm/relationships#defining-the-inverse-of-the-relationship-many-to-one):
+
+```typescript
+import { User } from '#app/models/User'
+import type { Relation } from '@athenna/database'
+import { Column, BelongsTo, BaseModel } from '@athenna/database'
+
+export class Phone extends BaseModel {
+  @Column()
+  public id: number
+
+  @Column()
+  public userId: number
+
+  @BelongsTo(() => User)
+  public user: Relation<User>
+}
+```
+
+The second argument is an object that accepts any of the following 
+options:
+
+### `isIncluded`
+
+> Default: `false`
+
+Set if the relation will be included when fetching data from the
+parent model:
+
+```typescript
+@BelongsTo(() => User, { isIncluded: true })
+public user: Relation<User>
+```
+
+:::tip
+
+This option is used by methods like `with()` to eager load your
+relation in the parent model:
+
+```typescript
+const phone = await Phone.query()
+  .with('user') // 👈 Set isIncluded to true in query schema.
+  .find()
+```
+
+This means that if you set this property to `true`, it will by 
+default load your relation every time.
+
+:::
+
+### `closure`
+
+> Default: `undefined`
+
+Set a closure that should be called when `isIncluded` is true,
+adding to possibility to call methods from the query builder
+of the relationship:
+
+```typescript
+@BelongsTo(() => User, { 
+  isIncluded: true,
+  closure: (query) => query.select('id')
+})
+public user: Relation<User>
+```
+
+:::tip
+
+Just like [`isIncluded` property](/docs/orm/annotations#isincluded-2)
+this option is used by methods like `with()` when eager loading your
+relation in your parent model:
+
+```typescript
+const phone = await Phone.query()
+  // Set isIncluded to true and add a select 
+  // statement to the relationship query builder.
+  .with('user', (query) => query.select('id'))
+  .find()
+```
+
+This means that if you set this property, it will by default be called
+when loading your relation without the need to set a second argument to
+the `with()` method.
+
+:::
+
+### `primaryKey`
+
+> Default: the `isMainPrimary` of the parent model (e.g `id`).
+
+Define the primary key of the relationship:
+
+```typescript
+@BelongsTo(() => User, { primaryKey: 'myId' })
+public user: Relation<User>
+```
+
+### `foreignKey`
+
+> Default: the relation model name in camel case 
+> with an `Id` at the end (e.g `userId`).
+
+Define the foreign key of the relationship:
+
+```typescript
+@BelongsTo(() => User, { foreignKey: 'myUserId' })
+public user: Relation<User>
+```
 
 ## `@BelongsToMany()`
 
-Comming soon...
+The `@BelongsToMany()` annotation marks a model property as a 
+[many-to-many relation](/docs/orm/relationships#many-to-many):
 
+```typescript
+import { Role } from '#app/models/Role'
+import type { Relation } from '@athenna/database'
+import { RolesUsers } from '#app/models/RolesUsers'
+import { Column, BaseModel, BelongsToMany } from '@athenna/database'
+
+export class User extends BaseModel {
+  @Column()
+  public id: number
+
+  @BelongsToMany(() => Role, () => RolesUsers)
+  public roles: Relation<Role[]>
+}
+```
+
+The third argument is an object that accepts any of the following 
+options:
+
+### `isIncluded`
+
+> Default: `false`
+
+Set if the relation will be included when fetching data from the
+parent model:
+
+```typescript
+@BelongsToMany(() => Role, () => RolesUsers, { 
+  isIncluded: true 
+})
+public roles: Relation<Role[]>
+```
+
+:::tip
+
+This option is used by methods like `with()` to eager load your
+relation in the parent model:
+
+```typescript
+const user = await User.query()
+  .with('roles') // 👈 Set isIncluded to true in query schema.
+  .find()
+```
+
+This means that if you set this property to `true`, it will by 
+default load your relation every time.
+
+:::
+
+### `closure`
+
+> Default: `undefined`
+
+Set a closure that should be called when `isIncluded` is true,
+adding to possibility to call methods from the query builder
+of the relationship:
+
+```typescript
+@BelongsToMany(() => Role, () => RolesUsers, { 
+  isIncluded: true,
+  closure: (query) => query.select('id')
+})
+public roles: Relation<Roles[]>
+```
+
+:::tip
+
+Just like [`isIncluded` property](/docs/orm/annotations#isincluded-3)
+this option is used by methods like `with()` when eager loading your
+relation in your parent model:
+
+```typescript
+const user = await User.query()
+  // Set isIncluded to true and add a select 
+  // statement to the relationship query builder.
+  .with('roles', (query) => query.select('id'))
+  .find()
+```
+
+This means that if you set this property, it will by default be called
+when loading your relation without the need to set a second argument to
+the `with()` method.
+
+:::
+
+### `pivotTable`
+
+> Default: Athenna will call the `table()` method of the pivot model.
+> (e.g RolesUsers.table() -> `roles_users`)
+
+Define the pivot table of the relationship:
+
+```typescript
+@BelongsToMany(() => Role, () => RolesUsers, { 
+  pivotTable: 'roles_users' 
+})
+public roles: Relation<Role>
+```
+
+### `primaryKey`
+
+> Default: the `isMainPrimary` of the parent model (e.g `id`).
+
+Define the primary key of the relationship:
+
+```typescript
+@BelongsToMany(() => Role, () => RolesUsers, { 
+  primaryKey: 'myId' 
+})
+public roles: Relation<Role>
+```
+
+### `foreignKey`
+
+> Default: the parent model name in camel case 
+> with an `Id` at the end (e.g `userId`). This
+> value needs to be defined in the pivot model 
+> (e.g RolesUsers).
+
+Define the foreign key of the relationship:
+
+```typescript
+@BelongsToMany(() => Role, () => RolesUsers, { 
+  foreignKey: 'myUserId' 
+})
+public roles: Relation<Role[]>
+```
+
+### `relationPrimaryKey`
+
+> Default: the `isMainPrimary` of the relation model (e.g `id`).
+
+Define the relation primary key of the relationship:
+
+```typescript
+@BelongsToMany(() => Role, () => RolesUsers, { 
+  relationPrimaryKey: 'myId' 
+})
+public roles: Relation<Role>
+```
+
+### `relationForeignKey`
+
+> Default: the relation model name in camel case 
+> with an `Id` at the end (e.g `roleId`). This
+> value needs to be defined in the pivot model 
+> (e.g RolesUsers).
+
+Define the relation foreign key of the relationship:
+
+```typescript
+@BelongsToMany(() => Role, () => RolesUsers, { 
+  relationForeignKey: 'myRoleId' 
+})
+public roles: Relation<Role[]>
+```
