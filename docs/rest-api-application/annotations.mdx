@@ -11,17 +11,316 @@ Check all available REST API annotations and it options.
 
 ## `@Controller()`
 
-Comming soon...
+Use this annotation to define all the metadata needed to register
+your controller into the service container:
+
+```typescript
+import { Controller, type Context } from '@athenna/http'
+
+@Controller()
+export class UserController {
+  public async index(ctx: Context) {
+    return ctx.response.status(200).send({ status: 'ok' })
+  }
+}
+```
+
+You can also define any of the following optional properties:
+
+### `alias`
+
+> Default: `'App/Http/Controllers/YourControllerName'`
+
+Set what will be the alias that your controller will be registered
+with in the service container:
+
+```typescript
+@Controller({ alias: 'App/Http/Controllers/OtherControllerName' })
+export class YourControllerName {}
+```
+
+### `camelAlias`
+
+> Default: `undefined`
+
+Set what will be the camel alias that your controller will be
+registered with in the service container. Camel aliases are very
+useful when you need to resolve your dependency from [`@Inject()` 
+annotation](/docs/architecture-concepts/service-container#using-inject-annotation) 
+or [automatic constructor injection.](docs/architecture-concepts/service-container#automatic-constructor-injection)
+
+Since controllers were not designed to be resolved using the above
+approachs, `camelAlias` will always be `undefined`, but you are
+free to define one:
+
+```typescript
+@Controller({ camelAlias: 'yourControllerName' })
+export class YourControllerName {}
+```
+
+### `type`
+
+> Default: `'transient'`
+
+Set the registration type of the controller into the service container:
+
+```typescript
+@Controller({ type: 'transient' })
+export class YourControllerName {}
+```
 
 ## `@Middleware()`
 
-Comming soon...
+Use this annotation to define all the metadata needed to register
+your middleware into the service container:
+
+```typescript
+import { User } from '#app/models/User'
+import { Middleware, type Context } from '@athenna/http'
+
+@Middleware()
+export class UserMiddleware {
+  public async handle(ctx: Context) {
+    ctx.user = await User.find({ id: ctx.params.id })
+  }
+}
+```
+
+You can also define any of the following optional properties:
+
+### `isGlobal`
+
+> Default: `false`
+
+Define if your middleware will be registered globally for all routes
+of your REST API:
+
+```typescript
+@Middleware({ isGlobal: true })
+export class YourMiddlewareName {}
+```
+
+### `name`
+
+> Default: `'yourMiddlewareName'`
+
+Set the name of your middleware that you will use to register it in 
+your REST API routes:
+
+```typescript
+@Middleware({ name: 'auth' })
+export class AuthMiddleware {}
+```
+
+### `alias`
+
+> Default: `'App/Http/Middlewares/YourMiddlewareName'`
+
+Set what will be the alias that your middleware will be registered
+with in the service container:
+
+```typescript
+@Middleware({ alias: 'App/Http/Middlewares/OtherMiddlewareName' })
+export class YourMiddlewareName {}
+```
+
+### `camelAlias`
+
+> Default: `undefined`
+
+Set what will be the camel alias that your middleware will be
+registered with in the service container. Camel aliases are very
+useful when you need to resolve your dependency from [`@Inject()` 
+annotation](/docs/architecture-concepts/service-container#using-inject-annotation) 
+or [automatic constructor injection.](docs/architecture-concepts/service-container#automatic-constructor-injection)
+
+Since middlewares were not designed to be resolved using the above
+approachs, `camelAlias` will always be `undefined`, but you are
+free to define one:
+
+```typescript
+@Middleware({ camelAlias: 'yourMiddlewareName' })
+export class YourMiddlewareName {}
+```
+
+### `type`
+
+> Default: `'transient'`
+
+Set the registration type of the middleware into the service container:
+
+```typescript
+@Middleware({ type: 'transient' })
+export class YourMiddlewareName {}
+```
 
 ## `@Interceptor()`
 
-Comming soon...
+Use this annotations to define all the metadata needed to register
+your interceptor into the service container:
+
+```typescript
+import { Interceptor, type Context } from '@athenna/http'
+
+@Interceptor()
+export class UserInterceptor {
+  public async intercept(ctx: Context) {
+    ctx.body.intercepted = true
+
+    return ctx.body
+  }
+}
+```
+
+You can also define any of the following optional properties:
+
+### `isGlobal`
+
+> Default: `false`
+
+Define if your interceptor will be registered globally for all routes
+of your REST API:
+
+```typescript
+@Interceptor({ isGlobal: true })
+export class YourInterceptorName {}
+```
+
+### `name`
+
+> Default: `'yourInterceptorName'`
+
+Set the name of your interceptor that you will use to register it in 
+your REST API routes:
+
+```typescript
+@Interceptor({ name: 'intercept' })
+export class AddInterceptInterceptor {}
+```
+
+### `alias`
+
+> Default: `'App/Http/Interceptors/YourInterceptorName'`
+
+Set what will be the alias that your interceptor will be registered
+with in the service container:
+
+```typescript
+@Interceptor({ alias: 'App/Http/Interceptors/OtherInterceptorName' })
+export class YourInterceptorName {}
+```
+
+### `camelAlias`
+
+> Default: `undefined`
+
+Set what will be the camel alias that your interceptor will be
+registered with in the service container. Camel aliases are very
+useful when you need to resolve your dependency from [`@Inject()` 
+annotation](/docs/architecture-concepts/service-container#using-inject-annotation) 
+or [automatic constructor injection.](docs/architecture-concepts/service-container#automatic-constructor-injection)
+
+Since interceptors were not designed to be resolved using the above
+approachs, `camelAlias` will always be `undefined`, but you are
+free to define one:
+
+```typescript
+@Interceptor({ camelAlias: 'yourInterceptorName' })
+export class YourInterceptorName {}
+```
+
+### `type`
+
+> Default: `'transient'`
+
+Set the registration type of the interceptor into the service container:
+
+```typescript
+@Interceptor({ type: 'transient' })
+export class YourInterceptorName {}
+```
 
 ## `@Terminator()`
 
-Comming soon...
+Use this annotations to define all the metadata needed to register
+your terminator into the service container:
+
+```typescript
+import { Terminator, type Context } from '@athenna/http'
+
+@Terminator()
+export class UserTerminator {
+  public async terminate(ctx: Context) {
+    await Log.channel('slack').debug('Request finished.', JSON.stringify(ctx))
+  }
+}
+```
+
+You can also define any of the following optional properties:
+
+### `isGlobal`
+
+> Default: `false`
+
+Define if your terminator will be registered globally for all routes
+of your REST API:
+
+```typescript
+@Terminator({ isGlobal: true })
+export class YourTerminatorName {}
+```
+
+### `name`
+
+> Default: `'yourTerminatorName'`
+
+Set the name of your terminator that you will use to register it in 
+your REST API routes:
+
+```typescript
+@Terminator({ name: 'log' })
+export class LogTerminator {}
+```
+
+### `alias`
+
+> Default: `'App/Http/Terminators/YourTerminatorName'`
+
+Set what will be the alias that your terminator will be registered
+with in the service container:
+
+```typescript
+@Terminator({ alias: 'App/Http/Terminators/OtherTerminatorName' })
+export class YourTerminatorName {}
+```
+
+### `camelAlias`
+
+> Default: `undefined`
+
+Set what will be the camel alias that your terminator will be
+registered with in the service container. Camel aliases are very
+useful when you need to resolve your dependency from [`@Inject()` 
+annotation](/docs/architecture-concepts/service-container#using-inject-annotation) 
+or [automatic constructor injection.](docs/architecture-concepts/service-container#automatic-constructor-injection)
+
+Since terminators were not designed to be resolved using the above
+approachs, `camelAlias` will always be `undefined`, but you are
+free to define one:
+
+```typescript
+@Terminator({ camelAlias: 'yourTerminatorName' })
+export class YourTerminatorName {}
+```
+
+### `type`
+
+> Default: `'transient'`
+
+Set the registration type of the terminator into the service container:
+
+```typescript
+@Terminator({ type: 'transient' })
+export class YourTerminatorName {}
+```
 
