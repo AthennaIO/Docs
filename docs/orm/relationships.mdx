@@ -401,7 +401,6 @@ export class RolesUsers extends BaseModel {
 
   @BelongsTo(() => User)
   public user: Relation<User> 
-
 }
 ```
 
@@ -521,9 +520,199 @@ const rolesUsers = await RolesUsers.query()
 
 ## Eager loading
 
-Comming soon...
+Eager loading alleviates the "N + 1" query problem. To illustrate the N + 1 
+query problem, consider a `Book` model that "belongs to" to an `Author` model:
+
+```typescript
+import { Author } from '#app/models/Author'
+import type { Relation } from '@athenna/database'
+import { Column, BelongsTo, BaseModel } from '@athenna/database'
+
+export class Book extends BaseModel {
+  @Column()
+  public id: number
+
+  @BelongsTo(() => Author)
+  public author: Relation<Author>
+}
+```
+
+Now, let's retrieve all books and their authors:
+
+```typescript
+const books = await Book.findMany()
+
+for (const book of books) {
+  await book.load('author')
+
+  console.log(book.author.name)
+}
+```
+
+This loop will execute one query to retrieve all of the books within the 
+database table, then another query for each book in order to retrieve the 
+book's author. So, if we have 25 books, the code above would run 26 queries: 
+one for the original book, and 25 additional queries to retrieve the author 
+of each book.
+
+Thankfully, we can use eager loading to reduce this operation to just two 
+queries. When building a query, you may specify which relationships should 
+be eager loaded using the `with()` method:
+
+```typescript
+const books = await Book.query()
+  .with('author') 👈
+  .findMany()
+
+for (const book of books) {
+  console.log(book.author.name)
+}
+```
+
+For this operation, only two queries will be executed - one query to retrieve 
+all of the books and one query to retrieve all of the authors for all of the 
+books:
+
+```sql
+select * from books
+ 
+select * from authors where id in (1, 2, 3, 4, 5, ...)
+```
+
+### Eager loading multiple relationships
+
+Sometimes you may need to eager load several different relationships. To do 
+so, just concat multiple `with()` calls: 
+
+```typescript
+const books = await Book.query()
+  .with('author') 👈
+  .with('publisher') 👈
+  .findMany()
+```
+
+### Nested eager loading
+
+To eager load a relationship's relationships, you may use "dot" syntax. For 
+example, let's eager load all of the book's authors and all of the author's 
+personal contacts:
+
+```typescript
+const books = await Book.query()
+  .with('author.contacts') 👈
+  .findMany()
+```
+
+:::warning
+
+Closures set as second argument of the `with()` method will be ignored when using 
+"dot" syntax to eager load relationship's relationships.
+
+Check the [relationship's relationships constraints documentation section](/docs/orm/relationships#relationships-relationships-constraints)
+to see how you could have more power under the constraints added to each of your relationships.
+
+:::
+
+### Constraining eager loads
+
+Sometimes you may wish to eager load a relationship but also specify additional 
+query conditions for the eager loading query. You can accomplish this by passing 
+a closure as second argument to the `with()` function that adds additional 
+constraints to the eager loading query:
+
+```typescript
+const users = await User.query()
+  .with('posts', query => query.whereLike('title', '%code%')) 👈
+  .findMany()
+```
+
+In this example, Athenna will only eager load posts where the post's title 
+column contains the word `code`. You may call other query builder methods to 
+further customize the eager loading operation:
+
+```typescript
+const users = await User.query()
+  .with('posts', query => query.orderBy('createdAt', 'desc')) 👈
+  .findMany()
+```
+
+#### Relationship's relationships constraints 
+
+When using the ["dot" syntax](/docs/orm/relationships#nested-eager-loading) to eager load
+relationship's relationships the closure set as second argument will always be ignored: 
+
+```typescript
+const books = await Book.query()
+  // ❌ Load `author` and `contacts` of author, 
+  // but doesn't query only cellphones contacts.
+  .with('author.contacts', query => query.where('isCellphone', true))
+  .findMany()
+```
+
+To have full power under the constraints that you want to add to your queries you can
+call `with()` method inside of your closure:
+
+```typescript
+const books = await Book.query()
+  .with('author', query => {
+    query
+      .where('name', 'Lenon')
+      .with('contacts', query => {
+        query.where('isCellphone', true)
+      })
+  })
+  .findMany()
+```
 
 ## Inserting & updating related models
 
-Comming soon...
+Since all of your relationships extends the `BaseModel`, you can use methods like 
+`save()` to create your relationships:
+
+```typescript
+const author = await Author.find()
+
+author.book = new Book()
+
+author.book.authorId = author.id
+
+await author.book.save()
+```
+
+Or even to update it:
+
+```typescript
+const book = await Book.query()
+  .with('author')
+  .find()
+
+book.author.name = 'Lenon'
+
+await book.author.save()
+```
+
+### Creating many-to-many relationships
+
+When working with many-to-many relationships you need to use the pivot model to 
+create the relation between the other two models:
+
+```typescript
+import { User } from '#app/models/User'
+import { Role } from '#app/models/Role'
+import { RolesUsers } from '#app/models/RolesUsers'
+
+const user = await User.find()
+const role = await Role.find()
+
+const rolesUsers = new RolesUsers()
+
+rolesUsers.userId = user.id
+rolesUsers.roleId = role.id
+
+await rolesUsers.save()
+
+// Or simply
+
+await RolesUsers.create({ userId: user.id, roleId: role.id })
+```
 
