@@ -246,6 +246,23 @@ flight.name = 'Brazil to Ukraine'
 await flight.save()
 ```
 
+:::tip
+
+To validate if a model is persisted in database you can use the 
+`isPersisted()` method:
+
+```typescript
+const flight = new Flight()
+
+flight.name = 'Brazil to Ukraine'
+
+if (!flight.isPersisted()) {
+  await flight.save()
+}
+```
+
+:::
+
 In this example, we assign the `name` field to the name attribute of 
 the `#app/models/Flight` model instance. When we call the `save()` 
 method, a record will be inserted into the database. The model's 
@@ -284,6 +301,38 @@ flight.name = 'Paris to London'
 
 await flight.save()
 ```
+
+:::tip
+
+To validate if some change has been done in the model after it was
+retrieved from database you may use the `isDirty()` method:
+
+```typescript
+const flight = await Flight.query()
+  .where({ id: 1 })
+  .find()
+
+if (!flight.isDirty()) {
+  flight.name = 'Paris to London'
+
+  await flight.save()
+}
+```
+
+Also to get only the values that were modified you may use the `dirty()`
+method:
+
+```typescript
+const flight = await Flight.query()
+  .where({ id: 1 })
+  .find()
+
+flight.name = 'Paris to London'
+
+const { name } = flight.dirty()
+```
+
+:::
 
 #### Mass updates 
 
@@ -417,6 +466,33 @@ await Flight.query()
     departure: 'Oakland',
     destination: 'San Diego'
   })
+```
+
+## Refreshing models
+
+If you already have an instance of an model that was retrieved from the 
+database, you can "refresh" the model using the `fresh()` and `refresh()` 
+methods. The `fresh()` method will re-retrieve the model from the database. 
+The existing model instance will not be affected:
+
+```typescript
+const flight = await Flight.find({ number: 'FR 900' })
+
+const freshFlight = await flight.fresh()
+```
+
+The `refresh()` method will re-hydrate the existing model using fresh data 
+from the database. In addition, all of its loaded relationships will be 
+refreshed as well:
+
+```typescript
+const flight = await Flight.find({ number: 'FR 900' })
+
+flight.number = 'FR 456'
+
+await flight.refresh()
+
+console.log(flight.number) // "FR 900" 👈
 ```
 
 ## Deleting models
