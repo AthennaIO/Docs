@@ -10,4 +10,171 @@ See how to factory fake models in Athenna Framework.
 
 ## Introduction
 
-Coming soon...
+When testing your application or seeding your database, you may need to insert a 
+few records into your database. Instead of manually specifying the value of each 
+column, Athenna allows you to define a set of default attributes for each of your 
+models using model factories.
+
+## Defining model factories
+
+First thing you need to do before start using your factories is to define the 
+return value of the static `definition()` method of your model:
+
+```typescript
+import { BaseModel } from '@athenna/database'
+
+export class User extends BaseModel {
+  @Column()
+  public id: number
+
+  @Column()
+  public name: string
+
+  @Column({ isUnique: true })
+  public email: string
+
+  @Column({ isCreateDate: true })
+  public createdAt: Date 
+
+  @Column({ isUpdateDate: true })
+  public updatedAt: Date
+
+  @Column({ isDeleteDate: true })
+  public deletedAt: Date
+
+  public async static definition(): Promise<Partial<User>> {
+    return {
+      id: this.faker.number.int({ max: 100000 }),
+      name: this.faker.person.firstName(),
+      email: this.faker.internet.email(),
+      createdAt: this.faker.date.anytime(),
+      updatedAt: this.faker.date.anytime()
+    }
+  }
+}
+```
+
+The definition method returns the default set of attribute values that should 
+be applied when creating a model using the factory.
+
+Via the `faker` helper, models have access to the [`@faker-js/faker`](https://fakerjs.dev/), 
+which allows you to conveniently generate various kinds of random data for testing 
+and seeding.
+
+## Creating models using factories
+
+Once you have defined the `definition()` method of your model, you may use the 
+static factory method in order to instantiate a factory instance for that model. 
+Let's take a look at a few examples of creating models. First, we'll use the 
+`make()` method to create models without persisting them to the database:
+
+```typescript
+const user = await User.factory().make()
+```
+
+You may create a collection of many models using the `count()` method:
+
+```typescript
+const users = await User.factory()
+  .count(3)
+  .make()
+```
+
+### Creating trashed models
+
+If your model is using [soft delete](/docs/orm/query-builder#soft-deleting) 
+approach you can apply the trashed state to your model by calling the `trashed()`
+method:
+
+```typescript
+const users = await User.factory()
+  .count(3)
+  .trashed()
+  .make()
+```
+
+### Overriding attributes
+
+If you would like to override some of the default values of your `definition()`
+method, you may pass an array of values to the `make()` method. Only the 
+specified attributes will be replaced while the rest of the attributes remain 
+set to their default values as specified by the `definiton()` method:
+
+```typescript
+const user = await User.factory().make({ name: 'Thais Gabriela' })
+```
+
+### Returning specific fields
+
+Sometimes you may need to return only a specific field from your fabricated data.
+To do so, you can use the `returning()` method:
+
+```typescript
+// Make one User and return it email
+const email = await User.factory()
+  .returning('email')
+  .make()
+
+// Make three Users and return an array with three emails
+const emails = await User.factory()
+  .count(3)
+  .returning('email')
+  .make()
+```
+
+## Persisting models 
+
+The `create()` method instantiates model instances and persists them to the 
+database:
+
+```typescript
+// Create a single User
+const user = await User.factory().create()
+ 
+// Create three Users
+const users = await User.factory()
+  .count(3)
+  .create()
+```
+
+You may override the factory's default model attributes by passing an object 
+of attributes to the `create()` method:
+
+```typescript
+const user = await User.factory().create({ name: 'Thais' })
+```
+
+:::note
+
+[Mass assignment protection](/docs/orm/query-builder#mass-assignment) is 
+automatically disabled when creating models using factories.
+
+:::
+
+## Defining relationships within factories
+
+To define a relationship within your model factory, you will typically assign a 
+new factory instance to the foreign key of the relationship. This is normally 
+done for the "inverse" relationships such as `@BelongsTo()` relationships. 
+
+For example, if you would like to create a new user when creating a post, 
+you may use the `returningAs()` method that works exactly like the [`returning()`](/docs/orm/factories#returning-specific-fields)
+method, the only difference is that `returningAs()` forces the TypeScript return type
+to be the same of the field you are returning:
+
+```typescript
+import { User } from '#app/models/User'
+import { BaseModel } from '@athenna/database'
+
+export class Post extends Model {
+  public static definition(): Promise<Partial<Post>> {
+    return {
+      title: this.faker.commerce.productName(),
+      userId: User.factory().returningAs('id')
+    }
+  }
+
+  /*...*/
+}
+```
+
