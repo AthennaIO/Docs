@@ -1,0 +1,257 @@
+---
+title: Annotations
+sidebar_position: 5
+toc_max_heading_level: 2
+description: Check all available Artisan annotations and it options.
+---
+
+# Annotations
+
+## `@Argument()`
+
+Define an argument for an Artisan command class:
+
+```typescript
+import { Argument, BaseCommand } from '@athenna/artisan'
+
+export class Greet extends BaseCommand {
+  @Argument()
+  public name: string
+
+  public static signature(): string {
+    return 'greet'
+  }
+
+  public async handle(): Promise<void> {
+    this.logger.simple(`Hello ${this.name}!`)
+  }
+}
+```
+
+You can also define any of the following optional properties:
+
+### `signature`
+
+> Default: the name of your class property (e.g `name`)
+
+The signature defines how the argument will be displayed in `help` 
+commands of Artisan and also how it's going to be parsed: 
+
+```typescript
+@Argument({ signature: 'myName' })
+public name: string
+```
+
+By default the signature of an argument will be set as required (`<myName>`),
+the define that an argument is optional use the following syntax:
+
+```typescript
+@Argument({ signature: '[myName]' })
+public name: string
+```
+
+:::tip
+
+To avoid using the syntax above to define your argument as optional 
+or not we recommend you to use the [`required`](/docs/cli-application/annotations#required)
+
+:::
+
+You can also define a catch-all argument, we call it spread/variadic 
+arguments. It works exactly like rest parameters of arrays in JavaScript, 
+and it **must always be the last argument of your command class**:
+
+```typescript
+@Argument({ signature: 'myNames...' })
+public myNames: string[]
+```
+
+### `default`
+
+> Default: `undefined`
+
+Set a default value for your argument:
+
+```typescript
+@Argument({ default: 'Lenon' })
+public: name: string
+```
+
+:::note
+
+Defining a value to `default` option automatically set the `required`
+option to `false`.
+
+:::
+
+### `required`
+
+> Default: `true`
+
+Define that argument is an optional field or not:
+
+```typescript
+@Argument({ required: false })
+public name?: string
+```
+
+### `description`
+
+> Default: `undefined`
+
+Define what description will be displayed in commands like `help` of
+Artisan:
+
+```typescript
+@Argument({ description: 'The name that Athenna should greet' })
+public name: string
+```
+
+## `@Option()`
+
+Define an option for an Artisan command class:
+
+```typescript
+import { Option, BaseCommand } from '@athenna/artisan'
+
+export class Greet extends BaseCommand {
+  @Option({ signature: '-n, --name <name>' })
+  public name: string
+
+  public static signature(): string {
+    return 'greet'
+  }
+
+  public async handle(): Promise<void> {
+    this.logger.simple(`Hello ${this.name}!`)
+  }
+}
+```
+
+You can also define any of the following optional properties:
+
+### `signature`
+
+> Default: the name of your class property with `--` in the 
+> beggining (e.g `--name`)
+
+The signature defines how the option will be displayed in `help` 
+commands of Artisan, how it's going to be parsed and also how
+the user that will be using the CLI will set the option: 
+
+```typescript
+@Option({ signature: '-n, --name' })
+public name: boolean 
+```
+
+Calling `greet` command setting the `name` option:
+
+```shell
+node artisan greet -n
+
+// Or
+
+node artisan greet --name
+```
+
+As you can see the type of the `name` property is a `boolean`. If you 
+want to define that your option will receive a value string you can 
+use the following signature:
+
+```typescript
+@Option({ signature: '-n, --name <name>' })
+public name: string
+```
+
+Calling `greet` command setting the `name` option:
+
+```shell
+node artisan greet -n Lenon
+
+// Or
+
+node artisan greet --name Lenon
+```
+
+Sometimes you might need to add more than one `name` option. For this 
+kind of situation, just like arguments, you can define a spread option:
+
+```typescript
+@Option({ signature: '-n, --name <name...>' })
+public names: string[]
+```
+
+Calling `greet` command setting multiple `name` options:
+
+```typescript
+node artisan greet -n Lenon -n Txsoura
+
+// or
+
+node artisan greet --name Lenon --name Txsoura
+```
+
+Is possible to create a signature with a negate value, check the example:
+
+```typescript
+@Option({ signature: '--no-name' })
+public hasName: boolean
+```
+
+If you call `greet` command passing the `--no-name` option, the value 
+of the `hasName` property will be `false`.
+
+### `default`
+
+> Default: `undefined`
+
+Set a default value for your option:
+
+```typescript
+@Option({ 
+  signature: '-n, --name <name>', 
+  default: 'Lenon' 
+})
+public: name: string
+```
+
+### `description`
+
+> Default: `undefined`
+
+Define what description will be displayed in commands like `help` of
+Artisan:
+
+```typescript
+@Option({ 
+  signature: '-n, --name <name>'
+  description: 'The name that Athenna should greet' 
+})
+public name: string
+```
+
+### `isFromGlobal`
+
+> Default: `false`
+
+Is possible to define global options to Artisan to be used in all 
+commands. To be able to catch the value of a global one, you must 
+define the `isFromGlobal` as true and set the exactly `signature` 
+that you see when running `node artisan --help`. By default, Athenna
+comes with `--env` global option, let's use it as example:
+
+```typescript
+@Option({
+  isFromGlobal: true,
+  signature: '--env <name>'
+})
+public env: string
+```
+
+:::warning
+
+The `default` and `description` options are ignored when `isFromGlobal`
+is true, since Athenna will use the values set for the global option.
+
+:::
+
