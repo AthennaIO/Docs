@@ -692,6 +692,18 @@ const contentJSON = file.getContentAsJsonSync()   👈
 const contentJSON = await file.getContentAsJson() 👈
 ```
 
+#### `File.getContentAsYaml()` & `File.getContentAsYamlSync()`
+
+Same behavior of `getContentAsJson()`/`getContentAsJsonSync()`, but automatically 
+parse the the yaml to an `object` if the content is a valid YAML string:
+
+```typescript
+import { File } from '@athenna/common'
+
+const contentYAML = file.getContentAsYamlSync()   👈
+const contentYAML = await file.getContentAsYaml() 👈
+```
+
 #### `File.getContentAsBuilder()` & `File.getContentAsBuilderSync()`
 
 Same behavior of `getContent()`/`getContentSync()`, but return the content as 
@@ -2748,6 +2760,26 @@ Json.get(object, 'name') // João Lenon
 Json.get(object, 'configs.theme') // dark
 ```
 
+#### `Json::omit()`
+
+Get all keys from an object omitting selected ones:
+
+```typescript
+const omitted = Json.omit({ name: 'Lenon', age: 23 }, ['name'])
+
+console.log(omitted) // { age: 23 }
+```
+
+#### `Json::pick()`
+
+Pick only selected keys from an object:
+
+```typescript
+const picked = Json.pick({ name: 'Lenon', age: 23 }, ['name'])
+
+console.log(picked) // { name: 'Lenon' }
+```
+
 ### Module
 
 #### `Module::get()`
@@ -2916,6 +2948,23 @@ Resolve the module path by meta url and import it:
 import { Module } from '@athenna/common'
 
 const module = await Module.resolve('./MyService.js', import.meta.url)
+```
+
+You can add the following options to it as third argument:
+
+```typescript
+const module = './MyService.js'
+const parentURL = import.meta.url
+
+const module = await Module.resolve(module, parentURL, {
+  // Automatically import the module instead of returning
+  // the module path resolved.
+  import: true,
+
+  // Automatically get the imported module using `Module.get()`
+  // method.
+  getModule: true
+})
 ```
 
 #### `Module::createDirname()`
@@ -3548,6 +3597,28 @@ const array = [{ name: 'João Lenon', age: 22 }]
 const builders = Parser.arrayObjectToArrayBuilder(array)
 ```
 
+#### `Parser::objectToYamlString()`
+
+Parse an object to a YAML string:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const object = { version: 1 }
+const yaml = Parser.objectToYamlString(object) // 'version: 1'
+```
+
+#### `Parser::yamlStringToObject()`
+
+Parse a YAML string to object: 
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const yaml = 'version: 1' 
+const object = Parser.yamlStringToObject(yaml) // { version: 1 }
+```
+
 ### Path
 
 #### `Path::dirs`
@@ -3699,6 +3770,26 @@ Set the `Path.dirs.app` value:
 import { Path } from '@athenna/common'
 
 Path.setApp('app/app')
+```
+
+#### `Path::models()`
+
+Merge the project root path with `Path.dirs.models`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.models()) // /home/user/athenna-project/app/models
+```
+
+#### `Path::setModels()`
+
+Set the `Path.dirs.models` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setModels('app/models/models')
 ```
 
 #### `Path::boostrap()`
