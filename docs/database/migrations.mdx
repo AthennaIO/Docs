@@ -25,7 +25,7 @@ timestamp that allows Athenna to determine the order of
 the migrations:
 
 ```shell
-node artisan make:migration create_flights_table
+node artisan make:migration FlightsMigration 
 ```
 
 :::tip
@@ -48,7 +48,7 @@ expressively create and modify tables. For example, the following migration crea
 ```typescript
 import { BaseMigration, type DatabaseImpl } from '@athenna/database'
 
-export class CreateFlightsTable extends BaseMigration {
+export class FlightsMigration extends BaseMigration {
   public tableName = 'flights'
 
   public async up(db: DatabaseImpl) {
@@ -75,7 +75,7 @@ you should set the static getter `connection` in your migration:
 ```typescript
 import { BaseMigration, type DatabaseImpl } from '@athenna/database'
 
-export class CreateFlightsTable extends BaseMigration { 
+export class FlightsMigration extends BaseMigration { 
   public static connection() {
     return 'postgres'
   }
@@ -108,7 +108,7 @@ node artisan migration:run --connection=postgres
 
 :::warning
 
-If `postgres` is your default connection than all the migrations 
+If `postgres` is your default connection then all the migrations 
 using the `default` value in the static `connection()` method
 will run too.
 
