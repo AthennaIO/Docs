@@ -100,7 +100,7 @@ and you will not be able to use it.
 
 If you want a middleware to run during every HTTP request
 to your application, you can set the `isGlobal` value to
-true in the `@Middleware` annotation:
+true in the `@Middleware()` annotation:
 
 ```typescript
 import { Middleware } from '@athenna/http'
@@ -132,7 +132,7 @@ If you are not using TypeScript, you can use the
 If you would like to assign middleware to specific routes,
 you can use the name of your middleware class in camelCase
 (`ensureApiKeyIsValid`). But we recommend you to assign a
-custom name to your middleware using the `@Middleware`
+custom name to your middleware using the `@Middleware()`
 annotation:
 
 ```typescript
@@ -168,6 +168,13 @@ Route.get('/welcome', () => {
     //
 }).middleware('auth') 👈
 ```
+
+:::tip
+
+To learn more about the `@Middleware()` annotation, visit the
+[REST API annotations documentation page.](/docs/rest-api-application/annotations#middleware)
+
+:::
 
 ## Intercept middleware
 
@@ -218,6 +225,13 @@ Route.get('/welcome', () => {
 }).interceptor('interceptMiddleware') 👈
 ```
 
+:::tip
+
+To learn more about the `@Interceptor()` annotation, visit the
+[REST API annotations documentation page.](/docs/rest-api-application/annotations#interceptor)
+
+:::
+
 ## Terminate middleware
 
 Sometimes a middleware may need to do some work **after**
@@ -264,3 +278,11 @@ handled by a terminator middleware! You can see the code
 [here](https://github.com/AthennaIO/Http/blob/develop/src/kernels/HttpKernel.ts#L93).
 
 :::
+
+:::tip
+
+To learn more about the `@Terminator()` annotation, visit the
+[REST API annotations documentation page.](/docs/rest-api-application/annotations#terminator)
+
+:::
+
