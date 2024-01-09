@@ -11,10 +11,10 @@ Understand how to mock dependencies and functions in Athenna.
 ## Introduction
 
 When testing Athenna applications, you may wish to "mock" 
-certain aspects of your application, so they are not actually
+certain aspects of your application, so they are not
 executed during a given test. For example, when testing a 
 controller that calls a service, you may wish to mock the 
-service, so they are not actually executed during the test.
+service, so they are not executed during the test.
 This allows you to only test the controller's HTTP response 
 without worrying about the execution of the service since 
 the service can be tested in their own test case.
@@ -82,14 +82,27 @@ public async mockAnObjectMethod({ assert }: Context) {
 }
 ```
 
-If you don't have access to the method you are mocking, you can
-save the return of `Mock::when()` method and use it to make your
-assertions:
+If you don't have access to the method you are mocking, or you want
+to create a specific kind of mock, you can get the stub created with 
+the `get()` method:
 
 ```typescript
 @Test()
 public async mockAnObjectMethod({ assert }: Context) {
-  const fooMock = Mock.when(this.object, 'foo').resolve('bar')
+  const fooMock = Mock.when(this.object, 'foo').resolve('bar').get()
+
+  await this.someMethodThatCallsFooMethod()
+
+  assert.isTrue(fooMock.called)
+}
+
+// Or
+
+@Test()
+public async mockAnObjectMethod({ assert }: Context) {
+  const fooMock = Mock.when(this.object, 'foo').get()
+
+  fooMock.returns('bar')
 
   await this.someMethodThatCallsFooMethod()
 
@@ -130,9 +143,293 @@ documentation section.
 
 :::
 
+### Mocking by arguments
+
+If your method receives an argument, you might need to test
+different scenarios based on the argument it has received.
+Athenna makes it delicious to mock this kind of situation
+using the `withArgs()` method:
+
+```typescript
+import { Test, Mock, type Context } from '@athenna/test'
+
+export default class MockTest {
+  public object = {
+    foo: (arg?: any) => 'Im the original!'
+  }
+
+  @Test()
+  public async mockAnObjectMethodByArgument({ assert }: Context) {
+    Mock.when(this.object, 'foo')
+      .withArgs('1') 👈
+      .return('mocked!')
+      .withArgs('2') 👈
+      .return('mocked!!')
+
+    assert.equal(this.object.foo('1'), 'mocked!')
+    assert.equal(this.object.foo('2'), 'mocked!!')
+
+    assert.equal(this.object.foo(), 'Im the original!')
+    assert.equal(this.object.foo('3'), 'Im the original!')
+  }
+}
+```
+
+As you can see in the example above, when the arguments set for 
+the `foo()` method don't match the defined mocks, the real
+implementation of `foo()` will be the chosen one, which can
+be a beneficial behavior for certain scenarios.
+
+If you wish to remove this behavior, you could add the
+"default" return before adding the arguments mocks:
+
+```typescript
+@Test()
+public async mockAnObjectMethodByArgument({ assert }: Context) {
+  Mock.when(this.object, 'foo')
+    .return('default mock') 👈
+    .withArgs('1')
+    .return('mocked!')
+    .withArgs('2')
+    .return('mocked!!')
+
+  assert.equal(this.object.foo('1'), 'mocked!')
+  assert.equal(this.object.foo('2'), 'mocked!!')
+
+  assert.equal(this.object.foo(), 'default mock')
+  assert.equal(this.object.foo('3'), 'default mock')
+}
+```
+
+### Matching by argument type
+
+Sometimes you don't mind what is the value of the argument
+that you will receive, but only the type of it, for this
+kind of situation you can use methods like `withStringArg()`:
+
+```typescript
+@Test()
+public async mockAnObjectMethodByArgumentType({ assert }: Context) {
+  Mock.when(this.object, 'foo')
+    .withStringArg() 👈
+    .return('mocked!')
+    .withNumberArg() 👈
+    .return('mocked!!')
+
+  assert.equal(this.object.foo(1), 'mocked!!')
+  assert.equal(this.object.foo('1'), 'mocked!')
+}
+```
+
+The code above is basically an alias for the following:
+
+```typescript
+@Test()
+public async mockAnObjectMethodByArgumentType({ assert }: Context) {
+  Mock.when(this.object, 'foo')
+    .withArgs(Mock.match.string) 👈
+    .return('mocked!')
+    .withArgs(Mock.match.number) 👈
+    .return('mocked!!')
+
+  assert.equal(this.object.foo(1), 'mocked!!')
+  assert.equal(this.object.foo('1'), 'mocked!')
+}
+```
+
+This means that you can use the `Mock.match` helper to match more
+complex kind of data in your arguments:
+
+```typescript
+@Test()
+public async mockAnObjectMethodByArgumentType({ assert }: Context) {
+  Mock.when(this.object, 'foo')
+    .withArgs(Mock.match({ id: 1 })) 👈
+    .return('mocked!')
+    .withArgs(Mock.match({ id: 2 })) 👈
+    .return('mocked!!')
+
+  const user1 = { id: 1, createdAt: new Date() }
+  const user2 = { id: 2, createdAt: new Date() }
+
+  assert.equal(this.object.foo(user1), 'mocked!')
+  assert.equal(this.object.foo(user2), 'mocked!!')
+
+  // Not a mocked scenario, returning the real implementation.
+  assert.equal(this.object.foo({ id: 3 }), 'Im the original!')
+}
+```
+
+Here you can check other methods that could help you to mock your
+methods by the argument value:
+
+- [`withArrayArg()`](/docs/testing/mocking#witharrayarg)
+- [`withObjectArg()`](/docs/testing/mocking#withobjectarg)
+- [`withBooleanArg()`](/docs/testing/mocking#withbooleanarg)
+- [`withFunctionArg()`](/docs/testing/mocking#withfunctionarg)
+- [`withDateArg()`](/docs/testing/mocking#withdatearg)
+- [`withRegexpArg()`](/docs/testing/mocking#withregexparg)
+- [`withFalsyArg()`](/docs/testing/mocking#withfalsyarg)
+- [`withTruthyArg()`](/docs/testing/mocking#withtruthyarg)
+- [`withAnyArg()`](/docs/testing/mocking#withanyarg)
+
+#### `withArrayArg()`
+
+Set up a mock when mocked method is called with an array:
+
+```typescript
+Mock.when(this.object, 'foo').withArrayArg().return('bar')
+
+this.object.foo([])
+```
+
+#### `withObjectArg()`
+
+Set up a mock when mocked method is called with an object:
+
+```typescript
+Mock.when(this.object, 'foo').withObjectArg().return('bar')
+
+this.object.foo({})
+```
+
+#### `withBooleanArg()`
+
+Set up a mock when mocked method is called with a boolean:
+
+```typescript
+Mock.when(this.object, 'foo').withBooleanArg().return('bar')
+
+this.object.foo(true)
+this.object.foo(false)
+```
+
+#### `withFunctionArg()`
+
+Set up a mock when mocked method is called with a function:
+
+```typescript
+Mock.when(this.object, 'foo').withFunctionArg().return('bar')
+
+this.object.foo(() => {})
+```
+
+#### `withDateArg()`
+
+Set up a mock when mocked method is called with a date:
+
+```typescript
+Mock.when(this.object, 'foo').withDateArg().return('bar')
+
+this.object.foo(new Date())
+```
+
+#### `withRegexpArg()`
+
+Set up a mock when mocked method is called with a regexp:
+
+```typescript
+Mock.when(this.object, 'foo').withRegexpArg().return('bar')
+
+this.object.foo(new RegExp())
+```
+
+#### `withFalsyArg()`
+
+Set up a mock when mocked method is called with a falsy value:
+
+```typescript
+Mock.when(this.object, 'foo').withFalsyArg().return('bar')
+
+this.object.foo('')
+this.object.foo(false)
+```
+
+#### `withTruthyArg()`
+
+Set up a mock when mocked method is called with a truthy value:
+
+```typescript
+Mock.when(this.object, 'foo').withTruthyArg().return('bar')
+
+this.object.foo('hey')
+this.object.foo(true)
+```
+
+### Mocking by call order
+
+It's possible to mock a method only for a specific call count, for example, I might
+need to mock my method on the first and second call, but on the third one, I
+want the original method result. To do so you can use methods like `onCall()`:
+
+```typescript
+@Test()
+public async mockAnObjectMethodByCall({ assert }: Context) {
+  Mock.when(this.object, 'foo')
+    .onCall(1) 👈
+    .return('mocked!')
+    .onCall(2) 👈
+    .return('mocked!!')
+
+  assert.equal(this.object.foo(), 'mocked!')
+  assert.equal(this.object.foo(), 'mocked!!')
+
+  // Not a mocked scenario, returning the real implementation.
+  assert.equal(this.object.foo(), 'Im the original!')
+}
+```
+
+For convenience, you can use the `onFirstCall()`, `onSecondCall()` or the
+`onThirdCall()` methods also:
+
+```typescript
+@Test()
+public async mockAnObjectMethodByCall({ assert }: Context) {
+  Mock.when(this.object, 'foo')
+    .onFirstCall() 👈
+    .return('mocked!')
+    .onSecondCall() 👈
+    .return('mocked!!')
+    .onThirdCall() 👈
+    .return('mocked!!!')
+
+  assert.equal(this.object.foo(), 'mocked!')
+  assert.equal(this.object.foo(), 'mocked!!')
+  assert.equal(this.object.foo(), 'mocked!!!')
+
+  // Not a mocked scenario, returning the real implementation.
+  assert.equal(this.object.foo(), 'Im the original!')
+}
+```
+
+:::tip
+
+You can also merge `onCall()` with `withArgs()` to craft mocks that will be called
+nth times with determined argument:
+
+```typescript
+@Test()
+public async mockAnObjectMethodByCall({ assert }: Context) {
+  Mock.when(this.object, 'foo')
+    .withArgs(1)
+    .onFirstCall()
+    .return('mocked!')
+    .onSecondCall()
+    .return('mocked!!')
+
+  assert.equal(this.object.foo(1), 'mocked!')
+  assert.equal(this.object.foo(1), 'mocked!!')
+
+  // Not a mocked scenario, returning the real implementation.
+  assert.equal(this.object.foo(1), 'Im the original!')
+}
+```
+
+:::
+
 ### Restoring mocks
 
-When you mock a method, you are changing its behavior, so
+When you mock a method, you are changing its behavior, so it
 is important to restore the default behavior of the method
 and also reset the mock history after your test finishes.
 
@@ -436,6 +733,19 @@ export default class AppControllerTest extends BaseHttpTest {
   }
 }
 ```
+
+:::tip
+
+Just like in `Mock::when()` method, you are able to mock by arguments
+and by calls using the Facade's `when()` method:
+
+```typescript
+Mail.when('to')
+    .withArgs('lenon@athenna.io')
+    .throw(new Error())
+```
+
+:::
 
 ### Restoring facades
 
