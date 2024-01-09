@@ -73,10 +73,23 @@ const user = await Database.table('users')
   .find()
 ```
 
-### Get the client and query builder of driver
+### Validate if exists
+
+If you just need to validate if exists any row with determined
+constraints, you may use the `Database` facade's `exists()` method.
+This method will return `true` if the row exists:
+
+```typescript
+const hasUser = await Database.table('users')
+  .select('id', 'name')
+  .where({ name: 'Rodrigo Kamada' })
+  .exists()
+```
+
+### Get the client and query builder of a driver
 
 To get the vanilla client or query builder of your connection 
-driver you can use the `getClient()` and `getQueryBuilder()` 
+driver, you can use the `getClient()` and `getQueryBuilder()`
 method:
 
 ```typescript

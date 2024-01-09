@@ -15,7 +15,7 @@ are ready to start retrieving data from your database.
 
 :::note
 
-To see how to create and configure your model check the 
+To see how to create and configure your model, check the
 [getting started documentation section](/docs/orm/getting-started)
 of the ORM.
 
@@ -58,7 +58,7 @@ You may use any of these methods when writing your model queries.
 
 :::
 
-### Hidding fields
+### Hiding fields
 
 Sometimes you might need to hide some sensitive field from your model 
 queries, to do so, you can set the `isHidden` property to true in your
@@ -91,7 +91,7 @@ const { password } = await User.query()
   .find()
 ```
 
-If you wish to get all the hidden fields for a specify use case you 
+If you wish to get all the hidden fields for a specify use case, you
 can use the `withHidden()` method:
 
 ```typescript
@@ -120,8 +120,8 @@ const flights = await Flight.collection(where)
 const availableFlights = flights.reject(flight => flight.cancelled)
 ```
 
-And of course, if you need to add more scecific constraints to your 
-query you can also use the `collection()` method when working 
+And of course, if you need to add more specific constraints to your
+query, you can also use the `collection()` method when working
 directly with the model query builder:
 
 ```typescript
@@ -168,7 +168,7 @@ const { data, meta, links } = await Flight.query()
 
 In addition to retrieving all the records matching a given query, you 
 may also retrieve single records using the `find()` method. Instead of 
-returning an array or collection of models, this method return a single 
+returning an array or collection of models, this method returns a single
 model instance:
 
 ```typescript
@@ -192,6 +192,19 @@ const flight = await Flight.query()
   .findOr(async () => {
     // ...
   })
+```
+
+### Validate model existence
+
+You can also validate if a model exists with determined constraints by
+using the `exists()` method:
+
+```typescript
+const existsFlight = await Flight.exists({ id: 1 })
+
+const existsFlight = await Flight.query()
+  .where('id', 1)
+  .exists()
 ```
 
 ### Not found exceptions 
