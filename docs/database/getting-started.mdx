@@ -60,12 +60,23 @@ is already present in your application's `Path.config('database.ts')`
 configuration file, so be sure to review this file to become
 familiar with its contents:
 
-| Driver name |                          Website |                                           Built with |
+| Driver name |             Website              |                                           Built with |
 |:------------|:--------------------------------:|-----------------------------------------------------:|
-| `mongo`     |         https://www.mongodb.com/ |   [mongoose](https://www.npmjs.com/package/mongoose) |
-| `mysql`     |           https://www.mysql.com/ |           [knex](https://www.npmjs.com/package/knex) |
-| `sqlite`    |          https://www.sqlite.org/ |           [knex](https://www.npmjs.com/package/knex) |
-| `postgres`  |      https://www.postgresql.org/ |           [knex](https://www.npmjs.com/package/knex) |
+| `mongo`     |     https://www.mongodb.com/     |   [mongoose](https://www.npmjs.com/package/mongoose) |
+| `mysql`     |      https://www.mysql.com/      |           [knex](https://www.npmjs.com/package/knex) |
+| `sqlite`    |     https://www.sqlite.org/      |           [knex](https://www.npmjs.com/package/knex) |
+| `postgres`  |   https://www.postgresql.org/    |           [knex](https://www.npmjs.com/package/knex) |
+
+:::note
+
+Athenna has another driver called `fake` that is very helpful when running tests.
+The `fake` driver got the same signature of all other drivers, but it returns
+empty objects and arrays in executors methods like `find()`, which is perfect to use
+within the [`Mock`](/docs/testing/mocking) class. For more information
+about the `FakeDriver`, take a look at the
+[mocking database documentation section.](/docs/testing/mocking#mocking-database)
+
+:::
 
 ### Overview of some environment variables
 

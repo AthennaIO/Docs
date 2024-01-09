@@ -50,12 +50,12 @@ As you can see in the example above, creating a collection is as simples as:
 const collection = new Collection([1, 2, 3])
 ```
 
-Simplifying even more: Athenna has extended the `Array` class to simply convert an array to a collection using the `toCollection` method:
+Simplifying even more: Athenna has extended the `Array` class to simply convert an array to a collection using the `toAthennaCollection()` method:
 
 ```typescript
 const numbers = [1, 2, 3]
 
-const collection = numbers.toCollection()
+const collection = numbers.toAthennaCollection()
 ```
 
 :::info
@@ -2723,9 +2723,23 @@ const json = collection.toJson()
 // {"id": 384, "name": "Rayquaza", "gender": "NA"}
 ```
 
+#### `toJSON()`
+
+Enter in all the collection objects and execute the `toJSON()` method of each object:
+
+```js
+const collection = new Collection([
+    { toJSON: () => ({ id: 1 }) }
+])
+
+const json = collection.toJSON()
+
+// [{ id: 1 }]
+```
+
 #### `toResource()`
 
-The toResource method enter all collection objects and execute the `toResource` method of each object:
+Enter in all the collection objects and execute the `toResource()` method of each object:
 
 ```js
 const collection = new Collection([

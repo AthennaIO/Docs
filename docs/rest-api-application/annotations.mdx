@@ -45,12 +45,12 @@ export class YourControllerName {}
 
 Set what will be the camel alias that your controller will be
 registered with in the service container. Camel aliases are very
-useful when you need to resolve your dependency from [`@Inject()` 
+useful when you need to resolve your dependency from [`@Inject()`
 annotation](/docs/architecture-concepts/service-container#using-inject-annotation) 
 or [automatic constructor injection.](docs/architecture-concepts/service-container#automatic-constructor-injection)
 
 Since controllers were not designed to be resolved using the above
-approachs, `camelAlias` will always be `undefined`, but you are
+approaches, `camelAlias` will always be `undefined`, but you are
 free to define one:
 
 ```typescript
@@ -135,7 +135,7 @@ annotation](/docs/architecture-concepts/service-container#using-inject-annotatio
 or [automatic constructor injection.](docs/architecture-concepts/service-container#automatic-constructor-injection)
 
 Since middlewares were not designed to be resolved using the above
-approachs, `camelAlias` will always be `undefined`, but you are
+approaches, `camelAlias` will always be `undefined`, but you are
 free to define one:
 
 ```typescript
@@ -156,7 +156,7 @@ export class YourMiddlewareName {}
 
 ## `@Interceptor()`
 
-Use this annotations to define all the metadata needed to register
+Use this annotation to define all the metadata needed to register
 your interceptor into the service container:
 
 ```typescript
@@ -221,7 +221,7 @@ annotation](/docs/architecture-concepts/service-container#using-inject-annotatio
 or [automatic constructor injection.](docs/architecture-concepts/service-container#automatic-constructor-injection)
 
 Since interceptors were not designed to be resolved using the above
-approachs, `camelAlias` will always be `undefined`, but you are
+approaches, `camelAlias` will always be `undefined`, but you are
 free to define one:
 
 ```typescript
@@ -242,7 +242,7 @@ export class YourInterceptorName {}
 
 ## `@Terminator()`
 
-Use this annotations to define all the metadata needed to register
+Use this annotation to define all the metadata needed to register
 your terminator into the service container:
 
 ```typescript
@@ -305,7 +305,7 @@ annotation](/docs/architecture-concepts/service-container#using-inject-annotatio
 or [automatic constructor injection.](docs/architecture-concepts/service-container#automatic-constructor-injection)
 
 Since terminators were not designed to be resolved using the above
-approachs, `camelAlias` will always be `undefined`, but you are
+approaches, `camelAlias` will always be `undefined`, but you are
 free to define one:
 
 ```typescript

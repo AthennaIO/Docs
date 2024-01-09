@@ -10,13 +10,13 @@ See how to extend models implementations in Athenna Framework.
 
 ## Introduction
 
-All the Athenna models extends the 
+All the Athenna models extends the
 [`BaseModel`](https://github.com/AthennaIO/Database/blob/develop/src/models/BaseModel.ts) 
 class of the `@athenna/database` package. This class
-provides everything that a model needs to communicate with database 
+provides everything that a model needs to communicate with database
 in the best way possible. But sometimes you may need to write your 
 own methods depending on your business logic and to save some time. 
-You will see at this page how you can easily create your own static 
+You will see on this page how you can easily create your own static
 and instance methods for your models.
 
 :::tip
@@ -148,7 +148,7 @@ const oldestPost = await user.getOldestPost()
 Always be carefully to not break the single responsibility principle 
 of [`SOLID`](https://medium.com/backticks-tildes/the-s-o-l-i-d-principles-in-pictures-b34ce2f1e898) 
 when implementing your own model methods. But you are free to do whatever 
-you want with Athenna 😎🤙. All this methods implementation will always 
+you want with Athenna 😎🤙. All of these methods implementations will always
 depend on your business logic and creativity.
 
 :::
