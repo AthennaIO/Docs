@@ -48,7 +48,7 @@ to `test`, meaning that the `.env.test` file will be used when
 running your tests.
 
 You are free to define other testing environment value. To do 
-that you can use the `setNodeEnv()` method of `Runner` class 
+that you can use the `setAppEnv()` method of `Runner` class 
 in your `Path.bootstrap('test.ts')` file:
 
 ```typescript
@@ -60,7 +60,7 @@ await Runner.setTsEnv()
   .addAssertPlugin()
   .addPlugin(request())
   .addPlugin(command())
-  .setNodeEnv('testing') 👈
+  .setAppEnv('testing') 👈
   .addPath('tests/e2e/**/*.ts')
   .addPath('tests/unit/**/*.ts')
   .setCliArgs(process.argv.slice(2))
