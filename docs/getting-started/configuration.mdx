@@ -68,13 +68,13 @@ since any sensitive credentials would get exposed.
 ### Determining the current environment
 
 Before loading your application's environment variables,
-Athenna determines if either the `NODE_ENV` environment
+Athenna determines if either the `APP_ENV` environment
 variable has been externally provided or if the `--env` Artisan
 flag has been specified. If so, Athenna will attempt to load
-the `.env.${NODE_ENV}` file if it exists. If it does not exist,
-Athenna will try to find the `NODE_ENV` value inside the `.env` file,
+the `.env.${APP_ENV}` file if it exists. If it does not exist,
+Athenna will try to find the `APP_ENV` value inside the `.env` file,
 if it exists, Athenna will save its value and repeat the process
-above. Finally, if the `NODE_ENV` is not present in the file,
+above. Finally, if the `APP_ENV` is not present in the file,
 Athenna will load the `.env` file by default if it exists.
 
 Running providing `--env` flag in Artisan:
@@ -83,10 +83,10 @@ Running providing `--env` flag in Artisan:
 node artisan serve --env=local
 ```
 
-Running providing `NODE_ENV` externally:
+Running providing `APP_ENV` externally:
 
 ```bash
-NODE_ENV=local node artisan serve
+APP_ENV=local node artisan serve
 ```
 
 Let's check some practical examples. This is the default
@@ -95,9 +95,9 @@ Let's check some practical examples. This is the default
 ```dotenv
 HOST=localhost
 PORT=3000
-NODE_ENV=local
 
 APP_NAME=Athenna
+APP_ENV=local
 APP_DEBUG=true
 APP_URL=http://${HOST}:${PORT}
 APP_DOMAIN=${HOST}
@@ -109,7 +109,7 @@ LOG_CHANNEL=application
 ```
 
 In the `.env` file above, you can see that we have the
-`NODE_ENV=local`. This means that if you create a new
+`APP_ENV=local`. This means that if you create a new
 `.env.local` file in your project root path, Athenna
 will load it instead of `.env` if running your application
 without a predefined environment.
