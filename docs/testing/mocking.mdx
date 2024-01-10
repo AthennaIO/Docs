@@ -998,4 +998,126 @@ export default class GreetTest {
 
 ## Mocking database
 
-Coming soon...
+When working with the database library, you might need to mock
+the database calls in your tests, specially in unitary tests.
+For this situation, you can use the `fake` connection as your default
+connection in your `.env.test` file:
+
+```dotenv title=".env.test"
+DB_CONNECTION=fake
+```
+
+Next step is to register the Database facade using the
+`DatabaseProvider` to be able to access the facade. We
+could do it inside a `@BeforeAll()` hook. Let's craft
+a `UserServiceTest` class to use as an example:
+
+```typescript title="UserServiceTest.ts"
+import { DatabaseProvider } from '@athenna/database'
+import { Mock, BeforeAll, AfterEach } from '@athenna/test'
+
+export default class UserServiceTest {
+  @BeforeAll()
+  public beforeAll() {
+    new DatabaseProvider().register()
+  }
+
+  @AfterEach()
+  public afterEach() {
+    Mock.restoreAll()
+  }
+}
+```
+
+Nice, now we have everything set up to start mocking database calls 🥳
+
+:::warning
+
+Never forget the `Mock.restoreAll()` in the `@AfterEach()` hook
+to clean your mocks in each test 👍
+
+:::
+
+### Mocking the `find()` method
+
+Imagine that our `UserService` has a method called `findById()`
+that is responsible to find a user in database by the id. To
+mock this scenario, we could do the following:
+
+```typescript
+import { UserService } from '#app/services/UserService'
+import { Database, DatabaseProvider } from '@athenna/database'
+import { Test, Mock, BeforeAll, AfterEach, type Context } from '@athenna/test'
+
+export default class UserServiceTest {
+  @BeforeAll()
+  public beforeEach() {
+    new DatabaseProvider().register()
+  }
+
+  @AfterEach()
+  public afterEach() {
+    Mock.restoreAll()
+  }
+
+  @Test()
+  public async testFindById({ assert }: Context) {
+    Mock.when(Database.driver, 'find').resolve({
+      id: 1,
+      name: 'Antoine Du Hamel'
+    })
+
+    const userService = new UserService()
+    const user = await userService.findById(1) 👈
+
+    assert.calledOnce(Database.driver.find) ✅
+    assert.deepEqual(user, { id: 1, name: 'Antoine Du Hamel' }) ✅
+  }
+}
+```
+
+### Mocking the `create()` method
+
+Now imagine that our `UserService` has a method called `create()`
+that is responsible to create a user in database. To mock this
+scenario, we could do the following:
+
+```typescript
+import { UserService } from '#app/services/UserService'
+import { Database, DatabaseProvider } from '@athenna/database'
+import { Test, Mock, BeforeAll, AfterEach, type Context } from '@athenna/test'
+
+export default class UserServiceTest {
+  @BeforeAll()
+  public beforeAll() {
+    new DatabaseProvider().register()
+  }
+
+  @AfterEach()
+  public afterEach() {
+    Mock.restoreAll()
+  }
+
+  @Test()
+  public async testCreate({ assert }: Context) {
+    Mock.when(Database.driver, 'create')
+      .withArgs({ name: 'João Lenon' })
+      .resolve({ id: 1, name: 'João Lenon', createdAt: new Date() })
+      .withArgs({ name: 'Antoine Du Hamel' })
+      .resolve({ id: 2, name: 'Antoine Du Hamel', createdAt: new Date() })
+
+    const userService = new UserService()
+    const data = { name: 'Antoine Du Hamel' }
+    const user = await userService.create(data) 👈
+
+    assert.containsSubset(user, { id: 2, name: 'Antoine Du Hamel' }) ✅
+    assert.calledOnceWith(Database.driver.create, data) ✅
+  }
+}
+```
+
+:::tip
+
+You are able to mock any of the methods of the database [query builder.](/docs/database/query-builder)
+
+:::
