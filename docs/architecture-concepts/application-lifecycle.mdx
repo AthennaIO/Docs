@@ -58,7 +58,7 @@ Some other operation will be done when loading the foundation, such as:
 :::note
 
 The process of loading the Athenna foundation is triggered by the
-`Ignite.load` method.
+`Ignite.load()` method.
 
 :::
 
@@ -283,7 +283,9 @@ const ignite = await new Ignite().load(import.meta.url, {
   bootLogs: false
 })
 
-await ignite.console({ kernelPath: '#app/http/CustomKernel' })
+await ignite.console(process.argv, { 
+  kernelPath: '#app/http/CustomKernel' 
+})
 ```
 
 ### Execution
