@@ -1041,8 +1041,8 @@ to clean your mocks in each test 👍
 ### Mocking the `find()` method
 
 Imagine that our `UserService` has a method called `findById()`
-that is responsible to find a user in database by the id. To
-mock this scenario, we could do the following:
+that is responsible to find a user in database by the id using
+an `User` model. To mock this scenario, we could do the following:
 
 ```typescript
 import { UserService } from '#app/services/UserService'
@@ -1079,8 +1079,8 @@ export default class UserServiceTest {
 ### Mocking the `create()` method
 
 Now imagine that our `UserService` has a method called `create()`
-that is responsible to create a user in database. To mock this
-scenario, we could do the following:
+that is responsible to create a user in database using an `User`
+model. To mock this scenario, we could do the following:
 
 ```typescript
 import { UserService } from '#app/services/UserService'
@@ -1118,6 +1118,9 @@ export default class UserServiceTest {
 
 :::tip
 
-You are able to mock any of the methods of the database [query builder.](/docs/database/query-builder)
+Mocking the methods of the `Database.driver` property gaves you
+power to change the behavior of models and also `Database`
+facade calls. You are able to mock any method of the
+database [query builder](/docs/database/query-builder)
 
 :::
