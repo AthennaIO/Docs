@@ -68,14 +68,16 @@ since any sensitive credentials would get exposed.
 ### Determining the current environment
 
 Before loading your application's environment variables,
-Athenna determines if either the `APP_ENV` environment
-variable has been externally provided or if the `--env` Artisan
-flag has been specified. If so, Athenna will attempt to load
-the `.env.${APP_ENV}` file if it exists. If it does not exist,
-Athenna will try to find the `APP_ENV` value inside the `.env` file,
-if it exists, Athenna will save its value and repeat the process
-above. Finally, if the `APP_ENV` is not present in the file,
-Athenna will load the `.env` file by default if it exists.
+Athenna determines if either the `--env` Artisan flag has
+been specified or if the `APP_ENV` environment variable has
+been externally provided.
+
+If so, Athenna will attempt to load the `.env.${env}` or
+`.env.${APP_ENV}` file if it exists. If the file cannot be
+found, Athenna will try to find the `APP_ENV` variable inside
+the `.env` file and again try to find the `.env.${APP_ENV}`
+file to load. Finally, if the `APP_ENV` is not present in `.env` file,
+Athenna will end up loading the `.env` file by default.
 
 Running providing `--env` flag in Artisan:
 
