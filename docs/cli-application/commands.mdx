@@ -1060,11 +1060,39 @@ that is exactly what we do internally with other
 
 :::
 
+#### `this.generator.fileName()`
+
+Set the name of the file and also the name that will 
+be used used as reference to create the custom properties 
+to be used in the template:
+
+```ts
+this.generator.fileName('UserRepository.ts')
+```
+
+#### `this.generator.destination()`
+
+Set the destination where the file should be created: 
+
+```ts
+this.generator.destination(Path.repositories())
+```
+
+#### `this.generator.extension()`
+
+Set the extension of your file: 
+
+```ts
+this.generator.extension('ts')
+```
+
 #### `this.generator.path()`
 
 Set the file path where the file will be generated.
-Remember that the file name in the path will be used
-to define the name properties:
+The `fileName()`, `destination()` and `extension()`
+will be ignored if a full path is set, meaning that
+when you set a path, the file name in the path will
+be used to define the name properties:
 
 ```typescript
 this.generator.path(Path.repositories('UserRepository.ts'))
@@ -1078,7 +1106,7 @@ the `templates` property of `.athennarc.json`
 to find the path to your template file:
 
 ```typescript
-this.generator.path('repository')
+this.generator.template('repository')
 ```
 
 #### `this.generator.properties()`
@@ -1087,11 +1115,11 @@ Set custom properties names to be replaceble inside
 the template, check the example:
 
 ```typescript
-console.log('Hello {{ name }}')
+this.generator.properties({ name: 'Lenon' })
 ```
 
-```typescript
-this.generator.properties({ name: 'Lenon' })
+```edge
+console.log('Hello {{ name }}')
 ```
 
 #### `this.generator.setNameProperties()`

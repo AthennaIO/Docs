@@ -232,6 +232,7 @@ import { Exception } from '@athenna/common'
 const exception = new Exception({
   status: 500,
   details: [],
+  otherInfos: {},
   name: 'ErrorName',
   code: 'ERROR_CODE',
   message: 'Some exception has ocurred.',
@@ -250,7 +251,8 @@ import { Exception } from '@athenna/common'
 
 const exception = new Exception({
   status: 500,
-  details: []
+  details: [],
+  otherInfos: {},
   name: 'ErrorName',
   code: 'ERROR_CODE',
   message: 'Some exception has ocurred.',
