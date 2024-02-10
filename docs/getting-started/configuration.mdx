@@ -473,6 +473,32 @@ import { Config } from '@athenna/config'
 await Config.loadAll(Path.stubs('config'))
 ```
 
+### Get configuration with `@Value()` decorator
+
+Instead of using the `Config.get()` method to get a configuration
+value, you can use the `@Value()` annotation in your classes to 
+automatically add it value to a class property:
+
+```typescript
+import { Value } from '@athenna/config'
+
+export class UserService {
+  @Value('api.users') 👈
+  public api: string
+}
+```
+
+:::tip
+
+Just like `Config.get()` method, you can set a default value
+when using the `@Value()` annotation:
+
+```typescript
+@Value('api.users', 'http://localhost:3000/users') 👈
+```
+
+:::
+
 ### Define my own configuration path
 
 If you are using the [slim](https://athenna.io/docs/getting-started/installation#project-structure)

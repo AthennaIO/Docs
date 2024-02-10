@@ -32,6 +32,8 @@ using `json` files to map the routes and their returns (similiar to [WireMock](h
 delete and get information about files.
 - [`Folder`](/docs/the-basics/helpers#folder) - Create, copy, move, 
 delete and get information about folders.
+- [`Globals`](/docs/the-basics/helpers#globals) - Execute global helpers exposed by 
+Athenna.
 - [`HttpClient`](/docs/the-basics/helpers#httpclient) - Make HTTP requests for
 other servers with a human-friendly and powerful API.
 - [`HttpClientBuilder`](/docs/the-basics/helpers#httpclientbuilder) - Build requests
@@ -1040,6 +1042,71 @@ if (await Folder.size('app')  === 100) {
 }
 ```
 
+### Globals
+
+#### `Array.athenna.toJSON()`
+
+For each value inside an array, execute the `toJSON()` method if exists:
+
+```typescript
+class User {
+  public constructor(private name: string) {}
+
+  public toJSON(criterias: any = {}) {
+    return { name: this.name }
+  }
+}
+
+const criterias = {}
+const users = [new User('lenon'), new User('txsoura'), {}, 1, 0]
+
+const jsons = users.athenna.toJSON(criterias)
+// [{ name: 'lenon' }, { name:'txsoura' }]
+```
+
+#### `Array.athenna.toResource()`
+
+For each value inside an array, execute the `toResource()` method if exists:
+
+```typescript
+class User {
+  public constructor(private name: string) {}
+
+  public toResource(criterias: any = {}) {
+    return { name: this.name }
+  }
+}
+
+const criterias = {}
+const users = [new User('lenon'), new User('txsoura'), {}, 1, 0]
+
+const resources = users.athenna.toResource(criterias)
+// [{ name: 'lenon' }, { name:'txsoura' }]
+```
+
+#### `Array.athenna.toCollection()`
+
+Parse an array to an [Athenna collection](/docs/digging-deeper/collections):
+
+```typescript
+class User {
+  public constructor(private name: string) {}
+}
+
+const users = [new User('lenon'), new User('txsoura')]
+
+const collection = users.athenna.toCollection().all()
+// [{ name: 'lenon' }, { name:'txsoura' }]
+```
+
+#### `Error.toAthennaException()`
+
+Parse a vanilla error to an [Athenna exception](/docs/the-basics/helpers#exception):
+
+```typescript
+new Error().toAthennaException({ status: 404 })
+```
+
 ### HttpClient
 
 This helper uses the [`got`](https://www.npmjs.com/package/got) 
@@ -1057,7 +1124,7 @@ import {
 } from '@athenna/common'
 
 const options: Request = {
-  timeout: 2000,
+  timeout: 2000
 }
 
 const response: Response<any> = await HttpClient.get('https://athenna.io', options)
@@ -1077,15 +1144,14 @@ import {
 const url = 'https://athenna.io'
 
 const options: Request = {
-  timeout: 2000,
+  body: {
+    name: 'João Lenon',
+    age: 22,
+  },
+  timeout: 2000
 }
 
-const body = {
-  name: 'João Lenon',
-  age: 22,
-}
-
-const response: Response<any> = await HttpClient.post(url, body, options)
+const response: Response<any> = await HttpClient.post(url, options)
 ```
 
 #### `HttpClient::put()`
@@ -1102,15 +1168,14 @@ import {
 const url = 'https://athenna.io'
 
 const options: Request = {
-  timeout: 2000,
+  body: {
+    name: 'João Lenon',
+    age: 22,
+  },
+  timeout: 2000
 }
 
-const body = {
-  name: 'João Lenon',
-  age: 22,
-}
-
-const response: Response<any> = await HttpClient.put(url, body, options)
+const response: Response<any> = await HttpClient.put(url, options)
 ```
 
 #### `HttpClient::patch()`
@@ -1127,15 +1192,14 @@ import {
 const url = 'https://athenna.io'
 
 const options: Request = {
-  timeout: 2000,
+  body: {
+    name: 'João Lenon',
+    age: 22,
+  },
+  timeout: 2000
 }
 
-const body = {
-  name: 'João Lenon',
-  age: 22,
-}
-
-const response: Response<any> = await HttpClient.patch(url, body, options)
+const response: Response<any> = await HttpClient.patch(url, options)
 ```
 
 #### `HttpClient::delete()`
@@ -1530,9 +1594,21 @@ import { HttpClientBuilder } from '@athenna/common'
 
 const builder = new HttpClientBuilder()
 
-builder.body({
-  hello: 'world!'
-})
+builder.body('hello', 'world!')
+// or overwriting the entire body set before
+builder.body({ hello: 'world!' })
+```
+
+#### `HttpClientBuilder.input()`
+
+Alias for `HttpClientBuilder.body()` method:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.input('hello', 'world!')
 ```
 
 #### `HttpClientBuilder.form()`
@@ -1549,6 +1625,20 @@ builder.form({
 })
 ```
 
+#### `HttpClientBuilder.when()`
+
+Execute a closure only when first value is truthy:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.when(true, (builder, value) => {
+  builder.input('isAdmin', value)
+})
+```
+
 #### `HttpClientBuilder.header()`
 
 Set a header of the request:
@@ -1559,6 +1649,8 @@ import { HttpClientBuilder } from '@athenna/common'
 const builder = new HttpClientBuilder()
 
 builder.header('Content-Type', 'application/json')
+// or overwriting the entire header set before
+builder.header({ 'Content-Type': 'application/json' })
 ```
 
 #### `HttpClientBuilder.safeHeader()`
@@ -1710,14 +1802,43 @@ import { HttpClientBuilder } from '@athenna/common'
 const builder = new HttpClientBuilder()
 
 builder
-  .searchParams({ hello: 'world!' })
+  .searchParams('hello', 'world!')
+  // overwrite queries set before
+  .searchParams({ hello: 'world!' }) 
+  // overwrite queries set before
   .searchParams(new URLSearchParams([['key', 'a'], ['key', 'b']]))
 ```
 
-#### `HttpClientBuilder.queryParams()`
+#### `HttpClientBuilder.query()`
 
 Alias for [`searchParams()`](/docs/the-basics/helpers#httpclientbuildersearchparams)
 method.
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder
+  .query('hello', 'world!')
+  // overwrite queries set before
+  .query({ hello: 'world!' }) 
+  // overwrite queries set before
+  .query(new URLSearchParams([['key', 'a'], ['key', 'b']]))
+```
+
+#### `HttpClientBuilder.safeQuery()`
+
+Same as [`query()`](/docs/the-basics/helpers#httpclientbuilderquery), 
+but if the query already exists it will not be overwritten:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.safeQuery('hello', 'world!')
+```
 
 #### `HttpClientBuilder.dnsLookup()`
 
@@ -2298,7 +2419,14 @@ import { HttpClientBuilder } from '@athenna/common'
 
 const builder = new HttpClientBuilder()
 
-const response = await builder.post()
+const response = await builder
+  .url('https://localhost:3000/users')
+  .body({ name: 'lenon' })
+  .post()
+// or
+const response = await builder.post('https://localhost:3000/users', {
+  body: { name: 'lenon' }
+})
 ```
 
 #### `HttpClientBuilder.put()`
@@ -2310,7 +2438,14 @@ import { HttpClientBuilder } from '@athenna/common'
 
 const builder = new HttpClientBuilder()
 
-const response = await builder.put()
+const response = await builder
+  .url('https://localhost:3000/users')
+  .body({ name: 'lenon' })
+  .put()
+// or
+const response = await builder.put('https://localhost:3000/users', {
+  body: { name: 'lenon' }
+})
 ```
 
 #### `HttpClientBuilder.patch()`
@@ -2322,7 +2457,14 @@ import { HttpClientBuilder } from '@athenna/common'
 
 const builder = new HttpClientBuilder()
 
-const response = await builder.patch()
+const response = await builder
+  .url('https://localhost:3000/users')
+  .body({ name: 'lenon' })
+  .patch()
+// or
+const response = await builder.patch('https://localhost:3000/users', {
+  body: { name: 'lenon' }
+})
 ```
 
 #### `HttpClientBuilder.delete()`
@@ -2353,12 +2495,12 @@ const response = await builder.head()
 
 #### `Is::kindOf()`
 
-Validate if the value is equals to some type:
+Return the kind of the argument:
 
 ```typescript
 import { Is } from '@athenna/common'
 
-Is.kindOf('string', 'string') // true
+Is.kindOf('hello') // string 
 ```
 
 #### `Is::Mac()`
@@ -3385,6 +3527,27 @@ Options.whenDefined('Helloo', (statement) => {
 
 ### Parser
 
+#### `Parser::stream()::csvToArray()`
+
+Pipe a csv to array parser to a Node.js stream:
+
+```typescript
+import { File, Parser } from '@athenna/common'
+
+const results = []
+
+new File('users.csv').createReadStream()
+  .pipe(Parser.stream().csvToArray())
+  .on('data', data => results.push(data))
+  .on('end', () => {
+    console.log(results)
+    // [
+    //   { NAME: 'João Lenon' },
+    //   { NAME: 'Victor Tesoura' }
+    // ]
+  })
+```
+
 #### `Parser::stringToArray()`
 
 Parse a string to an array:
@@ -3458,6 +3621,30 @@ import { Parser } from '@athenna/common'
 
 const json = Parser.formDataToJson('&name=João%20Lenon&age=22')
 // { name: 'João Lenon', age: '22' }
+```
+
+#### `Parser::arrayToCsv()`
+
+Parse an array to a csv string:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const csv = Parser.arrayToCsv([{ id: 1, name: 'lenon' }])
+
+console.log(csv) // 'id,name\n1,lenon'
+```
+
+#### `Parser::csvToArray()`
+
+Parse a csv string to an array:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const array = Parser.csvToArray('id,name\n1,lenon')
+
+console.log(array) // [{ id: 1, name: 'lenon' }]
 ```
 
 #### `Parser::linkToHref()`
