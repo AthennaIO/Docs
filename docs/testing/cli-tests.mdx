@@ -16,8 +16,9 @@ For example, take a look at the e2e test defined below:
 
 ```typescript
 import { Test, type Context } from '@athenna/test'
+import { BaseConsoleTest } from '@athenna/core/testing/BaseConsoleTest'
 
-export default class ExampleTest {
+export default class ExampleTest extends BaseConsoleTest {
   @Test()
   public async 'test successful output'({ command }: Context) {
     const output = await command.run('app')
@@ -35,6 +36,11 @@ output should have a successful exit code (`0`). In addition
 to this simple assertion, Athenna also contains a variety of 
 assertions for inspecting the output.
 
+You might have noticed that the `ExampleTest` is extending the 
+`BaseConsoleTest` class. We gonna see later on this documentation 
+what is the purpose of this class, and how to configure it for your
+needs.
+
 ## Registering `command` plugin
 
 The `command` property in your test context will only be 
@@ -47,15 +53,15 @@ Just call the `Runner.addPlugin()` static method to set up
 the request plugin imported from `@athenna/artisan/testing/plugins`:
 
 ```typescript title="Path.bootstrap('test.ts')"
+import { Runner } from '@athenna/test'
 import { request } from '@athenna/http/testing/plugins'
 import { command } from '@athenna/artisan/testing/plugins'
-import { Runner, assert, specReporter } from '@athenna/test'
 
 await Runner.setTsEnv()
-  .addPlugin(assert())
+  .setAppEnv('test')
+  .addAssertPlugin()
   .addPlugin(request())
   .addPlugin(command()) 👈
-  .addReporter(specReporter())
   .addPath('tests/e2e/**/*.ts')
   .addPath('tests/unit/**/*.ts')
   .setCliArgs(process.argv.slice(2))
@@ -75,8 +81,9 @@ that allow you to inspect your application's CLI output:
 
 ```typescript
 import { Test, type Context } from '@athenna/test'
+import { BaseConsoleTest } from '@athenna/core/testing/BaseConsoleTest'
 
-export default class ExampleTest {
+export default class ExampleTest extends BaseConsoleTest {
   @Test()
   public async testBasicCommand({ command }: Context) {
     const output = await command.run('greet')
@@ -98,17 +105,17 @@ used to test your commands. To do so, you can call the
 your tests:
 
 ```typescript title="Path.bootstrap('test.ts')"
+import { Runner } from '@athenna/test'
 import { request } from '@athenna/http/testing/plugins'
 import { command, TestCommand } from '@athenna/artisan/testing/plugins'
-import { Runner, assert, specReporter } from '@athenna/test'
 
 TestCommand.setArtisanPath(Path.fixtures('artisan.ts')) 👈
 
 await Runner.setTsEnv()
-  .addPlugin(assert())
+  .setAppEnv('test')
+  .addAssertPlugin()
   .addPlugin(request())
   .addPlugin(command())
-  .addReporter(specReporter())
   .addPath('tests/e2e/**/*.ts')
   .addPath('tests/unit/**/*.ts')
   .setCliArgs(process.argv.slice(2))
@@ -128,8 +135,9 @@ this kind of customization in your tests:
 ```typescript
 import { Config } from '@athenna/config'
 import { Test, type Context } from '@athenna/test'
+import { BaseConsoleTest } from '@athenna/core/testing/BaseConsoleTest'
 
-export default class ExampleTest {
+export default class ExampleTest extends BaseConsoleTest {
   @Test()
   public async testConfigCommand({ command }: Context) {
     Config.set('app.name', 'MyAppName')
@@ -161,13 +169,40 @@ Now, we can use this new `artisan` file to run our command:
 ```typescript
 import { Path } from '@athenna/common'
 import { Test, type Context } from '@athenna/test'
+import { BaseConsoleTest } from '@athenna/core/testing/BaseConsoleTest'
 
-export default class ExampleTest {
+export default class ExampleTest extends BaseConsoleTest {
   @Test()
   public async testConfigCommand({ command }: Context) {
     const output = await command.run('greet', {
       path: Path.fixtures('consoles/artisan-set-app-name.ts') 👈
     })
+
+    output.assertLogged('Hello from MyAppName!') ✅
+  }
+}
+```
+
+### Changing Artisan file path for the test group
+
+If you need to use the same Artisan file for all the tests inside
+of your class, but you don't want to change it globally for all
+the rest of your classes using `TestCommand.setArtisanPath()` method,
+you can set the `artisanPath` property in your test class that
+`BaseConsoleTest` will automatically change it when bootstraping
+your app:
+
+```typescript
+import { Path } from '@athenna/common'
+import { Test, type Context } from '@athenna/test'
+import { BaseConsoleTest } from '@athenna/core/testing/BaseConsoleTest'
+
+export default class ExampleTest extends BaseConsoleTest {
+  public artisanPath = Path.fixtures('consoles/artisan-set-app-name.ts') 👈
+
+  @Test()
+  public async testConfigCommand({ command }: Context) {
+    const output = await command.run('greet')
 
     output.assertLogged('Hello from MyAppName!') ✅
   }
@@ -182,8 +217,9 @@ inside with all the `output` data:
 
 ```typescript
 import { Test, type Context } from '@athenna/test'
+import { BaseConsoleTest } from '@athenna/core/testing/BaseConsoleTest'
 
-export default class ExampleTest {
+export default class ExampleTest BaseConsoleTest {
   @Test()
   public async testBasicCommand({ command }: Context) {
     const output = await command.run('basic')
@@ -281,4 +317,70 @@ argument:
 ```typescript
 output.assertLogMatches(/Hello World/, 'stdout') // or stderr
 output.assertLogNotMatches(/Hello World/, 'stdout') // or stderr
+```
+
+## The `BaseConsoleTest` class
+
+The `BaseConsoleTest` class is responsible to bootstrap your Athenna 
+application **before running all** tests and also to kill the 
+application **after running all** tests, meaning that is not possible 
+to use the `command` property without extending this class or at least
+setting up your own Athenna application using `Ignite` class.
+
+If for some reason you need to change the options set when
+calling the `Ignite.load()` or `Ignite.artisan()` methods, 
+you can set the `igniteOptions` and `artisanOptions` properties 
+in your test class:
+
+```typescript
+import { Path } from '@athenna/common'
+import { type IgniteOptions } from '@athenna/core'
+import { Test, type Context } from '@athenna/test'
+import { BaseConsoleTest } from '@athenna/core/testing/BaseConsoleTest'
+
+export default class ExampleTest extends BaseConsoleTest {
+  public igniteOptions: IgniteOptions = {
+    bootLogs: true,
+    shutdownLogs: true,
+    envPath: Path.fixtures('envs/.env'),
+    athennaRcPath: Path.fixtures('rcs/.athennarc.json'),
+    environments: ['http', 'test']
+  }
+
+  @Test()
+  public async 'test successful output'({ command }: Context) {
+    const output = await command.run('app')
+
+    output.assertSucceeded()
+  }
+}
+```
+
+:::warning
+
+Remember that changes done to the options of `Ignite` class will only
+be relevant when running commands outside of the child process. Meaning
+that if you call `command.run()`, the options used to ignite Artisan will
+be from your Artisan file, and not from the ones you set in your test class.
+
+To solve this, check how to change the [Artisan file path of your 
+test group](/docs/testing/cli-tests#changing-artisan-file-path-for-the-test-group).
+
+:::
+
+### Accessing `Ignite` instance
+
+You are able to access the `Ignite` instance by using the `ignite` 
+property:
+
+```typescript
+import { Test, type Context } from '@athenna/test'
+import { BaseConsoleTest } from '@athenna/core/testing/BaseConsoleTest'
+
+export default class ExampleTest extends BaseConsoleTest { 
+  @Test()
+  public async 'test successful output'({ command }: Context) {
+    this.ignite 👈
+  }
+}
 ```
