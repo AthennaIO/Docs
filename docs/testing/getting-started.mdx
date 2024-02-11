@@ -42,13 +42,13 @@ node artisan test
 
 ## Environment
 
-When running tests, Athenna will automatically set the 
-[configuration environment](/docs/getting-started/configuration) 
-to `test`, meaning that the `.env.test` file will be used when
+By default Athenna comes set with the 
+[configuration environment](/docs/getting-started/configuration)
+as `test`, meaning that the `.env.test` file will be used when
 running your tests.
 
 You are free to define other testing environment value. To do 
-that you can use the `setAppEnv()` method of `Runner` class 
+that you can simply change the `setAppEnv()` method of `Runner` class 
 in your `Path.bootstrap('test.ts')` file:
 
 ```typescript
@@ -57,16 +57,26 @@ import { request } from '@athenna/http/testing/plugins'
 import { command } from '@athenna/artisan/testing/plugins'
 
 await Runner.setTsEnv()
+  .setAppEnv('testing') 👈
   .addAssertPlugin()
   .addPlugin(request())
   .addPlugin(command())
-  .setAppEnv('testing') 👈
   .addPath('tests/e2e/**/*.ts')
   .addPath('tests/unit/**/*.ts')
   .setCliArgs(process.argv.slice(2))
   .setGlobalTimeout(5000)
   .run()
 ```
+
+:::tip
+
+You can also use the `--env` flag to set the environment:
+
+```shell
+node artisan test --env testing
+```
+
+:::
 
 ## Writing tests
 

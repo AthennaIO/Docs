@@ -16,8 +16,9 @@ For example, take a look at the e2e test defined below:
 
 ```typescript
 import { Test, type Context } from '@athenna/test'
+import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
 
-export default class ExampleTest {
+export default class ExampleTest extends BaseHttpTest {
   @Test()
   public async 'test successful response'({ request }: Context) {
     const response = await request.get('/')
@@ -34,6 +35,11 @@ to this simple assertion, Athenna also contains a variety of
 assertions for inspecting the response headers, content, 
 JSON structure, and more.
 
+You might have noticed that the `ExampleTest` is extending the 
+`BaseHttpTest` class. We gonna see later on this documentation 
+what is the purpose of this class, and how to configure it for your
+needs.
+
 ## Registering `request` plugin
 
 The `request` property in your test context will only be
@@ -46,15 +52,15 @@ Just call the `Runner.addPlugin()` static method to setup
 the request plugin imported from `@athenna/http/testing/plugins`:
 
 ```typescript title="Path.bootstrap('test.ts')"
+import { Runner } from '@athenna/test'
 import { request } from '@athenna/http/testing/plugins'
 import { command } from '@athenna/artisan/testing/plugins'
-import { Runner, assert, specReporter } from '@athenna/test'
 
 await Runner.setTsEnv()
-  .addPlugin(assert())
+  .setAppEnv('test')
+  .addAssertPlugin()
   .addPlugin(request()) 👈
   .addPlugin(command())
-  .addReporter(specReporter())
   .addPath('tests/e2e/**/*.ts')
   .addPath('tests/unit/**/*.ts')
   .setCliArgs(process.argv.slice(2))
@@ -79,8 +85,9 @@ responses:
 
 ```typescript
 import { Test, type Context } from '@athenna/test'
+import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
 
-export default class ExampleTest {
+export default class ExampleTest extends BaseHttpTest {
   @Test()
   public async testBasicRequest({ request }: Context) {
     const response = await request.get('/')
@@ -98,8 +105,9 @@ setup the request options:
 ```typescript
 import { type InjectOptions } from '@athenna/http'
 import { Test, type Context } from '@athenna/test'
+import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
 
-export default class ExampleTest {
+export default class ExampleTest extends BaseHttpTest {
   @Test()
   public async testBasicRequest({ request }: Context) {
     const options: InjectOptions = {
@@ -126,8 +134,9 @@ response data:
 
 ```typescript
 import { Test, type Context } from '@athenna/test'
+import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
 
-export default class ExampleTest {
+export default class ExampleTest extends BaseHttpTest {
   @Test()
   public async testBasicRequest({ request }: Context) {
     const response = await request.get('/')
@@ -286,4 +295,68 @@ const fullHeader = [{ hello: 'world' }]
 
 response.assertHeaderDeepEqual(fullHeader)
 response.assertHeaderNotDeepEqual(fullHeader)
+```
+
+## The `BaseHttpTest` class
+
+The `BaseHttpTest` class is responsible to bootstrap your Athenna 
+application **before running all** tests and also to kill the 
+application **after running all** tests, meaning that is not possible 
+to use the `request` property without extending this class or at least
+setting up your own Athenna application using `Ignite` class.
+
+If for some reason you need to change the options set when
+calling the `Ignite.load()` or `Ignite.httpServer()` methods, 
+you can set the `igniteOptions` and `httpOptions` properties 
+in your test class:
+
+```typescript
+import { Path } from '@athenna/common'
+import { Test, type Context } from '@athenna/test'
+import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
+import { type HttpOptions, type IgniteOptions } from '@athenna/core'
+
+export default class ExampleTest extends BaseHttpTest {
+  public httpOptions: HttpOptions = {
+    host: '0.0.0.0',
+    port: 9999,
+    trace: true,
+    routePath: Path.fixtures('routes/routes.ts'),
+    kernelPath: Path.fixtures('kernels/Kernel.ts'),
+    exceptionHandlerPath: Path.fixtures('handlers/Handler.ts')
+  }
+
+  public igniteOptions: IgniteOptions = {
+    bootLogs: true,
+    shutdownLogs: true,
+    envPath: Path.fixtures('envs/.env'),
+    athennaRcPath: Path.fixtures('rcs/.athennarc.json'),
+    environments: ['http', 'test']
+  }
+
+  @Test()
+  public async 'test successful response'({ request }: Context) {
+    const response = await request.get('/')
+
+    response.assertStatusCode(200)
+  }
+}
+```
+
+### Accessing `Ignite` and `Http` instance
+
+You are able to access the `Ignite` and `Http` instances by 
+using the `ignite` and `httpServer` properties:
+
+```typescript
+import { Test, type Context } from '@athenna/test'
+import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
+
+export default class ExampleTest extends BaseHttpTest { 
+  @Test()
+  public async 'test successful response'({ request }: Context) {
+    this.ignite 👈
+    this.httpServer 👈
+  }
+}
 ```
