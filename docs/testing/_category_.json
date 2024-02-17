@@ -2,9 +2,5 @@
   "label": "Testing",
   "position": 10,
   "collapsed": true,
-  "link": {
-    "type": "generated-index",
-    "slug": "/testing",
-    "description": "Understand how to create efficient tests in any Athenna application."
-  }
+  "link": null
 }

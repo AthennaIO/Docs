@@ -2,9 +2,5 @@
   "label": "Database",
   "position": 8,
   "collapsed": true,
-  "link": {
-    "type": "generated-index",
-    "slug": "/database",
-    "description": "See how to use the Athenna database component."
-  }
+  "link": null
 }

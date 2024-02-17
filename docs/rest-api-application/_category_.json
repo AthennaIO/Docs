@@ -2,9 +2,5 @@
   "label": "REST API Application",
   "position": 6,
   "collapsed": true,
-  "link": {
-    "type": "generated-index",
-    "slug": "/rest-api-application",
-    "description": "Understand how the Athenna REST API application works."
-  }
+  "link": null
 }

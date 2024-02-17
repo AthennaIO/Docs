@@ -137,6 +137,10 @@
 }
 
 @media (min-width: 640px) {
+  .heroBanner {
+    padding: 10rem 5rem; 
+  }
+
   .imageSrc {
       max-width: 256px;
       max-height: 256px;
@@ -189,6 +193,10 @@
 }
 
 @media (min-width: 960px) {
+  .heroBanner {
+    padding: 10rem 5rem; 
+  }
+
   .container {
       flex-direction: row;
   }
