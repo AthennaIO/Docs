@@ -71,3 +71,54 @@
 .align-center {
   align-items: center;
 }
+
+.pt-12 {
+  padding-top: 3rem;
+}
+
+.pt-16 {
+  padding-top: 4rem;
+}
+
+.pb-16 {
+  padding-bottom: 4rem;
+}
+
+.pb-24 {
+  padding-bottom: 6rem;
+}
+
+.py-12 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.py-16 {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 960px) {
+  .lg\:pt-36 {
+    padding-top: 9rem;
+  }
+
+  .lg\:pt-48 {
+      padding-top: 12rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .md\:pt-16 {
+    padding-top: 4rem;
+  }
+
+  .md\:pt-24 {
+    padding-top: 6rem;
+  }
+
+  .md\:pt-48 {
+      padding-top: 12rem;
+  }
+}
+
