@@ -1,6 +1,5 @@
 ---
 title: Benchmarks
-sidebar_position: 2
 description: See how Athenna performs in comparison to other frameworks.
 ---
 
@@ -17,7 +16,7 @@ All the code used in this benchmark is available in the
 
 The environment used to run the benchmarks:
 
-```shell title="npx envinfo --system --binaries"
+```bash title="npx envinfo --system --binaries"
   System:
     OS: macOS 12.2.1
     CPU: (8) arm64 Apple M1

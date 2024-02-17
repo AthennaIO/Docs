@@ -36,13 +36,13 @@ file using `node`.
 
 For Node.js v20.x or higher:
 
-```shell
+```bash
 node --import=@athenna/tsconfig index.ts
 ```
 
 For Node.js v19.x or lower:
 
-```shell
+```bash
 node --loader=ts-node/esm index.ts
 ```
 
@@ -51,7 +51,7 @@ node --loader=ts-node/esm index.ts
 When you are ready to deploy your application to 
 production, you can use the following command: 
 
-```shell
+```bash
 node artisan build
 ```
 
@@ -77,7 +77,7 @@ the root of your JavaScript application, this means two things:
 1. You must `cd` into the build folder and install production
 only dependencies:
 
-```shell
+```bash
 cd build
 npm ci --omit=dev
 ```
@@ -85,7 +85,7 @@ npm ci --omit=dev
 2. You must always `cd` into the build folder and then 
 run your app:
 
-```shell
+```bash
 cd build
 node bootstrap/main.js
 ```
