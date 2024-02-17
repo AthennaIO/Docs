@@ -72,7 +72,7 @@ export default function Features(): JSX.Element {
           ))}
         </div>
       </div>
-      <div className="container" style={{ marginTop: "20rem" }}>
+      <div className="container py-12 md:pt-24 lg:pt-36">
         <div className="row">
           <div className="col col--6 flex justify-center align-center">
               <div>
@@ -96,7 +96,7 @@ export default function Features(): JSX.Element {
           </div>
         </div>
       </div>
-      <div className="container" style={{ marginTop: "20rem" }}>
+      <div className="container py-12 md:pt-24 lg:pt-36">
         <div className="row">
           <div className="col col--6 flex justify-center align-center">
             <div>
@@ -122,7 +122,7 @@ export default function Features(): JSX.Element {
           </div>
         </div>
       </div> 
-      <div className="container" style={{ marginTop: "20rem", marginBottom: "20rem"  }}>
+      <div className="container pt-12 pb-24 md:pt-24 lg:pt-48">
         <div className="row">
           <div className="col col--6 flex justify-center align-center">
               <div>
