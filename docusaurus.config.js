@@ -53,7 +53,7 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      image: 'img/pre-visualization/og.jpg',
+      image: 'img/pre-visualization/home.png',
       navbar: {
         title: 'Athenna',
         logo: {
