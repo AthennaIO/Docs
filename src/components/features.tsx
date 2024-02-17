@@ -24,7 +24,8 @@ const FeatureList: FeatureItem[] = [
     icon: '🌍',
     description: (
       <>
-        Works on Deno, Bun, or Node.js. The same code runs on all platforms.
+        The focus will always be for Node.js, but Athenna also works on Deno and Bun. 
+        The same code runs on all platforms.
       </>
     ),
   },
