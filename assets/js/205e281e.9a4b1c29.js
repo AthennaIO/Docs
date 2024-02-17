@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[4474],{6185:n=>{n.exports=JSON.parse('{"title":"Introduction","description":"Introduction to Athenna Framework.","slug":"/introduction","permalink":"/docs/introduction","navigation":{"next":{"title":"Welcome","permalink":"/docs/introduction/welcome"}}}')}}]);
