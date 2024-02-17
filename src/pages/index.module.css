@@ -21,7 +21,7 @@
 }
 
 .clip {
-  background: webkit-linear-gradient(120deg, #bd34fe 30%, #41d1ff);;
+  background: webkit-linear-gradient(120deg, #bd34fe 30%, #41d1ff);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -67,20 +67,16 @@
 }
 
 .heroBanner {
-  padding: 14rem 5rem;
+  padding: 10rem 0;
 }
 
 .heroTitle {
-  font-weight: bold !important;
+  font-weight: bold;
   font-size: 56px;
 }
 
 .heroGradientTitle {
-  font-weight: bold !important;
-  font-size: 56px;
-  background: linear-gradient(135deg, #9580ff 0, #80ffea 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
+  font-size: 56px !important;
 }
 
 .heroParagraph {

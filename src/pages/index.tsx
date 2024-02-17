@@ -1,17 +1,17 @@
 import React from 'react'
+import clsx from 'clsx'
 import Layout from '@theme/Layout'
 import Link from '@docusaurus/Link'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import styles from './index.module.css'
 import Features from '../components/features'
-import clsx from 'clsx'
 
 function Header() {
   return (
     <header className={styles.heroBanner}>
       <div className={styles.container}>
         <div className={styles.main}>
-          <h1 className={styles.heroGradientTitle}>Athenna</h1>
+          <h1 className={clsx("navbar__title", styles.heroGradientTitle)}>Athenna</h1>
           <h1 className={styles.heroTitle}>Fast, Expressive, Elegant, For Artisans</h1>
           <p className={styles.heroParagraph}>One foundation for multiple applications</p>
           <div className={styles.actions}>
