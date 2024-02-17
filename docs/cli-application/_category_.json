@@ -2,9 +2,5 @@
   "label": "CLI Application",
   "position": 7,
   "collapsed": true,
-  "link": {
-    "type": "generated-index",
-    "slug": "/cli-application",
-    "description": "Understand how the Athenna CLI application works."
-  }
+  "link": null
 }

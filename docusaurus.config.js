@@ -89,6 +89,13 @@ const config = {
             position: 'right',
             html: '<i class="fa-brands fa-discord"></i>',
           },
+          {
+            href: 'https://twitter.com/athennaio',
+            'aria-label': 'Twitter',
+            className: 'navbar__icon navbar__twitter',
+            position: 'right',
+            html: '<i class="fa-brands fa-x-twitter"></i>',
+          },
         ],
       },
       prism: {

@@ -2,9 +2,5 @@
   "label": "The Basics",
   "position": 4,
   "collapsed": true,
-  "link": {
-    "type": "generated-index",
-    "slug": "/the-basics",
-    "description": "Get to know the basic Athenna Framework functionalities."
-  }
+  "link": null
 }
