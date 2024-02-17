@@ -1,0 +1,42 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
+.navbar__icon {
+  height: 2rem;
+  width: 2rem;
+}
+
+.navbar__github {
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.29rem;
+  transition: background var(--ifm-transition-fast);
+}
+
+.navbar__discord {
+  -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 1.24rem;
+  transition: background var(--ifm-transition-fast);
+}
+
+html[data-theme='light'] .navbar__github .navbar__discord {
+  color: #000;
+}
+
+html[data-theme='dark'] .navbar__github .navbar__discord {
+  color: #fff;
+}
+
+.navbar__link:hover {
+  background: var(--ifm-color-emphasis-200);
+}
+
+nav .clean-btn:hover {
+  color: var(--ifm-color-primary)
+}

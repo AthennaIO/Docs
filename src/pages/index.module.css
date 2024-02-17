@@ -1,0 +1,248 @@
+/**
+ * CSS files with the .module.css suffix will be treated as CSS modules
+ * and scoped locally.
+ */
+
+ img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+.container {
+  display: flex;
+  text-align: center;
+  flex-direction: column;
+  margin: 0 auto;
+  max-width: 1152px;
+}
+
+.name {
+  color: transparent;
+}
+
+.clip {
+  background: webkit-linear-gradient(120deg, #bd34fe 30%, #41d1ff);;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text {
+  max-width: 392px;
+  letter-spacing: -.4px;
+  line-height: 40px;
+  font-size: 32px;
+  font-weight: 700;
+  white-space: pre-wrap;
+}
+
+.name, .text, .tagline {
+  margin: 0 auto;
+}
+
+.main {
+  position: relative;
+  z-index: 10;
+  order: 2;
+  flex-grow: 1;
+  flex-shrink: 0;
+}
+
+.tagline {
+  padding-top: 8px;
+  max-width: 392px;
+  line-height: 28px;
+  font-size: 18px;
+  font-weight: 500;
+  white-space: pre-wrap;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: -6px;
+  gap: 15px;
+  padding-top: 24px;
+}
+
+.heroBanner {
+  padding: 14rem 5rem;
+}
+
+.heroTitle {
+  font-weight: bold !important;
+  font-size: 56px;
+}
+
+.heroGradientTitle {
+  font-weight: bold !important;
+  font-size: 56px;
+  background: linear-gradient(135deg, #9580ff 0, #80ffea 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.heroParagraph {
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 36px;
+  padding-top: 12px;
+  white-space: pre-wrap;
+  color: #50505399
+}
+
+[data-theme='dark'] .heroBanner p {
+  color: #ebebf599
+}
+
+.buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.imageContainer {
+  position: relative;
+  margin: 0 auto;
+  width: 320px;
+  height: 320px;
+}
+
+.imageBg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  width: 192px;
+  height: 192px;
+  background-image: linear-gradient(-45deg, #bd34fe 50%, #47caff 50%);
+  filter: blur(44px);
+  transform: translate(-50%,-50%);
+}
+
+.imageSrc {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: 192px;
+  max-height: 192px;
+  transform: translate(-50%,-50%);
+}
+
+.image {
+  margin: -76px -24px -48px;
+}
+
+.imageContainer {
+  position: relative;
+  margin: 0 auto;
+  width: 320px;
+  height: 320px;
+}
+
+@media (min-width: 640px) {
+  .imageSrc {
+      max-width: 256px;
+      max-height: 256px;
+  }
+
+  .imageBg {
+      width: 256px;
+      height: 256px;
+  }
+
+  .image {
+    margin: -108px -24px -48px;
+  }
+
+  .imageContainer {
+      width: 392px;
+      height: 392px;
+  }  
+
+  .container {
+    text-align: center;
+  }
+
+  .tagline {
+      padding-top: 12px;
+      max-width: 576px;
+      line-height: 32px;
+      font-size: 20px;
+  }
+
+  .actions {
+      padding-top: 32px;
+  }
+
+  .text {
+      max-width: 576px;
+      line-height: 56px;
+      font-size: 48px;
+  }
+
+  .name {
+    max-width: 576px;
+    line-height: 56px;
+    font-size: 48px;
+  }
+
+  .main {
+      order: 1;
+  }
+}
+
+@media (min-width: 960px) {
+  .container {
+      flex-direction: row;
+  }
+
+  .container {
+    text-align: left;
+  }
+
+  .tagline {
+      line-height: 36px;
+      font-size: 24px;
+  }
+
+  .actions {
+      justify-content: flex-start;
+  }
+
+  .name, .text {
+      margin: 0 auto;
+      line-height: 64px;
+      font-size: 56px;
+  } 
+
+  .main {
+    max-width: 592px;
+  }
+
+  .image {
+      flex-grow: 1;
+      order: 2;
+      margin: 0;
+      min-height: 100%;
+  }
+
+  .imageBg {
+      width: 320px;
+      height: 320px;
+  }
+
+  .imageSrc {
+      max-width: 320px;
+      max-height: 320px;
+  }
+
+  .imageContainer {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+      height: 100%;
+      transform: translate(-32px,-32px);
+  }
+}

@@ -24,7 +24,7 @@ You may use the `make:migration` Artisan command to generate a database migratio
 timestamp that allows Athenna to determine the order of
 the migrations:
 
-```shell
+```bash
 node artisan make:migration FlightsMigration 
 ```
 
@@ -95,14 +95,14 @@ export class FlightsMigration extends BaseMigration {
 To run all of your outstanding migrations, execute the 
 `migration:run` Artisan command:
 
-```shell
+```bash
 node artisan migration:run
 ```
 
 You can use the `--connection` option to run migrations 
 for a specific connection:
 
-```shell
+```bash
 node artisan migration:run --connection=postgres
 ```
 
@@ -119,14 +119,14 @@ will run too.
 To revert all your migrations, you may use the `migration:revert` 
 Artisan command. This command will revert all your migrations:
 
-```shell
+```bash
 node artisan migration:revert
 ```
 
 You can use the `--connection` option to revert migrations for a 
 specific connection:
 
-```shell
+```bash
 node artisan migration:revert --connection=postgres
 ```
 

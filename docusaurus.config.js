@@ -4,8 +4,8 @@
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Athenna Framework',
-  tagline: 'The plug & play Node.js framework',
-  favicon: 'img/favicons/favicon.ico',
+  tagline: 'One foundation for multiple applications',
+  favicon: 'img/favicons/minerva.ico',
   url: 'https://athenna.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
@@ -55,21 +55,42 @@ const config = {
     ({
       image: 'img/pre-visualization/og.jpg',
       navbar: {
-        title: 'Athenna Framework',
+        title: 'Athenna',
         logo: {
-          alt: 'Athenna Logo',
+          alt: 'Athenna Framework',
           src: 'img/logos/logo.png',
         },
         items: [
           {
-            href: 'https://github.com/AthennaIO',
-            label: 'GitHub',
+            type: 'doc',
+            docId: 'getting-started/installation',
+            label: 'Docs',
             position: 'right',
+          },
+          {
+            to: 'benchmarks',
+            label: 'Benchmarks',
+            position: 'right',
+          },
+          {
+            href: 'https://github.com/AthennaIO',
+            'aria-label': 'GitHub',
+            className: 'navbar__icon navbar__github',
+            position: 'right',
+            html: '<i class="fa-brands fa-github"></i>',
+          },
+          {
+            href: 'https://discord.gg/mZyBkA936X',
+            'aria-label': 'Discord',
+            className: 'navbar__icon navbar__discord',
+            position: 'right',
+            html: '<i class="fa-brands fa-discord"></i>',
           },
         ],
       },
       prism: {
-        theme: require('./lib/prism'),
+        additionalLanguages: ["json", "bash", "typescript", "sql"],
+        theme: require('./lib/prism/dracula'),
       },
     }),
   plugins: [
@@ -86,7 +107,7 @@ const config = {
           {
             tagName: 'link',
             rel: 'icon',
-            href: 'img/logos/logo.png',
+            href: 'img/logos/minerva.png',
           },
           {
             tagName: 'link',
@@ -118,12 +139,12 @@ const config = {
           {
             tagName: 'link',
             rel: 'apple-touch-icon',
-            href: 'img/logos/logo.png',
+            href: 'img/logos/minerva.png',
           },
           {
             tagName: 'link',
             rel: 'mask-icon',
-            href: 'img/logos/logo.png',
+            href: 'img/logos/minerva.png',
             color: 'rgb(80,27,134)',
           },
           {
