@@ -20,12 +20,11 @@ const FeatureList: FeatureItem[] = [
     ),
   },
   {
-    title: 'Multi-runtime',
-    icon: '🌍',
+    title: 'ESM only',
+    icon: '✅',
     description: (
       <>
-        The focus will always be for Node.js, but Athenna also works on Deno and Bun. 
-        The same code runs on all platforms.
+        Athenna leverages modern JavaScript primitives, including ES modules, Node.js sub-path imports, and much more.
       </>
     ),
   },
