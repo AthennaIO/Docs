@@ -24,3 +24,7 @@
 .menu__link {
     padding: 10px !important;
 }
+
+.menu__link--sublist-caret:after {
+  background: none;
+}
