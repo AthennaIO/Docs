@@ -54,6 +54,9 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       image: 'img/pre-visualization/home.png',
+      metadata: [
+        { name: 'og:description', content: 'One foundation for multiple applications' }
+      ],
       navbar: {
         title: 'Athenna',
         logo: {
