@@ -60,7 +60,6 @@ const config = {
           content: 'One foundation for multiple applications' 
         },
         {
-          tagName: 'meta',
           name: 'theme-color',
           content: '#9580ff'
         } 
