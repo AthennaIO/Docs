@@ -55,7 +55,14 @@ const config = {
     ({
       image: 'img/pre-visualization/home.png',
       metadata: [
-        { name: 'og:description', content: 'One foundation for multiple applications' }
+        { 
+          name: 'og:description', 
+          content: 'One foundation for multiple applications' 
+        },
+        {
+          name: 'theme-color',
+          content: '#9580ff'
+        } 
       ],
       navbar: {
         title: 'Athenna',
