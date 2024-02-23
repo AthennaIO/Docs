@@ -8,6 +8,72 @@ description: How to install and set up your first Athenna project.
 
 How to install and set up your first Athenna project.
 
+## Meet Athenna
+
+Athenna is a framework written specially for the Node.js runtime 
+with expressive and elegant syntax. The framework provides a reliable 
+code foundation and starting point for creating your application, 
+allowing you to focus on creating something amazing while we sweat the 
+details.
+
+Athenna strives to provide an amazing developer experience while 
+providing powerful features such as thorough dependency injection, 
+an expressive database abstraction layer, unit and e2e testing, 
+and more.
+
+Whether you are new to Node.js ecosystem or have years of experience, 
+Athenna is a framework that can grow with you. We'll help you take 
+your first steps as a developer or give you a boost as you take your 
+expertise to the next level. We can't wait to see what you build, make
+sure to share it with us in our [Discord community](https://discord.gg/JdEbBAKw6X).
+
+:::tip
+
+New to Athenna? Check out the [Athenna YouTube channel](https://www.youtube.com/@athennaio) 
+for an infinity of hands-on videos!
+
+:::
+
+## Why Athenna?
+
+There are a variety of tools and frameworks available to you when building 
+a software using Node.js. However, we believe Athenna is the best choice for 
+building modern microservices.
+
+### A progressive framework
+
+We like to call Athenna a "progressive" framework. By that, we mean that 
+Athenna grows with you. If you're just taking your first steps into backend 
+development, Athenna's vast library of documentation, guides, and video 
+tutorials will help you learn the ropes without becoming overwhelmed.
+
+If you're a senior developer, Athenna gives you robust tools for dependency 
+injection, unit and e2e testing, database abstracted layer and more. 
+Athenna is fine-tuned for building professional applications and ready to 
+handle enterprise work loads.
+
+### A scalable framework
+
+Athenna is incredibly scalable. Thanks to the scaling-friendly nature of 
+Node.js and Athenna's built-in support for fast, distributed cache systems 
+like Redis, horizontal scaling with Athenna is a breeze. In fact, Athenna applications 
+have been easily scaled to handle hundreds of millions of requests per month.
+
+### An agnostic framework
+
+Athenna is perpect for building modern software using microservices architecture. 
+No matter what type of application you are creating, be it a REST API, a CLI, a Cron Job, 
+Athenna has a reliable solution foundation for each occasion, the only thing you will
+need to take care is how your application will communicate with the external world.
+
+### A community framework
+
+Athenna is not reinventing the whell, the framework combines the best packages 
+in the Node.js ecosystem to offer the most robust and developer friendly 
+framework. We are always seeking for talented developers like you to
+help us by [contributing to the framework](https://github.com/athennaio) and 
+make it even better.
+
 ## Your first Athenna project
 
 ### Prerequisites
@@ -81,3 +147,80 @@ file to bootstrap your application with predefined configurations.
 - The `watch` flag is meant to watch the file system for
 changes and restart your application automatically when
 doing some change on it.
+
+### What the 🤬 is `Path.boostrap('main.ts')`?
+
+Well, Athenna tries a lot to be a framework without opinion, one thing
+that some frameworks do that makes them to have a lot of opinion is defining
+crucial file paths where you can't touch that file without breaking everything.
+
+Athenna is not totally different from them in this aspect, as you can see,
+the `node artisan serve` command depends on the existence of the `./bootstrap/main.ts`
+file. To be able to be "opinion less" without losing DX (Developer Experience) 
+we ensure that you can easily configure this path the way you want by doing two 
+things:
+
+1. In all places of our documentation you will see that we always use the [`Path`](/docs/the-basics/helpers#path)
+helper to reference file paths, so your brain could detect that the directory path 
+you just see is configurable.
+2. Inside `.athennarc.json` file or the `athenna` property of your `package.json` you 
+have the [`directories` property](/docs/getting-started/athennarc-file#the-directories-property) 
+where you can modify any path supported by the [`Path`](/docs/the-basics/helpers#path) helper.
+
+Ok, now you might be asking yourself: what the 🤬 is `.athennarc.json`? Be patient, we
+gonna see later on this documentation page 😆.
+
+## Initial configuration
+
+All of the configuration files for the Athenna framework are stored 
+in the `Path.config()` directory. Each option is documented, so feel 
+free to look through the files and get familiar with the options available 
+to you.
+
+Athenna needs almost no additional configuration out of the box. You are 
+free to get started developing! However, you may wish to review the 
+`Path.config('app.ts')` file and its documentation. It contains several 
+options such as timezone and locale that you may wish to change according 
+to your application.
+
+## Environment based configuration
+
+Since many of Athenna's configuration option values may vary depending on 
+whether your application is running on your local machine or in production, 
+many important configuration values are defined using the `.env` file that 
+exists at the root of your application.
+
+Your `.env` file should not be committed to your application's source control, 
+since each developer / server using your application could require a different 
+environment configuration. Furthermore, this would be a security risk in the 
+event an intruder gains access to your source control repository, since any 
+sensitive credentials would get exposed.
+
+:::note
+
+For more information about the `.env` file and environment based configuration, 
+check out the full [configuration documentation](/docs/getting-started/configuration).
+
+:::
+
+## Workspace and runtime configurations
+
+Inside the root directory of your project, there is a file
+called `.athennarc.json` or the `athenna` property of your 
+`package.json`. These configurations are used by Athenna 
+for configuring the workspace and certain runtime 
+settings of your Athenna application. Basically any configuration 
+related to how the framework will bootstrap and behave should be 
+defined in these configuration. 
+
+:::note
+
+Always remember that if you can't find the `.athennarc.json` file
+in the root path of you project, it will be defined inside of your
+`package.json` in the `athenna` property. 
+
+For more information about the RC file, more details about each one
+of its options and also how to define your own properties inside of it 
+check out the full [Athenna RC file documentation](/docs/getting-started/athennarc-file).
+
+:::

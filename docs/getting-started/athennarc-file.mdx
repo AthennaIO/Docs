@@ -163,14 +163,43 @@ of it could be the command path or an object with the
     "make:exception": "@athenna/core/commands/MakeExceptionCommand",
     "make:facade": {
       "path": "@athenna/core/commands/MakeFacadeCommand",
+      "env": "local",
       "destination": "./src/providers/facades",
       "loadApp": false,
       "stayAlive": false,
+      "loadAllCommands": false,
       "environments": ["console"]
     }
   }
 }
 ```
+
+Depending on the command you are running, it got their
+own configurations. Commands like `make:...` for example,
+reads the `destination` property to the file generated
+for a different path from it default.
+
+There are properties that you can define whatever your
+command. Let's see who they are and what they do:
+
+- **`path`** - Defines the path to your command, this field is mandatory 
+if you are using an object to define your command.
+- **`loadApp`** - If `true`, the `Ignite.fire()` method will be called
+until running your command. The `Ignite.fire()` method is responsible
+to load your env file and configuration files and also boot your
+service providers.
+- **`env`** - Defines which env file will be used to run your command. 
+This field is not required and it will only be relevant when the
+`loadApp` property is `true`.
+- **`stayAlive`** - If `true`, your command will stay running until the
+event loop is not in use anymore. Very useful for keep running 
+background tasks from commands.
+- **`loadAllCommands`** - If `true`, all the commands inside the `commands`
+property will be loaded. Useful when you command needs to call other command
+programmatically.
+- **`environments`** - Only relevant when `loadApp` is `true`. The environments
+set will be used as parameter for `Ignite.fire()` method and will help
+Athenna to select the service providers that should or shouldn't be booted.
 
 :::tip
 
@@ -246,7 +275,7 @@ resolve the paths of your application:
 ```
 
 The paths above are the default ones used by Athenna to resolve
-your application paths. You can change one of then or many
+your application paths. You can change one of them or many
 if you want, your directories defined in `directories` property
 will always be merged with the defaults.
 

@@ -90,7 +90,7 @@ const config = {
             html: '<i class="fa-brands fa-github"></i>',
           },
           {
-            href: 'https://discord.gg/mZyBkA936X',
+            href: 'https://discord.gg/JdEbBAKw6X',
             'aria-label': 'Discord',
             className: 'navbar__icon navbar__discord',
             position: 'right',
@@ -102,6 +102,13 @@ const config = {
             className: 'navbar__icon navbar__twitter',
             position: 'right',
             html: '<i class="fa-brands fa-x-twitter"></i>',
+          },
+          {
+            href: 'https://www.youtube.com/watch?v=wNMrx6OGKFk',
+            'aria-label': 'YouTube',
+            className: 'navbar__icon navbar__youtube',
+            position: 'right',
+            html: '<i class="fa-brands fa-youtube"></i>',
           },
         ],
       },
