@@ -48,24 +48,20 @@ as `test`, meaning that the `.env.test` file will be used when
 running your tests.
 
 You are free to define other testing environment value. To do 
-that you can simply change the `setAppEnv()` method of `Runner` class 
-in your `Path.bootstrap('test.ts')` file:
+that you can change the `env` value of your `test` command inside
+of your `.athennarc.json` file: 
 
-```typescript
-import { Runner } from '@athenna/test'
-import { request } from '@athenna/http/testing/plugins'
-import { command } from '@athenna/artisan/testing/plugins'
-
-await Runner.setTsEnv()
-  .setAppEnv('testing') 👈
-  .addAssertPlugin()
-  .addPlugin(request())
-  .addPlugin(command())
-  .addPath('tests/e2e/**/*.ts')
-  .addPath('tests/unit/**/*.ts')
-  .setCliArgs(process.argv.slice(2))
-  .setGlobalTimeout(5000)
-  .run()
+```json title=".athennarc.json"
+{
+  "commands": {
+    "test": {
+      "path": "@athenna/core/commands/TestCommand",
+      "env": "my-custom-env",
+      "loadApp": true,
+      "stayAlive": true
+    }
+  }
+}
 ```
 
 :::tip
