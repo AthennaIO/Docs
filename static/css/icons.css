@@ -23,11 +23,15 @@
   font-size: 1.24rem;
 }
 
-html[data-theme='light'] .navbar__github .navbar__discord .navbar__twitter {
+.navbar__youtube {
+  font-size: 1.24rem;
+}
+
+html[data-theme='light'] .navbar__github .navbar__discord .navbar__twitter .navbar__youtube {
   color: #000;
 }
 
-html[data-theme='dark'] .navbar__github .navbar__discord .navbar__twitter {
+html[data-theme='dark'] .navbar__github .navbar__discord .navbar__twitter .navbar__youtube {
   color: #fff;
 }
 
