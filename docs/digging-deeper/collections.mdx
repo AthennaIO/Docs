@@ -120,13 +120,13 @@ returns a new `Collection` instance, allowing you to preserve the original copy 
 
 The all method returns the underlying array or object represented by the collection:
 
-```js
+```typescript
 new Collection([1, 2, 3]).all()
 
 // [1, 2, 3]
 ```
 
-```js
+```typescript
 new Collection({
   firstname: 'Darwin',
   lastname: 'Núñez',
@@ -146,7 +146,7 @@ Alias for the [`avg()`](#avg) method
 
 The avg method returns the average of all items in the collection:
 
-```js
+```typescript
 new Collection([1, 3, 3, 7]).avg()
 
 // 3.5
@@ -154,7 +154,7 @@ new Collection([1, 3, 3, 7]).avg()
 
 If the collection contains nested arrays or objects, you should pass a key to use for determining which values to calculate the average:
 
-```js
+```typescript
 const collection = new Collection([
   {
     name: 'My story',
@@ -173,7 +173,7 @@ collection.avg('pages')
 
 You may also define a callback function
 
-```js
+```typescript
 const collection = new Collection([
   {
     name: 'My story',
@@ -194,7 +194,7 @@ collection.avg(book => book.pages)
 
 The chunk method breaks the collection into multiple, smaller collections of a given size:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5, 6, 7])
 
 const chunks = collection.chunk(4)
@@ -208,7 +208,7 @@ chunks.all()
 
 The collapse method collapses a collection of arrays into a single, flat collection:
 
-```js
+```typescript
 const collection = new Collection([[1], [{}, 5, {}], ['xoxo']])
 
 const collapsed = collection.collapse()
@@ -218,7 +218,7 @@ collapsed.all()
 // [1, {}, 5, {}, 'xoxo']
 ```
 
-```js
+```typescript
 const collection = new Collection([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
 const collapsed = collection.collapse()
@@ -232,7 +232,7 @@ collapsed.all()
 
 The combine method combines the keys of the collection with the values of another array or collection:
 
-```js
+```typescript
 const collection = new Collection(['name', 'number'])
 
 const combine = collection.combine(['Mohamed Salah', 11])
@@ -251,7 +251,7 @@ The concat method is used to merge two or more collections/arrays/objects:
 
 _You can also `concat()` an array of objects, or a multidimensional array_
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3])
 
 let concatenated = collection.concat(['a', 'b', 'c'])
@@ -270,7 +270,7 @@ concatenated.all()
 
 The contains method determines whether the collection contains a given item:
 
-```js
+```typescript
 const collection = new Collection({
   name: 'Mohamed Salah',
   number: 11,
@@ -288,7 +288,7 @@ collection.contains('Mohamed Salah')
 
 You may also work with arrays
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3])
 
 collection.contains(3)
@@ -297,7 +297,7 @@ collection.contains(3)
 
 You may also pass a key / value pair to the contains method, which will determine if the given pair exists in the collection:
 
-```js
+```typescript
 const collection = new Collection({
   name: 'Mohamed Salah',
   number: 11,
@@ -309,7 +309,7 @@ collection.contains('name', 'Steve Jobs')
 
 Finally, you may also pass a callback to the contains method to perform your own truth test:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 collection.contains((value, key) => value > 5)
@@ -321,7 +321,7 @@ collection.contains((value, key) => value > 5)
 
 The containsOneItem method returns true if the collection contains exactly one item otherwise, false is returned:
 
-```js
+```typescript
 new Collection([1]).containsOneItem()
 // true
 
@@ -351,7 +351,7 @@ new Collection({}).containsOneItem()
 
 The count method returns the total number of items in the collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4])
 
 collection.count()
@@ -363,7 +363,7 @@ collection.count()
 
 The countBy method counts the occurences of values in the collection. By default, the method counts the occurrences of every element:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 2, 2, 3])
 
 const counted = collection.countBy()
@@ -379,7 +379,7 @@ counted.all()
 
 However, you pass a callback to the countBy method to count all items by a custom value:
 
-```js
+```typescript
 const collection = new Collection([
   'mohamed.salah@gmail.com',
   'darwin.nunez@yahoo.com',
@@ -400,7 +400,7 @@ counted.all()
 
 The crossJoin method cross joins the collection with the given array or collection, returning all possible permutations:
 
-```js
+```typescript
 const collection = new Collection([1, 2])
 
 const joined = collection.crossJoin(['a', 'b'])
@@ -419,7 +419,7 @@ joined.all()
 
 The dd method will `console.log` the collection and exit the current process:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3]).dd()
 
 // Collection { items: [ 1, 2, 3 ] }
@@ -430,7 +430,7 @@ const collection = new Collection([1, 2, 3]).dd()
 
 The diff method compares the collection against another collection or a plain array based on its values. This method will return the values in the original collection that are not present in the given collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 const diff = collection.diff([1, 2, 3, 9])
@@ -445,7 +445,7 @@ diff.all()
 The diffAssoc method compares the collection against another collection or a plain object based on its keys and values.
 This method will return the key / value pairs in the original collection that are not present in the given collection:
 
-```js
+```typescript
 const collection = new Collection({
   color: 'orange',
   type: 'fruit',
@@ -468,7 +468,7 @@ diff.all()
 
 The diffKeys method compares the collection against another collection or a plain object based on its keys. This method will return the key / value pairs in the original collection that are not present in the given collection:
 
-```js
+```typescript
 const collection = new Collection({
   a: 'a',
   b: 'b',
@@ -490,7 +490,7 @@ diff.all()
 
 The `doesntContain` method determines whether the collection does not contain a given item. You may pass a closure to the `doesntContain` method to determine if an element does not exist in the collection matching a given truth test:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 collection.doesntContain(value => value < 5)
@@ -498,7 +498,7 @@ collection.doesntContain(value => value < 5)
 // false
 ```
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3])
 
 collection.doesntContain(4)
@@ -507,7 +507,7 @@ collection.doesntContain(4)
 
 You may also use `doesntContain` on object based collections:
 
-```js
+```typescript
 const collection = new Collection({
   name: 'Mohamed Salah',
   number: 11,
@@ -522,7 +522,7 @@ collection.doesntContain('Darwin Núñez')
 
 You may also pass a key / value pair to the contains method, which will determine if the given pair exists in the collection:
 
-```js
+```typescript
 const collection = new Collection({
   name: 'Mohamed Salah',
   number: 11,
@@ -536,7 +536,7 @@ collection.doesntContain('name', 'Darwin Núñez')
 
 The dump method outputs the results at that moment and then continues processing:
 
-```js
+```typescript
 new Collection([1, 2, 3, 4])
   .dump()
   .map(item => item * 2)
@@ -550,7 +550,7 @@ new Collection([1, 2, 3, 4])
 
 The duplicates method retrieves and returns duplicate values from the collection:
 
-```js
+```typescript
 const collection = new Collection(['a', 'b', 'a', 'c', 'b'])
 
 const duplicates = collection.duplicates()
@@ -564,7 +564,7 @@ duplicates.all()
 
 The each method iterates over the items in the collection and passes each item to a callback:
 
-```js
+```typescript
 let sum = 0
 
 const collection = new Collection([1, 3, 3, 7])
@@ -579,7 +579,7 @@ collection.each((item) => {
 
 If you would like to stop iterating through the items, you may return false from your callback:
 
-```js
+```typescript
 let sum = 0
 
 const collection = new Collection([1, 3, 3, 7])
@@ -600,7 +600,7 @@ collection.each((item) => {
 
 The eachSpread method iterates over the collection's items, passing each nested item value into the given callback:
 
-```js
+```typescript
 const collection = new Collection([['John Doe', 35], ['Jane Doe', 33]])
 
 collection.eachSpread((name, age) => {
@@ -610,7 +610,7 @@ collection.eachSpread((name, age) => {
 
 You may stop iterating through the items by returning false from the callback:
 
-```js
+```typescript
 collection.eachSpread((name, age) => false)
 ```
 
@@ -618,7 +618,7 @@ collection.eachSpread((name, age) => false)
 
 The every method may be used to verify that all elements of a collection pass a given truth test:
 
-```js
+```typescript
 new Collection([1, 2, 3, 4]).every((value, key) => value > 2)
 
 // false
@@ -628,7 +628,7 @@ new Collection([1, 2, 3, 4]).every((value, key) => value > 2)
 
 The except method returns all items in the collection except for those with the specified keys:
 
-```js
+```typescript
 const collection = new Collection({
   product_id: 1,
   price: 100,
@@ -642,7 +642,7 @@ filtered.all()
 // { product_id: 1 }
 ```
 
-```js
+```typescript
 new Collection([1, 2, 3, 4])
   .except([2, 12])
   .all()
@@ -656,7 +656,7 @@ new Collection([1, 2, 3, 4])
 
 The filter method filters the collection using the given callback, keeping only those items that pass a given truth test:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4])
 
 const filtered = collection.filter((value, key) => value > 2)
@@ -668,7 +668,7 @@ filtered.all()
 
 If no callback is supplied, all entries of the collection that are equivalent to `false` will be removed:
 
-```js
+```typescript
 const collection = new Collection([
   0,
   1,
@@ -700,7 +700,7 @@ filtered.all()
 
 The first method returns the first element in the collection that passes a given truth test:
 
-```js
+```typescript
 new Collection([1, 2, 3, 4]).first(item => item > 1)
 
 // 2
@@ -708,7 +708,7 @@ new Collection([1, 2, 3, 4]).first(item => item > 1)
 
 You may also call the first method with no arguments to get the first element in the collection. If the collection is empty, null is returned:
 
-```js
+```typescript
 new Collection([1, 2, 3, 4]).first()
 
 // 1
@@ -718,13 +718,13 @@ new Collection([1, 2, 3, 4]).first()
 
 The firstOrFail method returns the first element in the collection, or throws an error if there are no elements:
 
-```js
+```typescript
 new Collection([1, 2, 3, 4]).firstOrFail(item => item > 1)
 
 // 2
 ```
 
-```js
+```typescript
 new Collection([1, 2, 3, 4]).firstOrFail(item => item > 4)
 
 // Error ('Item not found.') is thrown.
@@ -732,13 +732,13 @@ new Collection([1, 2, 3, 4]).firstOrFail(item => item > 4)
 
 You may also call the firstOrFail method with no arguments to get the first element in the collection. If the collection is empty, an error is thrown:
 
-```js
+```typescript
 new Collection([1, 2, 3, 4]).firstOrFail()
 
 // 1
 ```
 
-```js
+```typescript
 new Collection().firstOrFail()
 
 // Error ('Item not found.') is thrown.
@@ -746,7 +746,7 @@ new Collection().firstOrFail()
 
 Like the where method, you may also pass an attribute, operator, and value:
 
-```js
+```typescript
 const collection = new Collection([
   { product: 'Desk', price: 200, discounted: true },
   { product: 'Chair', price: 100, discounted: true },
@@ -764,7 +764,7 @@ collection.firstOrFail('product', '=', 'Desk')
 
 The firstWhere method returns the first element in the collection with the given key / value pair:
 
-```js
+```typescript
 const collection = new Collection([
   { name: 'Regena', age: 12 },
   { name: 'Linda', age: 14 },
@@ -781,7 +781,7 @@ collection.firstWhere('name', 'Linda')
 
 The flatMap method iterates through the collection and passes each value to the given callback. The callback is free to modify the item and return it, thus forming a new collection of modified items. Then, the array is flattened by a level:
 
-```js
+```typescript
 const collection = new Collection([
   {
     name: 'Darwin Núñez',
@@ -804,7 +804,7 @@ flatMapped.all()
 
 The flatten method flattens a multi-dimensional collection into a single dimension:
 
-```js
+```typescript
 const collection = new Collection({
   club: 'Liverpool',
   players: ['Salah', 'Firmino', 'Núñez'],
@@ -819,7 +819,7 @@ flattened.all()
 
 You may optionally pass the function a "depth" argument:
 
-```js
+```typescript
 const collection = new Collection({
   Apple: [
     {
@@ -851,7 +851,7 @@ In this example, calling flatten without providing the depth would have also fla
 
 The flip method swaps the collection's keys with their corresponding values:
 
-```js
+```typescript
 const collection = new Collection({
   name: 'Darwin Núñez',
   number: 27,
@@ -871,7 +871,7 @@ flipped.all()
 
 The forPage method returns a new collection containing the items that would be present on a given page number. The method accepts the page number as its first argument and the number of items to show per page as its second argument:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5, 6, 7, 8, 9])
 
 const forPage = collection.forPage(2, 3)
@@ -885,7 +885,7 @@ forPage.all()
 
 The forget method removes an item from the collection by its key:
 
-```js
+```typescript
 const collection = new Collection({
   name: 'Darwin Núñez',
   number: 27,
@@ -906,7 +906,7 @@ collection.all()
 
 The get method returns the item at a given key or index. If the key or index does not exist, `null` is returned:
 
-```js
+```typescript
 const collection = new Collection({
   firstname: 'Mohamed',
   lastname: 'Salah',
@@ -921,7 +921,7 @@ collection.get('middlename')
 // null
 ```
 
-```js
+```typescript
 const collection = new Collection(['a', 'b', 'c'])
 
 collection.get(1)
@@ -931,7 +931,7 @@ collection.get(1)
 
 You may optionally pass a default value as the second argument:
 
-```js
+```typescript
 const collection = new Collection({
   firstname: 'Mohamed',
   lastname: 'Salah',
@@ -943,7 +943,7 @@ collection.get('middlename', 'default-value')
 
 You may even pass a callback as the default value. The result of the callback will be returned if the specified key does not exist:
 
-```js
+```typescript
 const collection = new Collection({
   firstname: 'Mohamed',
   lastname: 'Salah',
@@ -960,7 +960,7 @@ The groupBy method groups the collection's items into multiple collections by a 
 
 > If you want to group the collection by keys as a plain object, see [mapToGroups](#mapToGroups)
 
-```js
+```typescript
 const collection = new Collection([
   {
     product: 'Chair',
@@ -1012,7 +1012,7 @@ grouped.all()
 
 In addition to passing a string key, you may also pass a callback. The callback should return the value you wish to key the group by:
 
-```js
+```typescript
 const collection = new Collection([
   {
     product: 'Chair',
@@ -1066,7 +1066,7 @@ grouped.all()
 
 The has method determines if one or more keys exists in the collection:
 
-```js
+```typescript
 const collection = new Collection({
   animal: 'unicorn',
   ability: 'magical',
@@ -1089,7 +1089,7 @@ collection.has(['animal', 'ability', 'name'])
 
 The implode method joins the items in a collection. Its arguments depend on the type of items in the collection. If the collection contains arrays or objects, you should pass the key of the attributes you wish to join, and the "glue" string you wish to place between the values:
 
-```js
+```typescript
 const collection = new Collection([
   {
     product: 'Chair',
@@ -1112,7 +1112,7 @@ collection.implode('product', ',')
 
 If the collection contains simple strings or numeric values, simply pass the "glue" as the only argument to the method:
 
-```js
+```typescript
 new Collection([1, 2, 3, 4, 5]).implode('-')
 
 // 1-2-3-4-5
@@ -1122,7 +1122,7 @@ new Collection([1, 2, 3, 4, 5]).implode('-')
 
 The intersect method removes any values from the original collection that are not present in the given `array` or `collection`. The resulting collection will preserve the original collection's keys:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 intersect = collection.intersect([1, 2, 3, 9])
@@ -1136,7 +1136,7 @@ intersect.all()
 
 The intersectByKeys method removes any keys from the original collection that are not present in the given `array` or collection:
 
-```js
+```typescript
 const collection = new Collection({
   serial: 'UX301',
   type: 'screen',
@@ -1154,7 +1154,7 @@ intersect.all()
 // { type: 'screen', year: 2009 }
 ```
 
-```js
+```typescript
 const firstCollection = new Collection([1, 2, 3, 4, 5])
 const secondCollection = new Collection([1, 2, 3, 9])
 
@@ -1169,7 +1169,7 @@ intersect.all()
 
 The isEmpty method returns true if the collection is empty otherwise, false is returned:
 
-```js
+```typescript
 new Collection().isEmpty()
 // true
 
@@ -1184,7 +1184,7 @@ new Collection({}).isEmpty()
 
 The isNotEmpty method returns true if the collection is not empty otherwise, false is returned:
 
-```js
+```typescript
 new Collection([1, 2, 3]).isNotEmpty()
 //  true
 
@@ -1202,7 +1202,7 @@ new Collection({}).isNotEmpty()
 
 The join method joins the collection's values with a string:
 
-```js
+```typescript
 new Collection(['a', 'b', 'c']).join(', ')
 // 'a, b, c'
 
@@ -1223,7 +1223,7 @@ new Collection([]).join(', ', ' and ')
 
 The keyBy method keys the collection by the given key. If multiple items have the same key, only the last one will appear in the new collection:
 
-```js
+```typescript
 const collection = new Collection([
   {
     product: 'Chair',
@@ -1257,7 +1257,7 @@ keyed.all()
 
 You may also pass a callback to the method. The callback should return the value to key the collection by:
 
-```js
+```typescript
 const upperCased = collection.keyBy(item => item.manufacturer.toUpperCase())
 
 upperCased.all()
@@ -1278,7 +1278,7 @@ upperCased.all()
 
 The keys method returns all of the collection's keys:
 
-```js
+```typescript
 const collection = new Collection([
   {
     club: 'Liverpool',
@@ -1295,7 +1295,7 @@ keys = collection.keys()
 
 The last method returns the last element in the collection that passes a given truth test:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3])
 
 const last = collection.last(item => item > 1)
@@ -1305,7 +1305,7 @@ const last = collection.last(item => item > 1)
 
 You may also call the last method with no arguments to get the last element in the collection. If the collection is empty, `null` is returned:
 
-```js
+```typescript
 new Collection([1, 2, 3, 4]).last()
 
 // 4
@@ -1315,7 +1315,7 @@ new Collection([1, 2, 3, 4]).last()
 
 The macro method lets you register custom methods
 
-```js
+```typescript
 new Collection().macro('uppercase', function () {
   return this.map(item => item.toUpperCase())
 })
@@ -1339,7 +1339,7 @@ The make method creates a new collection instance.
 
 The map method iterates through the collection and passes each value to the given callback. The callback is free to modify the item and return it, thus forming a new collection of modified items:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 const multiplied = collection.map(item => item * 2)
@@ -1355,7 +1355,7 @@ multiplied.all()
 
 The mapInto method iterates through the collection and instantiates the given class with each element as a constructor:
 
-```js
+```typescript
 const Player = function (name) {
   this.name = name
 }
@@ -1380,7 +1380,7 @@ players.all()
 The mapSpread method iterates over the collection's items, passing each nested item value into the given callback.
 The callback is free to modify the item and return it, thus forming a new collection of modified items:
 
-```js
+```typescript
 const collection = new Collection([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
 const chunks = collection.chunk(2)
@@ -1397,7 +1397,7 @@ sequence.all()
 Run a dictionary map over the items.
 The callback should return an associative array with a single key/value pair.
 
-```js
+```typescript
 const collection = new Collection([
   { id: 1, name: 'a' },
   { id: 2, name: 'b' },
@@ -1420,7 +1420,7 @@ groups.all()
 
 The mapToGroups method iterates through the collection and passes each value to the given callback:
 
-```js
+```typescript
 const collection = new Collection([
   { id: 1, name: 'A' },
   { id: 2, name: 'B' },
@@ -1441,7 +1441,7 @@ const groups = collection.mapToGroups((item, key) => [item.name, item.id])
 
 The mapWithKeys method iterates through the collection and passes each value to the given callback. The callback should return an array where the first element represents the key and the second element represents the value pair:
 
-```js
+```typescript
 const collection = new Collection([
   {
     name: 'John',
@@ -1469,7 +1469,7 @@ keyed.all()
 
 The max method returns the maximum value of a given key:
 
-```js
+```typescript
 const collection = new Collection([
   {
     value: 10,
@@ -1490,7 +1490,7 @@ const max = collection.max('value')
 // 12
 ```
 
-```js
+```typescript
 new Collection([-1, -2345, 12, 11, 3]).max()
 
 // 12
@@ -1500,13 +1500,13 @@ new Collection([-1, -2345, 12, 11, 3]).max()
 
 The median method returns the median value of a given key:
 
-```js
+```typescript
 new Collection([1, 3, 3, 6, 7, 8, 9]).median()
 
 // 6
 ```
 
-```js
+```typescript
 new Collection([
   {
     foo: 1,
@@ -1529,7 +1529,7 @@ new Collection([
 
 The merge method merges the given object into the original collection. If a key in the given object matches a key in the original collection, the given objects value will overwrite the value in the original collection:
 
-```js
+```typescript
 const collection = new Collection({
   id: 1,
   price: 29,
@@ -1547,7 +1547,7 @@ merged.all()
 
 If our collection is an array, the values will be appended to the end of the collection:
 
-```js
+```typescript
 const collection = new Collection(['Unicorn', 'Rainbow'])
 
 const merged = collection.merge(['Sunshine', 'Rainbow'])
@@ -1561,7 +1561,7 @@ merged.all()
 
 The mergeRecursive method merges the given array or collection recursively with the original collection. If a string key in the given items matches a string key in the original collection, then the values for these keys are merged together into an array, and this is done recursively:
 
-```js
+```typescript
 const collection = new Collection({
   product_id: 1,
   price: 100,
@@ -1586,7 +1586,7 @@ merged.all()
 
 The min method returns the minimum value of a given key:
 
-```js
+```typescript
 const collection = new Collection([
   {
     worth: 100,
@@ -1604,7 +1604,7 @@ collection.min('worth')
 // 79
 ```
 
-```js
+```typescript
 new Collection([1, 2, 3, 4, 5]).min()
 
 // 1
@@ -1614,13 +1614,13 @@ new Collection([1, 2, 3, 4, 5]).min()
 
 The mode method returns the mode value of a given key:
 
-```js
+```typescript
 new Collection([1, 3, 3, 6, 7, 8, 9]).mode()
 
 // [3]
 ```
 
-```js
+```typescript
 new Collection([
   {
     foo: 1,
@@ -1643,7 +1643,7 @@ new Collection([
 
 The nth method creates a new collection consisting of every n-th element:
 
-```js
+```typescript
 const collection = new Collection(['a', 'b', 'c', 'd', 'e', 'f'])
 
 const nth = collection.nth(4)
@@ -1657,7 +1657,7 @@ nth.all()
 
 The only method returns the items in the collection with the specified keys:
 
-```js
+```typescript
 const collection = new Collection({
   id: 12,
   name: 'John Doe',
@@ -1672,7 +1672,7 @@ filtered.all()
 // { name: 'John Doe', email: 'john@doe.com' }
 ```
 
-```js
+```typescript
 new Collection([1, 2, 3, 4])
   .only([2, 12])
   .all()
@@ -1713,7 +1713,7 @@ behaves like the [array_pad](https://secure.php.net/manual/en/function.array-pad
 
 To pad to the left, you should specify a negative size. No padding will take place if the absolute value of the given size is less than or equal to the length of the array:
 
-```js
+```typescript
 const collection = new Collection(['A', 'B', 'C'])
 
 let filtered = collection.pad(5, 0)
@@ -1733,7 +1733,7 @@ filtered.all()
 
 The partition method may be combined with destructuring to separate elements that pass a given truth test from those that do not:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5, 6])
 
 const [underThree, overThree] = collection.partition(i => i < 3)
@@ -1743,7 +1743,7 @@ const [underThree, overThree] = collection.partition(i => i < 3)
 
 The pipe method passes the collection to the given callback and returns the result:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3])
 
 const piped = collection.pipe(items => items.sum())
@@ -1755,7 +1755,7 @@ const piped = collection.pipe(items => items.sum())
 
 The pluck method retrieves all of the values for a given key:
 
-```js
+```typescript
 const collection = new Collection([
   {
     id: 78,
@@ -1776,7 +1776,7 @@ plucked.all()
 
 You may also specify how you wish the resulting collection to be keyed:
 
-```js
+```typescript
 const collection = new Collection([
   {
     id: 78,
@@ -1800,7 +1800,7 @@ plucked.all()
 
 You can use "dot notation" to access nested values
 
-```js
+```typescript
 const collection = new Collection([
   {
     name: 'John',
@@ -1824,7 +1824,7 @@ plucked.all()
 
 "Dot notation" supports "wildcard"
 
-```js
+```typescript
 const collection = new Collection([
   {
     name: 'John',
@@ -1855,7 +1855,7 @@ plucked.all()
 
 The pop method removes and returns the last item from the collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 collection.pop()
@@ -1868,7 +1868,7 @@ collection.all()
 ```
 
 You may provide number of items to pop. This will return the popped items in a new collection:
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 collection.pop(2).all()
@@ -1884,7 +1884,7 @@ collection.all()
 
 The prepend method adds an item to the beginning of the collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 collection.prepend(0)
@@ -1905,7 +1905,7 @@ the scenes.
 
 :::
 
-```js
+```typescript
 const collection = new Collection({
   product: 'iPhone 6s',
 })
@@ -1924,7 +1924,7 @@ collection.all()
 
 The pull method removes and returns an item from the collection by its key:
 
-```js
+```typescript
 const collection = new Collection({
   firstname: 'Michael',
   lastname: 'Cera',
@@ -1943,7 +1943,7 @@ collection.all()
 
 The push method appends an item to the end of the collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4])
 
 collection.push(5)
@@ -1957,7 +1957,7 @@ collection.all()
 
 The put method sets the given key and value in the collection:
 
-```js
+```typescript
 const collection = new Collection(['JavaScript', 'Python'])
 
 collection.put('Ruby')
@@ -1971,7 +1971,7 @@ collection.all()
 
 The random method returns a random item from the collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 collection.random()
@@ -1981,7 +1981,7 @@ collection.random()
 
 You may optionally pass an integer to random to specify how many items you would like to randomly retrieve. A collection of items is always returned when explicitly passing the number of items you wish to receive:
 
-```js
+```typescript
 const threeRandom = collection.random(3)
 
 // Collection { items: [ 5, 3, 4 ] } (retrieved randomly)
@@ -1999,7 +1999,7 @@ oneRandom.all()
 
 The reduce method reduces the collection to a single value, passing the result of each iteration into the subsequent iteration:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3])
 
 const total = collection.reduce((carry, item) => carry + item)
@@ -2009,7 +2009,7 @@ const total = collection.reduce((carry, item) => carry + item)
 
 The value for `carry` on the first iteration is null however, you may specify its initial value by passing a second argument to reduce:
 
-```js
+```typescript
 const total = collection.reduce((carry, item) => carry + item, 4)
 
 // 10
@@ -2019,7 +2019,7 @@ const total = collection.reduce((carry, item) => carry + item, 4)
 
 The reject method filters the collection using the given callback. The callback should return true if the item should be removed from the resulting collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4])
 
 const filtered = collection.reject(value => value > 2)
@@ -2033,7 +2033,7 @@ const filtered = collection.reject(value => value > 2)
 
 The removeDuplicated method remove all duplicated values inside the collection:
 
-```js
+```typescript
 const collection = new Collection([1, 1, 2, 2, 3, 4])
 
 const set = collection.removeDuplicated()
@@ -2045,7 +2045,7 @@ const set = collection.removeDuplicated()
 
 The replace method behaves similarly to merge however, in addition to overwriting matching items with string keys, the replace method will also overwrite items in the collection that have matching numeric keys:
 
-```js
+```typescript
 const collection = new Collection({
   name: 'Bob',
 })
@@ -2067,7 +2067,7 @@ replaced.all()
 
 This method works like replace, but it will recurse into arrays and apply the same replacement process to the inner values:
 
-```js
+```typescript
 const collection = new Collection([
   'Matip',
   'van Dijk',
@@ -2096,7 +2096,7 @@ replaced.all()
 
 The reverse method reverses the order of the collection's items:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 const reversed = collection.reverse()
@@ -2110,7 +2110,7 @@ reversed.all()
 
 The search method searches the collection for the given value and returns its key if found. If the item is not found, false is returned.
 
-```js
+```typescript
 const collection = new Collection([2, 4, 6, 8])
 
 collection.search(4)
@@ -2120,7 +2120,7 @@ collection.search(4)
 
 The search is done using a "loose" comparison, meaning a string with an integer value will be considered equal to an integer of the same value. To use strict comparison, pass true as the second argument to the method:
 
-```js
+```typescript
 collection.search('4', true)
 
 // false
@@ -2128,7 +2128,7 @@ collection.search('4', true)
 
 Alternatively, you may pass in your own callback to search for the first item that passes your truth test:
 
-```js
+```typescript
 collection.search((item, key) => item > 5)
 
 // 2
@@ -2138,7 +2138,7 @@ collection.search((item, key) => item > 5)
 
 The shift method removes and returns the first item from the collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 collection.shift()
@@ -2151,7 +2151,7 @@ collection.all()
 ```
 
 You may provide number of items to shift. This will return the shifted items in a new collection:
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 collection.shift(2).all()
@@ -2167,7 +2167,7 @@ collection.all()
 
 The shuffle method randomly shuffles the items in the collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 const shuffled = collection.shuffle()
@@ -2181,7 +2181,7 @@ shuffled.all()
 
 The skip method returns a new collection, without the first given amount of items:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5, 6])
 
 collection.skip(4).all()
@@ -2189,7 +2189,7 @@ collection.skip(4).all()
 // [5, 6]
 ```
 
-```js
+```typescript
 const collection = new Collection({
   first: 'first',
   second: 'second',
@@ -2207,7 +2207,7 @@ collection.skip(4).all()
 
 The `skipUntil` method skips items until the given callback returns `true` and then returns the remaining items in the collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4])
 
 const subset = collection.skipUntil(item => item >= 3)
@@ -2219,7 +2219,7 @@ subset.all()
 
 You may also pass a simple value to the `skipUntil` method to skip all items until the given value is found:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4])
 
 const subset = collection.skipUntil(3)
@@ -2233,7 +2233,7 @@ subset.all()
 
 The `skipWhile` method skips items while the given callback returns `true` and then returns the remaining items in the collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4])
 
 const subset = collection.skipWhile(item => item <= 3)
@@ -2247,7 +2247,7 @@ subset.all()
 
 You may also pass a simple value to the `skipWhile`:
 
-```js
+```typescript
 const collection = new Collection([1, 1, 2, 2, 3, 3, 4, 4])
 
 const subset = collection.skipWhile(1)
@@ -2261,7 +2261,7 @@ subset.all()
 
 The slice method returns a slice of the collection starting at the given index:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
 const slice = collection.slice(4)
@@ -2273,7 +2273,7 @@ slice.all()
 
 If you would like to limit the size of the returned slice, pass the desired size as the second argument to the method:
 
-```js
+```typescript
 const slice = collection.slice(4, 2)
 
 slice.all()
@@ -2285,7 +2285,7 @@ slice.all()
 
 The sole method returns the first element in the collection that passes a given truth test, but only if the truth test matches exactly one element:
 
-```js
+```typescript
 new Collection([1, 2, 3, 4]).sole(item => item === 1)
 
 // 1
@@ -2293,7 +2293,7 @@ new Collection([1, 2, 3, 4]).sole(item => item === 1)
 
 If there are no elements in the collection that should be returned by the sole method, then an error will be thrown:
 
-```js
+```typescript
 new Collection([1, 2, 3, 4]).sole(item => item > 4)
 
 // Error ('Item not found.') is thrown.
@@ -2301,7 +2301,7 @@ new Collection([1, 2, 3, 4]).sole(item => item > 4)
 
 If there are multiple elements in the collection that should be returned by the sole method, then an error will be thrown:
 
-```js
+```typescript
 new Collection([1, 2, 3, 4]).sole()
 
 // Error ('Multiple items found.') is thrown.
@@ -2309,7 +2309,7 @@ new Collection([1, 2, 3, 4]).sole()
 
 Like the firstOrFail method, you may also pass an attribute, operator, and value:
 
-```js
+```typescript
 const collection = new Collection([
   { product: 'Desk', price: 200, discounted: true },
   { product: 'Chair', price: 100, discounted: true },
@@ -2330,7 +2330,7 @@ Alias for the [contains](#contains) method.
 
 The sort method sorts the collection:
 
-```js
+```typescript
 const collection = new Collection([5, 3, 1, 2, 4])
 
 const sorted = collection.sort()
@@ -2342,7 +2342,7 @@ sorted.all()
 
 > If your sorting needs are more advanced, you may pass a callback to sort with your own algorithm.
 
-```js
+```typescript
 const collection = new Collection([5, 3, 1, 2, 4])
 
 const sorted = collection.sort((a, b) => b - a)
@@ -2358,7 +2358,7 @@ sorted.all()
 
 The sortBy method sorts the collection by the given key. The sorted collection keeps the original array keys, so in this example we'll use the values method to reset the keys to consecutively numbered indexes:
 
-```js
+```typescript
 const collection = new Collection([
   { name: 'Desk', price: 200 },
   { name: 'Chair', price: 100 },
@@ -2377,7 +2377,7 @@ sorted.all()
 ```
 
 You can use dot notation to sort by nested values
-```js
+```typescript
 const collection = new Collection([
   {
     name: 'Desk',
@@ -2433,7 +2433,7 @@ sorted.all()
 
 You can also pass your own callback to determine how to sort the collection values:
 
-```js
+```typescript
 const collection = new Collection([
   { name: 'Desk', colors: ['Black', 'Mahogany'] },
   { name: 'Chair', colors: ['Black'] },
@@ -2459,7 +2459,7 @@ This method has the same signature as the `sortBy` method, but will sort the col
 
 This method will sort the collection in the opposite order as the `sort` method.
 
-```js
+```typescript
 const collection = new Collection([1, 3, 5, 2, 4])
 
 const sorted = collection.sortDesc()
@@ -2475,7 +2475,7 @@ Unlike `sort`, you may not pass a callback to `sortDesc`. If you wish to use a c
 
 The sortKeys method sorts the collection by the keys of the underlying associative array:
 
-```js
+```typescript
 const collection = new Collection({
   id: 10,
   first: 'Darwin',
@@ -2501,7 +2501,7 @@ This method has the same signature as the [sortKeys](#sortkeys) method, but will
 
 The splice method removes and returns a slice of items starting at the specified index:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 const chunk = collection.splice(2)
@@ -2517,7 +2517,7 @@ collection.all()
 
 You may pass a second argument to limit the size of the resulting chunk:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 const chunk = collection.splice(2, 1)
@@ -2533,7 +2533,7 @@ collection.all()
 
 In addition, you can pass a third argument containing the new items to replace the items removed from the collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 const chunk = collection.splice(2, 1, [10, 11])
@@ -2551,7 +2551,7 @@ collection.all()
 
 The split method breaks a collection into the given number of groups:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 const groups = collection.split(3)
@@ -2563,7 +2563,7 @@ const groups = collection.split(3)
 
 The sum method returns the sum of all items in the collection:
 
-```js
+```typescript
 new Collection([1, 2, 3]).sum()
 
 // 6
@@ -2571,7 +2571,7 @@ new Collection([1, 2, 3]).sum()
 
 If the collection contains nested arrays or objects, you should pass a key to use for determining which values to sum:
 
-```js
+```typescript
 const collection = new Collection([
   { name: 'My story', pages: 176 },
   { name: 'Fantastic Beasts and Where to Find Them', pages: 1096 },
@@ -2584,7 +2584,7 @@ collection.sum('pages')
 
 In addition, you may pass your own callback to determine which values of the collection to sum:
 
-```js
+```typescript
 const collection = new Collection([
   { name: 'Desk', colors: ['Black', 'Mahogany'] },
   { name: 'Chair', colors: ['Black'] },
@@ -2601,7 +2601,7 @@ const total = collection.sum(product => product.colors.length)
 The take method returns a new collection with the specified number of items:
 You may also pass a negative integer to take the specified amount of items from the end of the collection:
 
-```js
+```typescript
 const collection = new Collection([0, 1, 2, 3, 4, 5])
 
 const chunk = collection.take(3)
@@ -2615,7 +2615,7 @@ chunk.all()
 
 The `takeUntil` method returns items in the collection until the given callback returns `true`:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4])
 
 const subset = collection.takeUntil(item => item >= 3)
@@ -2629,7 +2629,7 @@ subset.all()
 
 You may also pass a simple value to the `takeUntil` method to get the items until the given value is found:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4])
 
 const subset = collection.takeUntil(3)
@@ -2643,7 +2643,7 @@ subset.all()
 
 The `takeWhile` method returns items in the collection until the given callback returns `false`:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4])
 
 const subset = collection.takeWhile(item => item < 3)
@@ -2659,7 +2659,7 @@ subset.all()
 
 The tap method passes the collection to the given callback, allowing you to "tap" into the collection at a specific point and do something with the items while not affecting the collection itself:
 
-```js
+```typescript
 new Collection([2, 4, 3, 1, 5])
   .sort()
   .tap((collection) => {
@@ -2676,7 +2676,7 @@ new Collection([2, 4, 3, 1, 5])
 
 The times method creates a new collection by invoking the callback a given amount of times:
 
-```js
+```typescript
 const collection = new Collection().times(10, number => number * 9)
 
 collection.all()
@@ -2689,7 +2689,7 @@ collection.all()
 The toArray method converts the collection into a plain array.
 If the collection is an object, an array containing the values will be returned.
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 'b', 'c'])
 
 collection.toArray()
@@ -2697,7 +2697,7 @@ collection.toArray()
 // [1, 2, 3, 'b', 'c']
 ```
 
-```js
+```typescript
 const collection = new Collection({
   name: 'Elon Musk',
   companies: ['Tesla', 'Space X', 'SolarCity'],
@@ -2712,7 +2712,7 @@ collection.toArray()
 
 The toJson method converts the collection into JSON string:
 
-```js
+```typescript
 const collection = new Collection({
   id: 384,
   name: 'Rayquaza',
@@ -2728,7 +2728,7 @@ const json = collection.toJson()
 
 Enter in all the collection objects and execute the `toJSON()` method of each object:
 
-```js
+```typescript
 const collection = new Collection([
     { toJSON: () => ({ id: 1 }) }
 ])
@@ -2742,7 +2742,7 @@ const json = collection.toJSON()
 
 Enter in all the collection objects and execute the `toResource()` method of each object:
 
-```js
+```typescript
 const collection = new Collection([
     { toResource: criterias => ({ id: 1, ...criterias }) }
 ])
@@ -2756,7 +2756,7 @@ const resources = collection.toResource({ name: 'string' })
 
 The transform method iterates over the collection and calls the given callback with each item in the collection. The items in the collection will be replaced by the values returned by the callback:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3, 4, 5])
 
 collection.transform((item, key) => item * 2)
@@ -2772,7 +2772,7 @@ collection.all()
 
 The `undot` method expands a single-dimensional collection that uses "dot" notation into a multi-dimensional collection:
 
-```js
+```typescript
 const person = new Collection({
   'name.first_name': 'Marie',
   'name.last_name': 'Valentine',
@@ -2806,7 +2806,7 @@ const all = undotted.all()
 
 The union method adds the given array to the collection. If the given array contains keys that are already in the original collection, the original collection's values will be preferred:
 
-```js
+```typescript
 const collection = new Collection({
   a: 'A',
   b: 'B',
@@ -2831,7 +2831,7 @@ union.all()
 
 The unique method returns all of the unique items in the collection:
 
-```js
+```typescript
 const collection = new Collection([1, 1, 1, 2, 3, 3])
 
 const unique = collection.unique()
@@ -2843,7 +2843,7 @@ unique.all()
 
 When dealing with an array of objects, you may specify the key used to determine uniqueness:
 
-```js
+```typescript
 const collection = new Collection([
   { name: 'iPhone 6', brand: 'Apple', type: 'phone' },
   { name: 'iPhone 5', brand: 'Apple', type: 'phone' },
@@ -2864,7 +2864,7 @@ unique.all()
 
 You may also pass your own callback to determine item uniqueness:
 
-```js
+```typescript
 const collection = new Collection([
   { name: 'iPhone 6', brand: 'Apple', type: 'phone' },
   { name: 'iPhone 5', brand: 'Apple', type: 'phone' },
@@ -2889,7 +2889,7 @@ unique.all()
 
 The unless method will execute the given callback when the first argument given to the method evaluates to false:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3])
 
 collection.unless(false, items => items.push(4))
@@ -2911,7 +2911,7 @@ Alias for the [`whenEmpty()`](#whenEmpty) method
 
 The unwrap method will unwrap the given collection:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3])
 
 new Collection().unwrap(collection)
@@ -2923,7 +2923,7 @@ new Collection().unwrap(collection)
 
 The values method returns a new collection with the keys reset to consecutive integers:
 
-```js
+```typescript
 const collection = new Collection({
   a: 'xoxo',
   b: 'abab',
@@ -2942,7 +2942,7 @@ values.all()
 
 The when method will execute the given callback when the first argument given to the method evaluates to true:
 
-```js
+```typescript
 const collection = new Collection([1, 2, 3])
 
 collection.when(true, items => items.push(4))
@@ -2956,7 +2956,7 @@ collection.all()
 
 The `whenEmpty` method will execute the given callback when the collection is empty:
 
-```js
+```typescript
 const collection = new Collection([])
 
 collection.whenEmpty(c => c.push('Mohamed Salah'))
@@ -2966,7 +2966,7 @@ collection.all()
 // ['Mohamed Salah']
 ```
 
-```js
+```typescript
 const collection = new Collection(['Darwin Núñez'])
 
 collection.whenEmpty(
@@ -2986,7 +2986,7 @@ collection.all()
 
 The `whenNotEmpty` method will execute the given callback when the collection is not empty:
 
-```js
+```typescript
 const collection = new Collection(['Darwin Núñez'])
 
 collection.whenNotEmpty(c => c.push('Mohamed Salah'))
@@ -2999,7 +2999,7 @@ collection.all()
 // ]
 ```
 
-```js
+```typescript
 const collection = new Collection(['Darwin Núñez'])
 
 collection.whenNotEmpty(
@@ -3019,7 +3019,7 @@ collection.all()
 
 The where method filters the collection by a given key / value pair:
 
-```js
+```typescript
 const collection = new Collection([
   { product: 'Desk', price: 200, discounted: true },
   { product: 'Chair', price: 100, discounted: true },
@@ -3060,7 +3060,7 @@ discounted.all()
 
 **Non-identity / strict inequality `(!==)`**
 
-```js
+```typescript
 const filtered = collection.where('price', '!==', 100)
 
 filtered.all()
@@ -3073,7 +3073,7 @@ filtered.all()
 
 **Less than operator `(<)`**
 
-```js
+```typescript
 const filtered = collection.where('price', '<', 100)
 
 filtered.all()
@@ -3083,7 +3083,7 @@ filtered.all()
 
 **Less than or equal operator `(<=)`**
 
-```js
+```typescript
 const filtered = collection.where('price', '<=', 100)
 
 filtered.all()
@@ -3096,7 +3096,7 @@ filtered.all()
 
 **Greater than operator `(>)`**
 
-```js
+```typescript
 const filtered = collection.where('price', '>', 100)
 
 filtered.all()
@@ -3109,7 +3109,7 @@ filtered.all()
 
 **Greater than or equal operator `(>=)`**
 
-```js
+```typescript
 const filtered = collection.where('price', '>=', 150)
 
 filtered.all()
@@ -3124,7 +3124,7 @@ filtered.all()
 
 The whereBetween method filters the collection within a given range:
 
-```js
+```typescript
 const collection = new Collection([
   { product: 'Desk', price: 200 },
   { product: 'Chair', price: 80 },
@@ -3148,7 +3148,7 @@ filtered.all()
 
 The whereIn method filters the collection by a given key / value contained within the given array.
 
-```js
+```typescript
 const collection = new Collection([
   { product: 'Desk', price: 200 },
   { product: 'Chair', price: 100 },
@@ -3173,7 +3173,7 @@ filtered.all()
 
 The whereInstanceOf method filters the collection by a given class type:
 
-```js
+```typescript
 const collection = new Collection([
   new Player('Firmino'),
   new Player('Salah'),
@@ -3194,7 +3194,7 @@ filtered.all()
 
 The whereNotBetween method filters the collection within a given range:
 
-```js
+```typescript
 const collection = new Collection([
   { product: 'Desk', price: 200 },
   { product: 'Chair', price: 80 },
@@ -3217,7 +3217,7 @@ filtered.all()
 
 The whereNotIn method filters the collection by a given key / value not contained within the given array:
 
-```js
+```typescript
 const collection = new Collection([
   { product: 'Desk', price: 200 },
   { product: 'Chair', price: 100 },
@@ -3241,7 +3241,7 @@ filtered.all()
 
 The `whereNotNull` method filters items where the given key is not null.
 
-```js
+```typescript
 const collection = new Collection([{
   name: 'Mohamed Salah',
 }, {
@@ -3264,7 +3264,7 @@ filtered.all()
 
 The `whereNull` method filters items where the given key is null.
 
-```js
+```typescript
 const collection = new Collection([{
   name: 'Mohamed Salah',
 }, {
@@ -3286,7 +3286,7 @@ filtered.all()
 
 The wrap method will wrap the given value in a collection:
 
-```js
+```typescript
 const collection = new Collection().wrap([1, 2, 3])
 
 collection.all()
@@ -3298,7 +3298,7 @@ collection.all()
 
 The zip method merges together the values of the given array with the values of the original collection at the corresponding index:
 
-```js
+```typescript
 const collection = new Collection(['Chair', 'Desk'])
 
 const zipped = collection.zip([100, 200])
