@@ -1,0 +1,405 @@
+---
+title: Views
+sidebar_position: 11
+description: Understand how you can use the Athenna view API for rendering HTML pages.
+---
+
+# Views
+
+Understand how you can use the Athenna view API for rendering HTML pages.
+
+## Introduction
+
+Of course, it's not practical to return entire HTML documents 
+strings directly from your routes and controllers. Thankfully, 
+views provide a convenient way to place all of our HTML in 
+separate files.
+
+Views separate your controller / application logic from your 
+presentation logic. When using Athenna, view templates are 
+usually written using the [Edge templating language](https://edgejs.dev/docs/introduction). 
+A simple view might look something like this:
+
+```html title="Path.views('greeting.edge')"
+<html>
+    <body>
+        <h1>Hello, {{ name }}</h1>
+    </body>
+</html>
+```
+
+And we may return it in our routes using the `response.view()` method
+like so:
+
+```typescript
+Route.get('/', ({ response }) => {
+  return response.view('greeting', { name: 'Lenon' })
+})
+```
+
+:::note
+
+Looking for more information on how to write Edge templates? 
+Check out the full [Edge documentation](https://edgejs.dev/docs/introduction) 
+to get started.
+
+:::
+
+## Views support
+
+Our focus at the moment is to be a framework for backend 
+applications development. But since the `View` API exists in 
+Athenna ecosystem for creating template files for `make` commands 
+of Artisan, providing this feature for you to create monolith 
+applications with Athenna is possible, but remember that 
+supporting this kind of application is not our focus right 
+now.
+
+If you think this is an interesting feature to improve, feel 
+free to open a [discussion](https://github.com/orgs/AthennaIO/discussions)
+at Athenna organization, any contribution is welcome!
+
+## Installation
+
+By default, `@athenna/view` package will already be installed 
+in your Athenna project. But you still need to configure it
+to be able to use all of it features.
+
+Artisan provides a very simple command to configure the view
+library in your project. Simply run the following:
+
+```bash
+node artisan configure @athenna/view
+```
+
+The view configurer will do the following operations in 
+your project:
+
+- Create the `view.ts` configuration file.
+- Add all view providers in your `.athennarc.json` file.
+- Add all view commands in your `.athennarc.json` file.
+- Add all view template files in your `.athennarc.json` file.
+
+## Configuration
+
+All the configuration options for your application's views 
+behavior is housed in the `Path.config('view.ts')` 
+configuration file. We will see later on this documentation 
+the purpose of each option:
+
+```typescript
+import { Path } from '@athenna/common'
+import { Env, Config } from '@athenna/config'
+
+export default {
+  disk: Path.views(),
+  namedDisks: {},
+  components: {},
+  properties: {
+    env: Env,
+    config: Config
+  },
+  edge: {
+    cache: Env('APP_ENV') === 'production'
+  }
+}
+```
+
+## Defining & rendering views
+
+To create a new view, use the `make:view` command:
+
+```bash
+node artisan make:view greeting 
+```
+
+This command will place a new `greeting.edge` template
+within your `Path.views()` directory. In this view we 
+will render a simple profile with an avatar and the user name:
+
+```html title="Path.views('greeting.edge')
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+  </head>
+  <body>
+    <h1>{{ name }}</h1> 
+  </body>
+</html>
+```
+
+Edge templates contain HTML as well as Edge directives that
+allow you to easily log values, create "if" statements,
+iterate over data, and more. Check [Edge documentation](https://edgejs.dev/docs/introduction) 
+for more details around the syntax of Edge templates.
+
+Once you have created a view, you may return it from one of your application's 
+routes or controllers using the `response.view()` method:
+
+```typescript title="Path.routes('http.ts')"
+import { Route } from '@athenna/view'
+
+Route.get('greeting', ({ request, response }) => {
+  // Render the Path.views('greeting.edge') template
+  return response.view('greeting', { name: 'Lenon' }) 👈
+})
+```
+
+Views may also be rendered using the `View` facade:
+
+```typescript
+import { View } from '@athenna/view'
+
+await View.render('greeting')
+```
+
+As you can see, the first argument passed to the method corresponds 
+to the name of the view file in the `Path.views()` directory as defined
+in the `disk` options of the [configuration file](/docs/rest-api-application/views#configuration)
+of the view package. The second argument is an object of data that 
+should be made available to the view. In this case, we are passing 
+the `name` variable, which is displayed in the view using [Edge syntax](https://edgejs.dev/docs/syntax_specification).
+
+### Nested view directories 
+
+Views may also be nested within subdirectories of your views 
+directory. "Slash" notation may be used to reference nested views. 
+For example, if your view is stored at `Path.views('admin/profile.edge')`, 
+you may return it from one of your application's routes / controllers 
+like so:
+
+```typescript 
+return response.view('admin/profile', data) 👈
+```
+
+### Rendering raw string
+
+You can render raw template string values using the
+`View.renderRaw()` or `View.renderRawSync()` methods:
+
+```typescript
+await View.renderRaw('<p>Hello {{ name }}</p>', {
+    name: 'Lenon'
+})
+```
+
+:::note
+
+Raw strings do not enjoy the benefits of [template caching](/docs/rest-api-application/views#optimizing-views)
+as there are not associated with a unique path.
+
+:::
+
+## Defining & rendering named disks
+
+Named disks could be defined inside `Path.config('view.ts')`
+file, in the `namedDisks` configuration:
+
+```typescript
+export default {
+  namedDisks: {
+    admin: Path.views('admin')
+  }
+}
+```
+
+Now you can render templates by prefixing the disk name 
+before the template path:
+
+```typescript
+return response.view('admin::profile', user) 👈
+```
+
+For rendering nested views inside named disks you can use "slash"
+syntax:
+
+```typescript
+return response.view('admin::dashboard/home', user) 👈
+```
+
+## Sharing data with all views 
+
+As you saw in the previous examples, you may pass an object of data 
+to views to make that data available to the view:
+
+```typescript
+return response.view('greeting', { name: 'Lenon' })
+```
+
+But sometimes you may need to share data with all views that are 
+rendered by your application. You may do so by using the `properties`
+option inside of the `Path.config('view.ts')` file:
+
+```typescript
+export default {
+  properties: {
+    env: Env,
+    config: Config,
+    key: 'value',
+    appName: Env('APP_NAME', '@athenna/athenna')
+  }
+}
+```
+
+You can also use `View.addProperty()` method for registering your global
+properties:
+
+```typescript
+import { View } from '@athenna/view'
+
+View.addProperty('hello', )
+```
+
+## View components
+
+Components are regular views created with the purpose of reuse. 
+Components can access additional runtime properties like `$props` 
+and `$slots`, which are unavailable to other views.
+
+We recommend you create components inside the components directory 
+of your `disk` root path. This helps create a visual boundary between 
+the components and the rest of the templates used by your application.
+
+Let's start by creating a button component. We will store it inside 
+the `Path.views('components/button.edge')` file:
+
+```html
+<button type="{{ type || 'submit' }}">{{ text }}</button>
+```
+
+### Using components
+
+You must use the `@component` tag to render a component inside your 
+templates. The component tag accepts the template path as the first 
+parameter and props as the second parameter:
+
+```html
+<form>
+  @!component('components/button', { text: 'Login' })
+  @!component('components/button', { text: 'Cancel', type: 'reset' })
+</form>
+```
+
+Output:
+
+```html
+<form>
+  <button type="submit">Login</button>
+  <button type="reset">Cancel</button>
+</form>
+```
+
+Components from named disks can be referenced by prefixing the disk name:
+
+```html
+@!component('uikit::components/button', { text: 'Login' })
+```
+
+:::tip
+
+For more information about components, check [Edge component documentation
+page](https://edgejs.dev/docs/components/introduction#components).
+
+:::
+
+### In-memory components
+
+You can register in-memory views components by defining them
+in the `components` property of you `Path.config('view.ts')`
+file. You can find it useful whenever you want to split a large 
+template file into several smaller ones or also if you want to 
+provide some templates as part of a npm package:
+
+```typescript
+export default {
+  components: {
+    'myuikit/button': Path.node_modules('myuikit/button.edge') 
+  }
+}
+```
+
+You can also create in-memory components without defining any file 
+using the `View` facade directly:
+
+```typescript
+import { View } from '@athenna/view'
+
+View.createComponent('myuikit/button', '<button {{ $props.serializeExcept(["title"]) }}>{{ title }}</button>')
+```
+
+:::tip
+
+You can also use the `View.createTemplate()` method to
+register templates. The only difference between them is
+that `View.createTemplate()` does not throws errors if
+some template name already exists, instead the old template
+will be replaced.
+
+:::
+
+You can render the template directly or use it as a component in 
+other views:
+
+```html
+@!component('myuikit/button', {
+  title: 'Signup',
+  class: ['btn', 'btn-primary'],
+  id: 'signup'
+})
+```
+
+## Optimizing views
+
+Compiling a template to a JavaScript function is a
+time-consuming process, and hence it is recommended to cache
+the compiled templates in production.
+
+You can control the template caching using the `edge.cache`
+property inside `Path.config('view.ts')` file. Just make sure to set
+the value to `true` in the production environment:
+
+```typescript
+export default { 
+  edge: {
+    // Set to `true` in production only
+    cache: Env('APP_ENV') === 'production' 👈
+  }
+}
+```
+
+All the templates are cached within the memory. Currently,
+we do not have any plans to support on-disk caching since
+the value provided for the efforts is too low.
+
+The raw text does not take up too much space, and even
+keeping thousands of pre-compiled templates in memory should
+not be a problem.
+
+## More details about views syntax
+
+If you want to know more informations about the views syntax like loops,
+"if" statements and declaring properties, check out the full [Edge documentation](https://edgejs.dev/docs/introduction) 
+for all the details around it syntax.
+
+## Customizing `make` commands templates
+
+The Artisan console's `make` commands are used to create 
+a variety of classes, such as controllers, services, 
+commands, and tests. These classes are generated using 
+`.edge` files that are populated with values based on 
+your input. However, you may want to make small changes 
+to files generated by Artisan. To accomplish this, you 
+may use the `template:customize` command to publish the 
+most common stubs to your application so that you can 
+customize them:
+
+```bash
+node artisan template:customize
+```
+
+The customized templates will be located in the 
+`Path.resources('templates')` directory. Any change
+you make to these files will be reflected when you
+generate their correspoding files using Artisan's 
+`make` commands.

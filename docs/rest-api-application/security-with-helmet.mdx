@@ -48,6 +48,7 @@ file in the `helmet` object:
 ```typescript
 export default {
   helmet: {
+    enabled: true,
     global: true
   }
 }
@@ -81,7 +82,7 @@ Route.group(() => {
 :::warning
 
 The `helmet()` method of route groups will never 
-subscribe the already set methods of routes. Use it 
+overwrite the already set methods of routes. Use it 
 to create "defaults" configurations for all routes.
 
 :::

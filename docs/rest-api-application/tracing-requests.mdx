@@ -25,8 +25,8 @@ that `cls-rtracer` supports can be set inside
 
 ```typescript title="Path.config('http.ts')"
 export default {
-  trace: true,
   rTracer: {
+    enabled: true,
     echoHeader: false,
     useHeader: false,
     headerName: 'X-Request-Id',

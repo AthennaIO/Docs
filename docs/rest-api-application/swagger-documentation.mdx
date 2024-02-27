@@ -4,7 +4,7 @@ sidebar_position: 10
 description: See how to create the Swagger documentation for Athenna REST API application.
 ---
 
-# Swagger
+# Swagger Documentation
 
 See how to create the Swagger documentation for Athenna REST API application.
 
@@ -27,9 +27,10 @@ supports can be set inside `Path.config('http.ts')` file in the `swagger.ui` obj
 ```typescript title="Path.config('http.ts')"
 export default {
   swagger: {
+    enabled: true,
     ui: {
       staticCSP: true,
-      routePrefix: '/documentation'
+      routePrefix: '/docs'
     },
     configurations: {
       mode: 'dynamic',
@@ -116,9 +117,9 @@ Route.group(() => {
 
 :::warning
 
-The swagger methods of route groups will never subscribe 
-the already set methods of routes. Use them to create "defaults"
-configurations for all routes such as `security`.
+The swagger methods of route groups will never overwrite 
+the already set methods of routes. Use them to create 
+"defaults" configurations for all routes such as `security`.
 
 :::
 

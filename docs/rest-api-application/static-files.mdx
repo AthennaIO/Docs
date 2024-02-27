@@ -1,0 +1,111 @@
+---
+title: Static Files
+sidebar_position: 12
+description: See how to serve static files in Athenna REST API application.
+---
+
+# Static Files 
+
+See how to serve static files in Athenna REST API application.
+
+## Introduction
+
+In Athenna you can use the `response` object to serve static 
+files from a given directory.
+
+## Basic usage
+
+Athenna uses the [`@fastify/static`](https://github.com/fastify/fastify-static) 
+plugins inside `HttpKernel`. All the configurations that `@fastify/static` 
+supports can be set inside `Path.config('http.ts')` file in the `static` 
+object. 
+
+```typescript title="Path.config('http.ts')"
+import { Path } from '@athenna/common'
+
+export default {
+  static: {
+    enabled: true,
+    root: Path.public(),
+    prefix: '/public/'
+  }
+}
+```
+
+Now you can use the `response.sendFile()` methods to serve
+files from `Path.public()` directory: 
+
+```typescript title="Path.route('http.ts')"
+Route.get('/hello', ({ response }) => {
+  // Serve Path.public('image.png') directly
+  return response.sendFile('image.png') 👈
+})
+```
+
+To serve a file from a different root location add the
+root path as second parameter:
+
+```typescript title="Path.route('http.ts')"
+Route.get('/hello', ({ response }) => {
+  return response.sendFile('image.png', Path.build()) 👈
+})
+```
+
+You could also add options directly in the response:
+
+```typescript title="Path.route('http.ts')"
+Route.get('/hello', ({ response }) => {
+  return response.sendFile('image.png', {
+    cacheControl: false,
+    etag: true,
+    dotfiles: 'ignore',
+    lastModified: true
+  })
+})
+```
+
+### Custom file name
+
+You can use the `response.download()` to set a custom file name
+by changing the `content-disposition` header:
+
+```typescript title="Path.route('http.ts')"
+Route.get('/hello', ({ response }) => {
+  return response.download('image.png', 'custom-image.png') 👈
+})
+```
+
+You could also add options directly in the response:
+
+```typescript title="Path.route('http.ts')"
+Route.get('/hello', ({ response }) => {
+  return response.download('image.png', 'custom-image.png', {
+    cacheControl: false,
+    etag: true,
+    dotfiles: 'ignore',
+    lastModified: true
+  })
+})
+```
+
+## Disabling static file server
+
+The `HttpKernel` class will automatically disable the
+plugin registration if the package does not exist, so
+to disable static file server in Athenna you need to
+remove the `@fastify/static` package from your
+application:
+
+```bash
+npm remove @fastify/static
+```
+
+You can also disable by setting `http.static.enabled` to `false`:
+
+```typescript title="Path.config('http.ts')"
+export default {
+  static: {
+    enabled: false
+  }
+}
+```

@@ -48,8 +48,7 @@ files that were submitted with the request.
 
 #### The `id` getter
 
-With this getter, you will be able to get the id from the
-request:
+Get the id from the request:
 
 ```typescript
 Route.get('/welcome', ({ request }) => {
@@ -64,8 +63,7 @@ Check the [tracing requests](/docs/rest-api-application/tracing-requests) docume
 
 #### The `ip` getter
 
-With this getter, you will be able to get the ip from where
-the requests were executed:
+Get the ip from where the request were executed:
 
 ```typescript
 Route.get('/welcome', ({ request }) => {
@@ -77,8 +75,7 @@ Route.get('/welcome', ({ request }) => {
 
 #### The `method` getter
 
-With this getter, you will be able to get the
-[`REST`](https://restfulapi.net/) method of your request:
+Get the [`REST`](https://restfulapi.net/) method of your request:
 
 ```typescript
 Route.get('/welcome', ({ request }) => {
@@ -90,9 +87,8 @@ Route.get('/welcome', ({ request }) => {
 
 #### The `hostUrl` getter
 
-With this getter, you will be able to get the host url of
-the request concatenating the host:port of your application
-and the [`originalUrl`](/docs/the-basics/http/context#the-originalUrl-getter)
+Get the host url of the request concatenating the host:port 
+of your application and the [`originalUrl`](/docs/the-basics/http/context#the-originalUrl-getter)
 of the request:
 
 ```typescript
@@ -105,8 +101,7 @@ Route.get('/welcome', ({ request }) => {
 
 #### The `baseUrl` getter
 
-With this getter, you will be able to get the url of the
-route without the query params:
+Get the url of the route without the query params:
 
 ```typescript
 Route.get('/welcome', ({ request }) => {
@@ -118,8 +113,7 @@ Route.get('/welcome', ({ request }) => {
 
 #### The `originalUrl` getter
 
-With this getter, you will be able to get the original url
-with the query params:
+Get the original url with the query params:
 
 ```typescript
 Route.get('/welcome', ({ request }) => {
@@ -131,8 +125,7 @@ Route.get('/welcome', ({ request }) => {
 
 #### The `body`, `params`, `queries` and `headers` getters
 
-With these getters, you will be able to retrieve all the
-data inside each one of then:
+Retrieve all the data inside each one of then:
 
 ```typescript
 Route.post('/welcome/:id', ({ request }) => {
@@ -145,10 +138,9 @@ Route.post('/welcome/:id', ({ request }) => {
 })
 ```
 
-#### The `input` and `payload` methods
+#### The `input()` and `payload()` methods
 
-With these methods you will be able to retrieve only one
-value per call from the request body:
+Retrieve only one value per call from the request body:
 
 ```typescript
 Route.post('/welcome/:id', ({ request }) => {
@@ -179,10 +171,10 @@ nested within JSON arrays / objects:
 const name = request.input('user.name')
 ```
 
-#### The `only` and `except` methods
+#### The `only()` and `except()` methods
 
 If you need to retrieve a subset of the input data, you may
-use the `only` and `except` methods. Both of these methods
+use the `only()` and `except()` methods. Both of these methods
 accept a single array or a dynamic list of arguments:
 
 ```typescript
@@ -195,18 +187,17 @@ const input = request.except(['credit_card'])
 
 :::warning
 
-The `only` method returns all the key / value pairs that you
+The `only()` method returns all the key / value pairs that you
 request; however, it will not return key / value pairs that
 are not present on the request body.
 
 :::
 
-#### The `param`, `query` and `header` methods
+#### The `param()`, `query()` and `header()` methods
 
-With these methods you will be able to retrieve only one
-value per call from the above methods. You can also set a
-second parameter that will set the default value if the
-first argument key doesn't exist:
+Retrieve only one value of `params`, `queries` or `headers`. 
+You can also set a second parameter that will set the default 
+value if the first argument key doesn't exist:
 
 ```typescript
 Route.post('/welcome/:id', ({ request }) => {
@@ -225,11 +216,10 @@ Route.post('/welcome/:id', ({ request }) => {
 })
 ```
 
-#### The `getFastifyRequest` method
+#### The `getFastifyRequest()` method
 
-With this method, you will be able to retrieve the vanilla
-Fastify request object to use more advanced getters and
-methods from Fastify:
+Retrieve the vanilla Fastify request object to use more 
+advanced getters and methods from Fastify:
 
 ```typescript
 Route.get('/welcome', ({ request }) => {
@@ -246,10 +236,9 @@ interact with the current HTTP response being handled by
 your application as well set a status code and return the
 response to the client.
 
-#### The `send` method
+#### The `send()` method
 
-With this method, you are going to terminate the request
-sending a response body to the client:
+Terminate the request sending a response body to the client:
 
 ```typescript
 Route.get('/welcome', ({ response }) => {
@@ -257,10 +246,20 @@ Route.get('/welcome', ({ response }) => {
 })
 ```
 
-#### The `helmet` method
+#### The `view()` method
 
-With this method you are going to apply all the
-[`Helmet`](https://www.npmjs.com/package/helmet) response
+Terminate the request rendering a view in the response 
+body to the client:
+
+```typescript
+Route.get('/welcome', ({ response }) => {
+    response.view('welcome', { hello: 'world' })
+})
+```
+
+#### The `helmet()` method
+
+Apply all the [`Helmet`](https://www.npmjs.com/package/helmet) response
 headers in your response:
 
 ```typescript
@@ -275,10 +274,9 @@ Route.get('/welcome', async ({ response }) => {
 })
 ```
 
-#### The `status` method
+#### The `status()` method
 
-With this method you are going to apply the status code of
-your response:
+Apply the status code of your response:
 
 ```typescript
 Route.get('/welcome', async ({ response }) => {
@@ -286,13 +284,32 @@ Route.get('/welcome', async ({ response }) => {
 })
 ```
 
-#### The `header`, `safeHeader` and `removeHeader` methods
+#### The `sendFile()` method
 
-With these methods you can set custom header for your
-response, the `header` method will subscribe the already
-set headers, the `safeHeader` will only register the header
-if the header is not yet registered and the `removeHeader`
-will remove a header from the response:
+Serve files if the [static plugin](/docs/rest-api-application/static-files)
+is enabled in your application:
+
+```typescript
+Route.get('/welcome', async ({ response }) => {
+    response.status(200).sendFile('img.png')
+})
+```
+
+#### The `download()` method
+
+Serve files with a custom name if the [static plugin](/docs/rest-api-application/static-files)
+is enabled in your application:
+
+```typescript
+response.status(200).download('img.png', 'custom-img.png')
+```
+
+#### The `header()`, `safeHeader()` and `removeHeader()` methods
+
+Set custom header for your response, the `header()` method will 
+overwrite the already set headers, the `safeHeader()` will only 
+register the header if the header is not yet registered and 
+the `removeHeader()` will remove a header from the response:
 
 ```typescript
 Route.get('/welcome', async ({ response }) => {
@@ -302,10 +319,9 @@ Route.get('/welcome', async ({ response }) => {
 })
 ```
 
-#### The `redirectTo` method
+#### The `redirectTo()` method
 
-With this method, you can redirect your response to another
-url and with a different status code:
+Redirect your response to another url and with a different status code:
 
 ```typescript
 Route.get('/hello', ctx => ctx.response.status(200))
@@ -317,8 +333,7 @@ Route.get('/welcome', async ({ response }) => {
 
 #### The `sent` getter
 
-With this getter, you can verify if your response has already
-been sent to client, useful to be used in
+Verify if your response has already been sent to client, useful to be used in
 [interceptors](/docs/rest-api-application/middlewares#intercept-middleware):
 
 ```typescript
@@ -333,9 +348,8 @@ Route.get('/welcome', async ({ response }) => {
 
 #### The `body`, `statusCode` and `headers` getters
 
-With these getters, you can get the content of the response
-body, status code and headers if it exists. These values will
-be available before you use `response.send()`,
+Get the content of the response body, status code and headers if 
+it exists. These values will be available before you use `response.send()`,
 `response.status()` and `response.headers()` methods somewhere.
 These getters are useful when using
 [interceptors](/docs/rest-api-application/middlewares#intercept-middleware) and
@@ -361,9 +375,9 @@ Route.get('/welcome', async ({ response }) => {
 
 #### The `responseTime` getter
 
-With this getter, you will be able to get how much time your
-request has taken until it finish and turn back to client.
-This value will only be available in [terminators](/docs/rest-api-application/middlewares#terminate-middleware):
+Get how much time your request has taken until it finish and 
+turn back to client. This value will only be available in 
+[terminators](/docs/rest-api-application/middlewares#terminate-middleware):
 
 ```typescript
 Route.get('/welcome', async ({ response }) => {
@@ -373,11 +387,10 @@ Route.get('/welcome', async ({ response }) => {
 })
 ```
 
-#### The `getFastifyResponse` method
+#### The `getFastifyResponse()` method
 
-With this method, you will be able to retrieve the vanilla
-Fastify response object to use more advanced getters and
-methods from Fastify:
+Retrieve the vanilla Fastify response object to use more advanced 
+getters and methods from Fastify:
 
 ```typescript
 Route.get('/welcome', ({ response }) => {
@@ -389,23 +402,21 @@ Route.get('/welcome', ({ response }) => {
 
 ### The params object
 
-Athenna `params` is just a simple object that contains the
-actual HTTP params of the request that is being handled by
-your application.
+The `params` object contains the actual HTTP params of the 
+request that is being handled by your application.
 
 ### The queries object
 
-Athenna `queries` is just a simple object that contains the
-actual HTTP queries of the request that is being handled by
-your application.
+The `queries` object contains the actual HTTP queries of the 
+request that is being handled by your application.
 
 ### The data object
 
-Athenna `data` is just a simple object that you can use to
-set data inside to transfer between middlewares. This is
-really useful for some cases. Let's see an example setting
-default pagination values if client has not sent page and
-limit:
+Use the `data` object to define properties that will be available
+in your entire request flow. This is really useful for some cases
+where you want to transfer data from a middleware to a controller
+for example. Let's see an example setting default pagination values 
+if client has not sent page and limit:
 
 ```typescript
 import { Config } from '@athenna/config'
