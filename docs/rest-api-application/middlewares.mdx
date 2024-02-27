@@ -35,7 +35,7 @@ node artisan make:middleware EnsureApiKeyIsValid
 ```
 
 This command will place a new `EnsureApiKeyIsValid` class
-within your `app/http/middlewares` directory. In this
+within your `Path.middlewares()` directory. In this
 middleware, we will only allow access to the route if the
 supplied api key input matches a specified value. Otherwise,
 we will throw an unauthorized exception:

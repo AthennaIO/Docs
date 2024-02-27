@@ -18,7 +18,7 @@ related request handling logic into a single class. For
 example, a `UserController` class might handle all incoming
 requests related to users, including showing, creating,
 updating, and deleting users. By default, controllers are
-stored in the `app/http/controllers` directory.
+stored in the `Path.controllers()` directory.
 
 ## Writing controllers
 
@@ -71,7 +71,7 @@ node artisan make:controller PhotoController --resource
 ```
 
 This command will generate a controller at
-`app/http/controllers/PhotoController`. The controller will
+`Path.controllers('PhotoController.ts')`. The controller will
 contain a method for each of the available resource
 operations. Next, you may register a resource route that
 points to the controller:
