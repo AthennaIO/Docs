@@ -45,8 +45,8 @@ import { Context, Middleware, MiddlewareContract } from '@athenna/http'
 
 @Middleware()
 export class EnsureApiKeyIsValid implements MiddlewareContract {
-    public async handle(ctx: Context): Promise<void> {
-        if (queries.apiKey !== 'my-api-key') {
+    public async handle(({ request }): Context): Promise<void> {
+        if (request.query('apiKey') !== 'my-api-key') {
             throw new UnauthorizedException('Your api key does not match with application api key.')
         }
     }
@@ -108,8 +108,8 @@ import type { Context, MiddlewareContract } from '@athenna/http'
 
 @Middleware({ isGlobal: true }) 👈
 export class EnsureApiKeyIsValid implements MiddlewareContract {
-    public async handle(ctx: Context): Promise<void> {
-        if (queries.apiKey !== 'my-api-key') {
+    public async handle(({ request }): Context): Promise<void> {
+        if (request.query('apiKey') !== 'my-api-key') {
             throw new UnauthorizedException('Your api key does not match with application api key.')
         }
     }
@@ -141,8 +141,8 @@ import type { Context, MiddlewareContract } from '@athenna/http'
 
 @Middleware({ name: 'auth' }) 👈
 export class EnsureApiKeyIsValid implements MiddlewareContract {
-    public async handle(ctx: Context): Promise<void> {
-        if (queries.apiKey !== 'my-api-key') {
+    public async handle(({ request }): Context): Promise<void> {
+        if (request.query('apiKey') !== 'my-api-key') {
             throw new UnauthorizedException('Your api key does not match with application api key.')
         }
     }
@@ -198,10 +198,10 @@ import type { InterceptContext, InterceptorContract } from '@athenna/http'
 
 @Interceptor()
 export class InterceptMiddleware implements InterceptorContract {
-    public async intercept(ctx: InterceptContext): Promise<unknown> {
-      ctx.body.intercepted = true
+    public async intercept(({ response }): InterceptContext): Promise<unknown> {
+      response.body.intercepted = true
 
-      return ctx.body
+      return response.body 
     }
 }
 ```

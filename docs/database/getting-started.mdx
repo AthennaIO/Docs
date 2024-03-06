@@ -17,17 +17,13 @@ using a fluent query builder and the ORM.
 
 ## Installation
 
-First of all you need to install `@athenna/database` package:
+First of all you need to install `@athenna/database` package
+and configure it. Artisan provides a very simple command to 
+install and configure the database library in your project. 
+Simply run the following:
 
 ```bash
-npm i @athenna/database
-```
-
-Artisan provides a very simple command to configure the database
-library in your project. Simply run the following:
-
-```bash
-node artisan configure @athenna/database 
+node artisan install @athenna/database
 ```
 
 The database configurer will do the following operations in 
@@ -39,7 +35,9 @@ your project:
 - Add all database commands in your `.athennarc.json` file.
 - Add all database template files in your `.athennarc.json` file.
 - Add database environment variables to `.env`, `.env.test` and `.env.example`.
-- Configure the `docker-compose.yml` file acordding to the database selected.
+- Configure the `docker-compose.yml` file according to the database selected.
+- Install libraries like `knex` and `pg`. It will always depends on the default 
+database you selected.
 
 ## Configuration
 

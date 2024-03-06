@@ -400,15 +400,7 @@ Route.get('/welcome', ({ response }) => {
 })
 ```
 
-### The params object
 
-The `params` object contains the actual HTTP params of the 
-request that is being handled by your application.
-
-### The queries object
-
-The `queries` object contains the actual HTTP queries of the 
-request that is being handled by your application.
 
 ### The data object
 
@@ -459,12 +451,11 @@ interface from `@athenna/http` package.
 
 In [interceptors](/docs/rest-api-application/middlewares#intercept-middleware)
 Athenna uses the `InterceptContext`. This context is quite
-the same of `Context`, but it has additional properties
-`body` and `status`.
+the same of `Context`, but it has additional property `status`.
 
 ### Terminate middleware context
 
 In [terminators](/docs/rest-api-application/middlewares#terminate-middleware)
 Athenna set the `TerminateContext`. This context is quite
-the same of `Context`, but it has additional properties
-`body`, `status` and `responseTime`.
+the same of `Context`, but it has additional properties 
+`status` and `responseTime`.
