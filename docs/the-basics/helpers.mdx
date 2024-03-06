@@ -294,6 +294,46 @@ const newArray = await Exec.concurrently(array, async (number) => {
 })
 ```
 
+### `Exec::link()`
+
+Link some library using any kind of package manager 
+(tested only with `npm`):
+
+```typescript
+import { Exec } from '@athenna/common'
+
+await Exec.link('@athenna/mail')
+await Exec.link(['@athenna/mail', '@athenna/database'], { registry: 'npm' })
+await Exec.link(['@athenna/mail', '@athenna/database'], { 
+  silent: true,
+  args: ['-D'],
+  reject: false,
+  registry: 'npm',
+  cwd: Path.pwd('other-pkg'), 
+})
+```
+
+### `Exec::install()`
+
+Install some library using any kind of package manager 
+(tested only with `npm`):
+
+```typescript
+import { Exec } from '@athenna/common'
+
+await Exec.install('@athenna/mail')
+await Exec.install(['@athenna/mail', '@athenna/database'], { registry: 'npm' })
+await Exec.install(['@athenna/mail', '@athenna/database'], { 
+  silent: true,
+  dev: false,
+  args: ['-D'],
+  cached: false,
+  reject: false,
+  registry: 'npm', 
+  cwd: Path.pwd('other-pkg'), 
+})
+```
+
 #### `Exec::command()`
 
 Execute some command of your OS in a child process:

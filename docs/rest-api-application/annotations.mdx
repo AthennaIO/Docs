@@ -19,8 +19,8 @@ import { Controller, type Context } from '@athenna/http'
 
 @Controller()
 export class UserController {
-  public async index(ctx: Context) {
-    return ctx.response.status(200).send({ status: 'ok' })
+  public async index(({ response }): Context) {
+    return response.status(200).send({ status: 'ok' })
   }
 }
 ```
@@ -80,8 +80,8 @@ import { Middleware, type Context } from '@athenna/http'
 
 @Middleware()
 export class UserMiddleware {
-  public async handle(ctx: Context) {
-    ctx.user = await User.find({ id: ctx.params.id })
+  public async handle(({ request, data }): Context) {
+    data.user = await User.find({ id: request.param('id') })
   }
 }
 ```
@@ -164,10 +164,10 @@ import { Interceptor, type Context } from '@athenna/http'
 
 @Interceptor()
 export class UserInterceptor {
-  public async intercept(ctx: Context) {
-    ctx.body.intercepted = true
+  public async intercept(({ response }): Context) {
+    response.body.intercepted = true
 
-    return ctx.body
+    return response.body 
   }
 }
 ```

@@ -58,10 +58,35 @@ incoming request is matched with the correct route.
 
 :::
 
+## View routes
+
+You may use the `Route.view()` method if you have a route handler 
+that only renders a view. It is a convenient shortcut to render 
+a view without defining an explicit handler:
+
+```typescript
+Route.view('/welcome', 'welcome')
+```
+
+The example above is just a shortcut for the following:
+
+```typescript
+Route.get('/welcome', ({ response }) => {
+  return response.view('welcome')
+})
+```
+
+Optionally, you can pass the template data as the third argument,
+just like in `response.view()` method:
+
+```typescript
+Route.view('/welcome', 'welcome', { name: 'lenon' })
+```
+
 ## Redirect routes
 
 If you are defining a route that redirects to another
-`url`, you may use the `Route.redirect` method. This
+`url`, you may use the `Route.redirect()` method. This
 method provides a convenient shortcut so that you do not
 have to define a full route or controller for performing
 a simple redirect:
@@ -70,9 +95,9 @@ a simple redirect:
 Route.redirect('/here', '/there')
 ```
 
-By default, `Route.redirect` returns a `302` status code.
-You may customize the status code using the optional
-third parameter:
+By default, `Route.redirect()` method returns a `302` 
+status code. You may customize the status code using 
+the optional third parameter:
 
 ```typescript
 Route.redirect('/here', '/there', 301)
@@ -104,8 +129,8 @@ a user's ID from the URL. You may do so by defining route
 parameters:
 
 ```typescript
-Route.get('/user/:id', ({ response, params }) => {
-    return response.send({ user: `User ${params.id}` })
+Route.get('/user/:id', ({ request, response }) => {
+    return response.send({ user: `User ${request.param('id')}` })
 })
 ```
 

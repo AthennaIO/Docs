@@ -10,4 +10,159 @@ See how to send emails in Athenna.
 
 ## Introduction
 
-Coming soon
+Sending email doesn't have to be complicated. Athenna provides a 
+clean, simple email API powered by the popular [nodemailer] package. 
+Right now Athenna provide drivers for sending email via SMTP, only
+but in the future we will add support for Mailgun, Mailtrap, 
+Amazon SES, and sendmail.
+
+## Installation
+
+First of all you need to install `@athenna/mail` package
+and configure it. Artisan provides a very simple command to 
+install and configure the mail library in your project. 
+Simply run the following:
+
+```bash
+node artisan install @athenna/mail
+```
+
+The mail configurer will do the following operations in 
+your project:
+
+- Create the `mail.ts` configuration file.
+- Add all mail providers in your `.athennarc.json` file.
+- Add mail environment variables to `.env`, `.env.test` and `.env.example`.
+
+## Configuration
+
+Athenna's email services may be configured via your application's 
+`Path.config('mail.ts')` configuration file. Each mailer configured 
+within this file may have its own unique configuration and even 
+its own unique "transport", allowing your application to use different 
+email services to send certain email messages.
+
+### Available mail drivers
+
+Each mailer is powered by a "driver". The driver determines how 
+the mail will be transported. The following mail drivers are 
+available in every Athenna application. An entry for most of 
+these drivers is already present in your application's 
+`Path.config('mail.ts')` configuration file, so be sure to 
+review this file to become familiar with its contents:
+
+| Driver name |           Website            |                                            Built with |
+|:------------|:----------------------------:|------------------------------------------------------:|
+| `smtp`      | https://nodemailer.com/smtp/ |[nodemailer](https://www.npmjs.com/package/nodemailer) |
+
+:::note
+
+Athenna has another driver called `fake` that is very helpful when running tests.
+The `fake` driver got the same signature of all other drivers, but it don't execute
+any operation when calling executors methods like `send()`, which is perfect to use
+within the [`Mock`](/docs/testing/mocking) class. For more information
+about the `FakeDriver`, take a look at the
+[mocking mail documentation section.](/docs/testing/mocking#mocking-mail)
+
+:::
+
+## Sending mail
+
+Let's see the simplest way to send a mail using Mail facade:
+
+```typescript
+import { Mail } from '@athenna/mail'
+
+await Mail.from('support@athenna.io')
+  .to('user@gmail.com')
+  .text('Mail content')
+  .send()
+```
+
+You can add "to", "cc" and "bcc" recipientes by chaining 
+their respective method together:
+
+```typescript
+await Mail.from('support@athenna.io')
+  .to('user@gmail.com')
+  .cc('txsoura@athenna.io')
+  .bcc('support@athenna.io')
+  .text('Mail content')
+  .send()
+```
+
+### Sending mail via a specific mailer
+
+By default, Athenna will send email using the mailer configured
+as the `default` mailer in your application's `mail` configuration
+file. However, you may use the `mailer()` method to send a message
+using a specific mailer configuration:
+
+```typescript
+await Mail.mailer('my-mailer')
+  .from('support@athenna.io')
+  .to('lenon@athenna.io')
+  .text('Mail content')
+  .send()
+```
+
+### Sending HTML and Markdown as content
+
+To send HTML as the content of the mail, you can use the `html()` 
+method:
+
+```typescript
+await Mail.mailer('my-mailer')
+  .from('support@athenna.io')
+  .to('lenon@athenna.io')
+  .html('<h1>Mail content</h1>')
+  .send()
+```
+
+And for markdowns you can use the `markdown()` method:
+
+```typescript
+await Mail.mailer('my-mailer')
+  .from('support@athenna.io')
+  .to('lenon@athenna.io')
+  .markdown('# Mail content')
+  .send()
+```
+
+### Using view template as content 
+
+The mail component is integrated with the view component to be 
+able to render and send a view as the body of the email. To do
+so you can use the `view()` method of the Mail facade:
+
+```typescript
+const userEmail = 'lenon@athenna.io'
+
+await Mail.from('support@athenna.io')
+  .to(userEmail)
+  .view('mail/welcome', { email: userEmail })
+  .send()
+```
+
+### Previewing mail templates in the browser
+
+When designing a mailable's template, it is convenient to quickly 
+preview the rendered mailable in your browser like a typical 
+Edge template. For this reason, Athenna allows you to return any 
+mailable directly from a route closure or controller by using the
+`response.view()` method, allowing you to quickly preview its 
+design without needing to send it to an actual email address:
+
+```typescript title="Path.routes('http.ts')"
+Route.get('/mailable', ({ response }) => {
+  return response.view('mail.welcome', { email: 'lenon@athenna.io' })
+})
+```
+
+
+
+
+
+
+
+

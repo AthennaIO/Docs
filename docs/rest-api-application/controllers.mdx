@@ -29,8 +29,8 @@ import { Context, Controller } from '@athenna/http'
 
 @Controller()
 export class UserController {
-  public async show({ response, params }: Context) {
-    return response.send(`User_${params.id}`)
+  public async show({ request, response }: Context) {
+    return response.send(`User_${request.param('id')}`)
   }
 }
 ```
