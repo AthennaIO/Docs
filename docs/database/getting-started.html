@@ -18,7 +18,7 @@
 <link rel="apple-touch-icon" href="/img/logos/minerva.png">
 <link rel="mask-icon" href="/img/logos/minerva.png" color="rgb(80,27,134)">
 <meta name="msapplication-TileColor" content="#000"><link rel="stylesheet" href="/assets/css/styles.6559cc61.css">
-<script src="/assets/js/runtime~main.28a18bff.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.1f36de0a.js" defer="defer"></script>
 <script src="/assets/js/main.9b1355e8.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -30,11 +30,11 @@ database. Athenna makes interacting with databases
 extremely simple across a variety of supported databases
 using a fluent query builder and the ORM.</p>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="installation">Installation<a href="#installation" class="hash-link" aria-label="Direct link to Installation" title="Direct link to Installation">​</a></h2>
-<p>First of all you need to install <code>@athenna/database</code> package:</p>
-<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282a36"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282a36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token function" style="color:hsl(115, 100%, 75%)">npm</span><span class="token plain"> i @athenna/database</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<p>Artisan provides a very simple command to configure the database
-library in your project. Simply run the following:</p>
-<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282a36"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282a36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token function" style="color:hsl(115, 100%, 75%)">node</span><span class="token plain"> artisan configure @athenna/database </span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
+<p>First of all you need to install <code>@athenna/database</code> package
+and configure it. Artisan provides a very simple command to
+install and configure the database library in your project.
+Simply run the following:</p>
+<div class="language-bash codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282a36"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-bash codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282a36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token function" style="color:hsl(115, 100%, 75%)">node</span><span class="token plain"> artisan install @athenna/database</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
 <p>The database configurer will do the following operations in
 your project:</p>
 <ul>
@@ -44,7 +44,9 @@ your project:</p>
 <li>Add all database commands in your <code>.athennarc.json</code> file.</li>
 <li>Add all database template files in your <code>.athennarc.json</code> file.</li>
 <li>Add database environment variables to <code>.env</code>, <code>.env.test</code> and <code>.env.example</code>.</li>
-<li>Configure the <code>docker-compose.yml</code> file acordding to the database selected.</li>
+<li>Configure the <code>docker-compose.yml</code> file according to the database selected.</li>
+<li>Install libraries like <code>knex</code> and <code>pg</code>. It will always depends on the default
+database you selected.</li>
 </ul>
 <h2 class="anchor anchorWithStickyNavbar_LWe7" id="configuration">Configuration<a href="#configuration" class="hash-link" aria-label="Direct link to Configuration" title="Direct link to Configuration">​</a></h2>
 <p>All the configuration options for your application&#x27;s database
