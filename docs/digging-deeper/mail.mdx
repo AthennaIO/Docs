@@ -11,10 +11,10 @@ See how to send emails in Athenna.
 ## Introduction
 
 Sending email doesn't have to be complicated. Athenna provides a 
-clean, simple email API powered by the popular [nodemailer] package. 
-Right now Athenna provide drivers for sending email via SMTP, only
-but in the future we will add support for Mailgun, Mailtrap, 
-Amazon SES, and sendmail.
+clean, simple email API powered by the popular [nodemailer](https://nodemailer.com/)
+package.  Right now Athenna provide drivers for sending email via
+SMTP only, but in the future we will add support for Mailgun, 
+Mailtrap, Amazon SES, and sendmail.
 
 ## Installation
 
@@ -75,7 +75,7 @@ import { Mail } from '@athenna/mail'
 
 await Mail.from('support@athenna.io')
   .to('user@gmail.com')
-  .text('Mail content')
+  .content('<h1>Mail content</h1>')
   .send()
 ```
 
@@ -87,7 +87,7 @@ await Mail.from('support@athenna.io')
   .to('user@gmail.com')
   .cc('txsoura@athenna.io')
   .bcc('support@athenna.io')
-  .text('Mail content')
+  .content('<h1>Mail content</h1>')
   .send()
 ```
 
@@ -102,30 +102,30 @@ using a specific mailer configuration:
 await Mail.mailer('my-mailer') 👈
   .from('support@athenna.io')
   .to('lenon@athenna.io')
-  .text('Mail content')
+  .content('Mail content')
   .send()
 ```
 
-### Sending HTML and Markdown as content
+### Sending Text and Markdown as content
 
-To send HTML as the content of the mail, you can use the `html()` 
-method:
+To send text as the content of the mail, you can set the 
+`type` property in second argument:
 
 ```typescript
 await Mail.mailer('my-mailer')
   .from('support@athenna.io')
   .to('lenon@athenna.io')
-  .html('<h1>Mail content</h1>') 👈
+  .content('Mail content', { type: 'text' }) 👈
   .send()
 ```
 
-And for markdowns you can use the `markdown()` method:
+And for markdowns you can use the `markdown` type:
 
 ```typescript
 await Mail.mailer('my-mailer')
   .from('support@athenna.io')
   .to('lenon@athenna.io')
-  .markdown('# Mail content') 👈
+  .content('# Mail content', { type: 'markdown' }) 👈
   .send()
 ```
 
@@ -140,8 +140,26 @@ const userEmail = 'lenon@athenna.io'
 
 await Mail.from('support@athenna.io')
   .to(userEmail)
+  .cc('mailer1@athenna.io, mailer2@athenna.io')
+  .bcc('mailer3@athenna.io, mailer4@athenna.io')
+  .content('This is the mail body')
   .view('mail/welcome', { email: userEmail }) 👈
   .send()
+```
+
+Any data that you provide using the `Mail` facade will be
+available to you in your view:
+
+```html title="Path.views('mail/welcome.edge')"
+<!-- Provided by you also but using Mail facade -->
+<h1>{{ to }}</h1>
+<h1>{{ cc }}</h1>
+<h1>{{ bcc }}</h1>
+<h1>{{ from }}</h1>
+<h1>{{ content }}</h1>
+
+<!-- Provided by you in second argument -->
+<h1>{{ email }}</h1>
 ```
 
 ### Previewing mail templates in the browser
