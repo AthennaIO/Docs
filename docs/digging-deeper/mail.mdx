@@ -151,16 +151,38 @@ Any data that you provide using the `Mail` facade will be
 available to you in your view:
 
 ```html title="Path.views('mail/welcome.edge')"
-<!-- Provided by you also but using Mail facade -->
+<!-- Provided by you when using Mail facade methods -->
 <h1>{{ to }}</h1>
 <h1>{{ cc }}</h1>
 <h1>{{ bcc }}</h1>
 <h1>{{ from }}</h1>
 <h1>{{ content }}</h1>
 
-<!-- Provided by you in second argument -->
+<!-- Provided by you second argument -->
 <h1>{{ email }}</h1>
 ```
+
+:::tip
+
+You can overwrite data set by `Mail` facade by defining it
+in the second argument object:
+
+```typescript
+const userEmail = 'lenon@athenna.io'
+
+await Mail.from('support@athenna.io')
+  .to(userEmail)
+  .cc('mailer1@athenna.io, mailer2@athenna.io')
+  .bcc('mailer3@athenna.io, mailer4@athenna.io')
+  .content('This is the mail body')
+  .view('mail/welcome', { 
+    email: userEmail, 
+    to: 'txsoura@athenna.io' 👈
+  })
+  .send()
+```
+
+:::
 
 ### Previewing mail templates in the browser
 
