@@ -99,7 +99,7 @@ file. However, you may use the `mailer()` method to send a message
 using a specific mailer configuration:
 
 ```typescript
-await Mail.mailer('my-mailer')
+await Mail.mailer('my-mailer') 👈
   .from('support@athenna.io')
   .to('lenon@athenna.io')
   .text('Mail content')
@@ -115,7 +115,7 @@ method:
 await Mail.mailer('my-mailer')
   .from('support@athenna.io')
   .to('lenon@athenna.io')
-  .html('<h1>Mail content</h1>')
+  .html('<h1>Mail content</h1>') 👈
   .send()
 ```
 
@@ -125,7 +125,7 @@ And for markdowns you can use the `markdown()` method:
 await Mail.mailer('my-mailer')
   .from('support@athenna.io')
   .to('lenon@athenna.io')
-  .markdown('# Mail content')
+  .markdown('# Mail content') 👈
   .send()
 ```
 
@@ -140,7 +140,7 @@ const userEmail = 'lenon@athenna.io'
 
 await Mail.from('support@athenna.io')
   .to(userEmail)
-  .view('mail/welcome', { email: userEmail })
+  .view('mail/welcome', { email: userEmail }) 👈
   .send()
 ```
 
@@ -149,20 +149,10 @@ await Mail.from('support@athenna.io')
 When designing a mailable's template, it is convenient to quickly 
 preview the rendered mailable in your browser like a typical 
 Edge template. For this reason, Athenna allows you to return any 
-mailable directly from a route closure or controller by using the
-`response.view()` method, allowing you to quickly preview its 
-design without needing to send it to an actual email address:
+mailable directly from a route using the `Route.view()` method, 
+allowing you to quickly preview its  design without needing to 
+send it to an actual email address:
 
 ```typescript title="Path.routes('http.ts')"
-Route.get('/mailable', ({ response }) => {
-  return response.view('mail.welcome', { email: 'lenon@athenna.io' })
-})
+Route.view('/mailable', 'mail.welcome', { email: 'lenon@athenna.io' })
 ```
-
-
-
-
-
-
-
-
