@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@docusaurus/core": "^3.1.1",
-    "@docusaurus/plugin-google-gtag": "^3.1.1",
+    "@docusaurus/plugin-google-gtag": "^3.2.0",
     "@docusaurus/plugin-pwa": "^3.1.1",
     "@docusaurus/preset-classic": "^3.1.1",
     "@docusaurus/theme-mermaid": "^3.1.1",
