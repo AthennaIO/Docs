@@ -118,12 +118,26 @@ public id: number
 
 > Default: `false`
 
-Set if the column should be hidden when retrieving it from database:
+Set if the field should be hidden when executing the 
+`toJSON()` method of the model:
 
 ```typescript
 @Column({ isHidden: true })
 public password: string
 ```
+
+:::tip
+
+To force return hidden fields in `toJSON()` calls, 
+use the `withHidden` option:
+
+```typescript
+const flight = await Flight.find()
+
+const flightJson = flight.toJSON({ withHidden: true })
+```
+
+:::
 
 ### `isUnique`
 

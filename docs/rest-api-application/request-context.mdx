@@ -146,11 +146,11 @@ Retrieve only one value per call from the request body:
 Route.post('/welcome/:id', ({ request }) => {
     const defaultValue = 'defaultValue'
 
-    console.log(request.input('hello'), 'found') // 'world'
-    console.log(request.input('not-found'), defaultValue) // 'defaultValue'
+    console.log(request.input('hello', 'found')) // 'world'
+    console.log(request.input('not-found', defaultValue)) // 'defaultValue'
 
-    console.log(request.payload('hello'), defaultValue) // 'world'
-    console.log(request.payload('not-found'), defaultValue) // 'defaultValue'
+    console.log(request.payload('hello', defaultValue)) // 'world'
+    console.log(request.payload('not-found', defaultValue)) // 'defaultValue'
 
     /*....*/
 })
@@ -203,14 +203,14 @@ value if the first argument key doesn't exist:
 Route.post('/welcome/:id', ({ request }) => {
     const defaultValue = 'defaultValue'
 
-    console.log(request.param('id'), defaultValue) // '1'
-    console.log(request.param('not-found'), defaultValue) // 'defaultValue'
+    console.log(request.param('id', defaultValue)) // '1'
+    console.log(request.param('not-found', defaultValue)) // 'defaultValue'
 
-    console.log(request.query('world'), defaultValue) // 'hello'
-    console.log(request.query('not-found'), defaultValue) // 'defaultValue'
+    console.log(request.query('world', defaultValue)) // 'hello'
+    console.log(request.query('not-found', defaultValue)) // 'defaultValue'
 
-    console.log(request.header('content-type'), defaultValue) // 'application/json'
-    console.log(request.header('not-found'), defaultValue) // 'defaultValue'
+    console.log(request.header('content-type', defaultValue)) // 'application/json'
+    console.log(request.header('not-found', defaultValue)) // 'defaultValue'
 
     /*....*/
 })
@@ -399,8 +399,6 @@ Route.get('/welcome', ({ response }) => {
     /*....*/
 })
 ```
-
-
 
 ### The data object
 

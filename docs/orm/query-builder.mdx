@@ -58,7 +58,7 @@ You may use any of these methods when writing your model queries.
 
 :::
 
-### Hiding fields
+### Hidding fields
 
 Sometimes you might need to hide some sensitive field from your model 
 queries, to do so, you can set the `isHidden` property to true in your
@@ -75,29 +75,21 @@ export class User extends BaseModel {
 }
 ```
 
-Everytime you call the `query()` method of your models, Athenna will 
-automatically select all the columns from your model but never the 
-ones where the `isHidden` property is true.
+Everytime you call the `toJSON()` method of your models, Athenna will 
+ignore all the hidden columns from your model and return the rest. 
 
 #### Retrieve hidden fields
 
 Is possible to bypass the `isHidden` validation using the 
-`select()` method from the query builder:
+`withHidden` option of the `toJSON()` method:
 
 ```typescript
-const { password } = await User.query()
+const user = await User.query()
   .select('id')
-  .select('password') 👈
+  .select('password')
   .find()
-```
 
-If you wish to get all the hidden fields for a specify use case, you
-can use the `withHidden()` method:
-
-```typescript
-const { password } = await User.query()
-  .withHidden()
-  .find()
+const { password } = user.toJSON({ withHidden: true }) 👈
 ```
 
 ## Collections 
