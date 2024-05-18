@@ -22,6 +22,8 @@ them in your own applications if you find them convenient.
 from different data structures.
 - [`Color`](/docs/the-basics/helpers#color) - The UI Kit of Athenna 
 command line applications.
+- [`Enum`](/docs/the-basics/helpers#enum) - Create enums with helper methods
+to retrieve keys, values and more.
 - [`Exception`](/docs/the-basics/helpers#exception) - Create errors with
 more details to handle them easily.
 - [`Exec`](/docs/the-basics/helpers#exec) - Simple helpers that executes
@@ -212,6 +214,53 @@ Color.httpMethod('PUT').bold('Request Received')
 Color.httpMethod('PATCH').bold('Request Received')
 Color.httpMethod('DELETE').bold('Request Received')
 Color.httpMethod('OPTIONS').bold('Request Received')
+```
+
+### Enum
+
+#### `Enum::keys()`
+
+Return all the keys of your enum:
+
+```ts
+import { Enum } from '@athenna/common'
+
+class Status extends Enum {
+  static PENDING = 'pending'
+  static APPROVED = 'approved'
+}
+
+const keys = Status.keys() // ['PENDING', 'APPROVED']
+```
+
+#### `Enum::values()`
+
+Return all the values of your enum:
+
+```ts
+import { Enum } from '@athenna/common'
+
+class Status extends Enum {
+  static PENDING = 0
+  static APPROVED = 1
+}
+
+const values = Status.values() // [0, 1]
+```
+
+#### `Enum::entries()`
+
+Return all the entries of your enum:
+
+```ts
+import { Enum } from '@athenna/common'
+
+class Status extends Enum {
+  static PENDING = 0
+  static APPROVED = 1
+}
+
+const entries = Status.entries() // [['PENDING', 0], ['APPROVED', 1]]
 ```
 
 ### Exception
@@ -1083,6 +1132,15 @@ if (await Folder.size('app')  === 100) {
 ```
 
 ### Globals
+
+#### `Array.athenna.random()`
+
+Return a random value from the array:
+
+```typescript
+const numbers = [1, 2, 3, 4, 5]
+const number = numbers.athenna.random() // 4
+```
 
 #### `Array.athenna.toJSON()`
 
@@ -4463,6 +4521,46 @@ import { Path } from '@athenna/common'
 Path.setServices('services/app')
 ```
 
+#### `Path::jobs()`
+
+Merge the project root path with `Path.dirs.jobs`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.jobs()) // /home/user/athenna-project/app/jobs
+```
+
+#### `Path::setJobs()`
+
+Set the `Path.dirs.jobs` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setJobs('jobs/app')
+```
+
+#### `Path::workers()`
+
+Merge the project root path with `Path.dirs.workers`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.workers()) // /home/user/athenna-project/appworkers/
+```
+
+#### `Path::setWorkers()`
+
+Set the `Path.dirs.workers` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setWorkers('workers/app')
+```
+
 #### `Path::repositories()`
 
 Merge the project root path with `Path.dirs.repositories`:
@@ -4521,6 +4619,26 @@ Set the `Path.dirs.controllers` value:
 import { Path } from '@athenna/common'
 
 Path.setControllers('controllers/app')
+```
+
+#### `Path::guards()`
+
+Merge the project root path with `Path.dirs.guards`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.guards()) // /home/user/athenna-project/app/http/guards/
+```
+
+#### `Path::setGuards()`
+
+Set the `Path.dirs.guards` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setGuards('guards/app')
 ```
 
 #### `Path::exceptions()`
