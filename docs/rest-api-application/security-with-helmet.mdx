@@ -4,6 +4,8 @@ sidebar_position: 9
 description: See how to improve the security of your REST API with Helmet in Athenna.
 ---
 
+import Path from '@site/src/components/path'
+
 # Security with Helmet
 
 See how to improve the security of your REST API with Helmet in Athenna.
@@ -42,7 +44,7 @@ attacks, but makes things worse, so Helmet disables it.
 
 Athenna uses the [`@fastify/helmet`](https://github.com/fastify/helmet) 
 plugin inside `HttpKernel`. All the configurations that 
-`@fastify/helmet` supports can be set inside `Path.config('http.ts')` 
+`@fastify/helmet` supports can be set inside <Path father="config" child="http.ts" />
 file in the `helmet` object:
 
 ```typescript
@@ -58,7 +60,7 @@ export default {
 
 In Athenna you can set specific options of helmet 
 for specific routes. You can also disable the `global` 
-option of your `helmet` configuration in `Path.config('http.ts')` 
+option of your `helmet` configuration in  <Path father="config" child="http.ts" />
 and set different rules in your routes:
 
 ```typescript title="Path.route('http.ts')"

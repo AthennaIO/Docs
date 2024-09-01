@@ -4,6 +4,8 @@ sidebar_position: 3
 description: Understand how to use all the Athenna Helpers from @athenna/common and other packages.
 ---
 
+import Path from '@site/src/components/path'
+
 # Helpers
 
 Understand how to use all the Athenna Helpers from @athenna/common and other packages.
@@ -495,7 +497,7 @@ console.log(paginateObject)
 #### `FakeApi::start()`
 
 Start the fake server on port `8989` and loading the path
-`Path.resources('fake-api')`:
+<Path father="resources" child="fake-api" />:
 
 ```typescript
 import { FakeApi } from '@athenna/common'
@@ -561,7 +563,7 @@ import { FakeApi } from '@athenna/common'
 FakeApi.registerFile(Path.resources('fake-api/users.json'))
 ```
 
-Content of `Path.resources('fake-api/users.json')` file:
+Content of <Path father="fake-api" child="users.json" /> file:
 
 ```json
 {
@@ -4048,7 +4050,7 @@ Merge the project root path with `Path.dirs.app`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.app()) // /home/user/athenna-project/app
+console.log(Path.app()) // /home/user/athenna-project/src
 ```
 
 #### `Path::setApp()`
@@ -4068,7 +4070,7 @@ Merge the project root path with `Path.dirs.models`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.models()) // /home/user/athenna-project/app/models
+console.log(Path.models()) // /home/user/athenna-project/src/models
 ```
 
 #### `Path::setModels()`
@@ -4108,7 +4110,7 @@ Merge the project root path with `Path.dirs.config`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.config()) // /home/user/athenna-project/config
+console.log(Path.config()) // /home/user/athenna-project/src/config
 ```
 
 #### `Path::setConfig()`
@@ -4128,7 +4130,7 @@ Merge the project root path with `Path.dirs.database`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.database()) // /home/user/athenna-project/database
+console.log(Path.database()) // /home/user/athenna-project/src/database
 ```
 
 #### `Path::setDatabase()`
@@ -4148,7 +4150,7 @@ Merge the project root path with `Path.dirs.lang`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.lang()) // /home/user/athenna-project/lang
+console.log(Path.lang()) // /home/user/athenna-project/src/lang
 ```
 
 #### `Path::setLang()`
@@ -4188,7 +4190,7 @@ Merge the project root path with `Path.dirs.providers`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.providers()) // /home/user/athenna-project/providers
+console.log(Path.providers()) // /home/user/athenna-project/src/providers
 ```
 
 #### `Path::setProviders()`
@@ -4208,7 +4210,7 @@ Merge the project root path with `Path.dirs.facades`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.facades()) // /home/user/athenna-project/providers/facades
+console.log(Path.facades()) // /home/user/athenna-project/src/facades
 ```
 
 #### `Path::setFacades()`
@@ -4248,7 +4250,7 @@ Merge the project root path with `Path.dirs.resources`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.resources()) // /home/user/athenna-project/resources
+console.log(Path.resources()) // /home/user/athenna-project/src/resources
 ```
 
 #### `Path::setResources()`
@@ -4268,7 +4270,7 @@ Merge the project root path with `Path.dirs.routes`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.routes()) // /home/user/athenna-project/routes
+console.log(Path.routes()) // /home/user/athenna-project/src/routes
 ```
 
 #### `Path::setRoutes()`
@@ -4288,7 +4290,7 @@ Merge the project root path with `Path.dirs.storage`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.storage()) // /home/user/athenna-project/storage
+console.log(Path.storage()) // /home/user/athenna-project/src/storage
 ```
 
 #### `Path::setStorage()`
@@ -4328,7 +4330,7 @@ Merge the project root path with `Path.dirs.logs`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.logs()) // /home/user/athenna-project/storage/logs
+console.log(Path.logs()) // /home/user/athenna-project/src/storage/logs
 ```
 
 #### `Path::setLogs()`
@@ -4348,7 +4350,7 @@ Merge the project root path with `Path.dirs.views`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.views()) // /home/user/athenna-project/resources/views
+console.log(Path.views()) // /home/user/athenna-project/src/resources/views
 ```
 
 #### `Path::setViews()`
@@ -4408,7 +4410,7 @@ Merge the project root path with `Path.dirs.locales`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.locales()) // /home/user/athenna-project/resources/locales
+console.log(Path.locales()) // /home/user/athenna-project/src/resources/locales
 ```
 
 #### `Path::setLocales()`
@@ -4468,7 +4470,7 @@ Merge the project root path with `Path.dirs.http`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.http()) // /home/user/athenna-project/app/http
+console.log(Path.http()) // /home/user/athenna-project/src/http
 ```
 
 #### `Path::setHttp()`
@@ -4488,7 +4490,7 @@ Merge the project root path with `Path.dirs.console`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.console()) // /home/user/athenna-project/app/console
+console.log(Path.console()) // /home/user/athenna-project/src/console
 ```
 
 #### `Path::setConsole()`
@@ -4501,6 +4503,26 @@ import { Path } from '@athenna/common'
 Path.setConsole('console/app')
 ```
 
+#### `Path::cron()`
+
+Merge the project root path with `Path.dirs.cron`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.cron()) // /home/user/athenna-project/src/cron
+```
+
+#### `Path::setCron()`
+
+Set the `Path.dirs.cron` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setCron('cron/app')
+```
+
 #### `Path::services()`
 
 Merge the project root path with `Path.dirs.services`:
@@ -4508,7 +4530,7 @@ Merge the project root path with `Path.dirs.services`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.services()) // /home/user/athenna-project/app/services
+console.log(Path.services()) // /home/user/athenna-project/src/services
 ```
 
 #### `Path::setServices()`
@@ -4528,7 +4550,7 @@ Merge the project root path with `Path.dirs.jobs`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.jobs()) // /home/user/athenna-project/app/jobs
+console.log(Path.jobs()) // /home/user/athenna-project/src/jobs
 ```
 
 #### `Path::setJobs()`
@@ -4548,7 +4570,7 @@ Merge the project root path with `Path.dirs.workers`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.workers()) // /home/user/athenna-project/appworkers/
+console.log(Path.workers()) // /home/user/athenna-project/src/workers
 ```
 
 #### `Path::setWorkers()`
@@ -4568,7 +4590,7 @@ Merge the project root path with `Path.dirs.repositories`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.repositories()) // /home/user/athenna-project/app/repositories
+console.log(Path.repositories()) // /home/user/athenna-project/src/repositories
 ```
 
 #### `Path::setRepositories()`
@@ -4588,7 +4610,7 @@ Merge the project root path with `Path.dirs.commands`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.commands()) // /home/user/athenna-project/app/console/commands
+console.log(Path.commands()) // /home/user/athenna-project/src/console/commands
 ```
 
 #### `Path::setCommands()`
@@ -4601,6 +4623,26 @@ import { Path } from '@athenna/common'
 Path.setCommands('commands/app')
 ```
 
+#### `Path::schedulers()`
+
+Merge the project root path with `Path.dirs.schedulers`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.schedulers()) // /home/user/athenna-project/src/cron/schedulers
+```
+
+#### `Path::setSchedulers()`
+
+Set the `Path.dirs.schedulers` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setSchedulers('schedulers/app')
+```
+
 #### `Path::controllers()`
 
 Merge the project root path with `Path.dirs.controllers`:
@@ -4608,7 +4650,7 @@ Merge the project root path with `Path.dirs.controllers`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.controllers()) // /home/user/athenna-project/app/http/controllers
+console.log(Path.controllers()) // /home/user/athenna-project/src/http/controllers
 ```
 
 #### `Path::setControllers()`
@@ -4628,7 +4670,7 @@ Merge the project root path with `Path.dirs.guards`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.guards()) // /home/user/athenna-project/app/http/guards/
+console.log(Path.guards()) // /home/user/athenna-project/src/http/guards/
 ```
 
 #### `Path::setGuards()`
@@ -4648,7 +4690,7 @@ Merge the project root path with `Path.dirs.exceptions`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.exceptions()) // /home/user/athenna-project/app/exceptions
+console.log(Path.exceptions()) // /home/user/athenna-project/src/exceptions
 ```
 
 #### `Path::setExceptions()`
@@ -4668,7 +4710,7 @@ Merge the project root path with `Path.dirs.middlewares`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.middlewares()) // /home/user/athenna-project/app/http/middlewares
+console.log(Path.middlewares()) // /home/user/athenna-project/src/http/middlewares
 ```
 
 #### `Path::setMiddlewares()`
@@ -4688,7 +4730,7 @@ Merge the project root path with `Path.dirs.interceptors`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.interceptors()) // /home/user/athenna-project/app/http/interceptors
+console.log(Path.interceptors()) // /home/user/athenna-project/src/http/interceptors
 ```
 
 #### `Path::setInterceptors()`
@@ -4708,7 +4750,7 @@ Merge the project root path with `Path.dirs.terminators`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.terminators()) // /home/user/athenna-project/app/http/terminators
+console.log(Path.terminators()) // /home/user/athenna-project/src/http/terminators
 ```
 
 #### `Path::setTerminators()`
@@ -4728,7 +4770,7 @@ Merge the project root path with `Path.dirs.migrations`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.migrations()) // /home/user/athenna-project/database/migrations
+console.log(Path.migrations()) // /home/user/athenna-project/src/database/migrations
 ```
 
 #### `Path::setMigrations()`
@@ -4748,7 +4790,7 @@ Merge the project root path with `Path.dirs.seeders`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.seeders()) // /home/user/athenna-project/database/seeders
+console.log(Path.seeders()) // /home/user/athenna-project/src/database/seeders
 ```
 
 #### `Path::setSeeders()`
@@ -4805,7 +4847,7 @@ console.log(Path.vmHome()) // /home/user
 
 Return the execution path of where this method is being called:
 
-```typescript title="/home/user/athenna-project/app/logPath.ts"
+```typescript title="/home/user/athenna-project/src/logPath.ts"
 import { Path } from '@athenna/common'
 
 export function logPath() {
@@ -4813,10 +4855,10 @@ export function logPath() {
 }
 ```
 
-```typescript title="/home/user/athenna-project/bootstrap/index.ts"
-import { logPath } from '#app/logPath'
+```typescript title="/home/user/athenna-project/bin/index.ts"
+import { logPath } from '#src/logPath'
 
-logPath() // /home/user/athenna-project/app
+logPath() // /home/user/athenna-project/src
 ```
 
 ### Route

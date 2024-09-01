@@ -4,6 +4,8 @@ sidebar_position: 1
 description: See how to create a REPL session with Athenna Framework ecosystem.
 ---
 
+import Path from '@site/src/components/path'
+
 # REPL
 
 See how to create a REPL session with Athenna Framework ecosystem.
@@ -37,7 +39,7 @@ node artisan repl
 :::info
 
 When running this command, Athenna will use the 
-`Path.bootstrap('repl.ts')` file to execute your session.
+<Path father="bin" child="repl.ts" /> file to execute your session.
 
 :::
 
@@ -47,7 +49,7 @@ To import modules inside REPL you need to use dynamic imports:
 
 ```typescript
 { Log } = await import('@athenna/logger') // Destructuring import
-helpers = await import('#app/helpers/index') // Default import
+helpers = await import('#src/helpers/index') // Default import
 ```
 
 :::caution
@@ -72,7 +74,7 @@ keep declaring the same variables over and over again. To
 avoid that you can use the `repl.setIntContext()` method,
 and it will be available in all your REPL sessions:
 
-```typescript title="Path.bootstrap('repl.ts')"
+```typescript title="Path.bin('repl.ts')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url, { bootLogs: false })
@@ -88,7 +90,7 @@ repl.setInContext('appService', ioc.safeUse('App/Services/AppService'))
 You can create custom REPL commands like `.ls` and `.clean`
 to make your life easier when running your REPL session:
 
-```typescript title="Path.bootstrap('repl.ts')"
+```typescript title="Path.bin('repl.ts')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url, { bootLogs: false })
@@ -165,7 +167,7 @@ Path.pwd()
 
 :::info
 
-By default, your `Path.bootstrap('repl.ts')` file already
+By default, your <Path father="bin" child="repl.ts" /> file already
 imports all the `@athenna/common` helpers to your REPL session 🤩.
 
 :::

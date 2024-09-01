@@ -4,6 +4,8 @@ sidebar_position: 4
 description: See how to create tests for CLI applications in Athenna.
 ---
 
+import Path from '@site/src/components/path'
+
 # CLI Testing
 
 See how to create tests for CLI applications in Athenna.
@@ -29,7 +31,7 @@ export default class ExampleTest extends BaseConsoleTest {
 ```
 
 The `command.run()` method will run a child process using the 
-`Path.bootstrap('artisan.ts')` file to execute the `app` command
+<Path father="bin" child="artisan.ts" /> file to execute the `app` command
 and get the `stdout`, `stderr` and `exitCode` outputs,
 while the `assertSucceeded()` method asserts that the returned 
 output should have a successful exit code (`0`). In addition 
@@ -52,7 +54,7 @@ going to cover how to register it manually if needed.
 Just call the `Runner.addPlugin()` static method to set up
 the request plugin imported from `@athenna/artisan/testing/plugins`:
 
-```typescript title="Path.bootstrap('test.ts')"
+```typescript title="Path.bin('test.ts')"
 import { Runner } from '@athenna/test'
 import { request } from '@athenna/http/testing/plugins'
 import { command } from '@athenna/artisan/testing/plugins'
@@ -97,13 +99,13 @@ export default class ExampleTest extends BaseConsoleTest {
 ### Changing the default Artisan file path
 
 As mentioned previously, the `command.run()` method invokes 
-a child process using the `Path.bootstrap('artisan.ts')` file.
+a child process using the <Path father="bin" child="artisan.ts" /> file.
 But for some reason, you may want to change which file should be
 used to test your commands. To do so, you can call the 
 `TestCommand.setArtisanPath()` static method before running
 your tests:
 
-```typescript title="Path.bootstrap('test.ts')"
+```typescript title="Path.bin('test.ts')"
 import { Runner } from '@athenna/test'
 import { request } from '@athenna/http/testing/plugins'
 import { command, TestCommand } from '@athenna/artisan/testing/plugins'

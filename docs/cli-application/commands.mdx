@@ -4,6 +4,7 @@ sidebar_position: 1
 description: See how to create and configure your CLI commands.
 ---
 
+import Path from '@site/src/components/path'
 import ReactPlayer from 'react-player'
 
 # Commands
@@ -54,7 +55,7 @@ commands in `commands` object:
 {
   "commands": {
     "send:email": { 👈
-      "path": "#app/console/commands/SendEmails",
+      "path": "#src/console/commands/SendEmails",
       "loadApp": true
     }
   }
@@ -79,7 +80,7 @@ object:
 {
   "commands": {
     "sendEmails": { 👈 // All commands will be loaded
-      "path": "#app/console/commands/SendEmails",
+      "path": "#src/console/commands/SendEmails",
       "loadApp": true
     }
   }
@@ -92,7 +93,7 @@ inside your command:
 
 ```typescript
 import { Inject } from '@athenna/ioc'
-import { MailgunService } from '#app/services/MailgunService'
+import { MailgunService } from '#src/services/MailgunService'
 import { Option, Artisan, Argument, BaseCommand } from '@athenna/artisan'
 
 export class SendEmails extends BaseCommand {
@@ -141,7 +142,7 @@ setting in your command:
 {
   "commands": {
     "send:email": {
-      "path": "#app/console/commands/SendEmails",
+      "path": "#src/console/commands/SendEmails",
       "loadApp": true,
       "loadAllCommands": true 👈 // All commands will be loaded
     }
@@ -200,7 +201,7 @@ and then execute the `handle` method:
 {
   "commands": {
     "sendEmails": {
-      "path": "#app/console/commands/SendEmails",
+      "path": "#src/console/commands/SendEmails",
       "loadApp": true 👈
     }
   }
@@ -213,7 +214,7 @@ the `@Inject()` annotation:
 ```typescript
 import { Inject } from '@athenna/ioc'
 import { BaseCommand } from '@athenna/artisan'
-import { MailgunService } from '#app/services/MailgunService'
+import { MailgunService } from '#src/services/MailgunService'
 
 export class SendEmails extends BaseCommand {
   public static signature(): string {
@@ -246,7 +247,7 @@ your dependencies:
 
 ```typescript
 import { BaseCommand } from '@athenna/artisan'
-import { MailgunService } from '#app/services/MailgunService'
+import { MailgunService } from '#src/services/MailgunService'
 
 export class SendEmails extends BaseCommand {
   public static signature(): string {
@@ -273,7 +274,7 @@ export class SendEmails extends BaseCommand {
 
 ```typescript
 import { BaseCommand } from '@athenna/artisan'
-import type { MailgunService } from '#app/services/MailgunService'
+import type { MailgunService } from '#src/services/MailgunService'
 
 export class SendEmails extends BaseCommand {
   public static signature(): string {
@@ -314,7 +315,7 @@ annotations on your commands. See the example:
 
 ```typescript
 import { Inject } from '@athenna/ioc'
-import { MailgunService } from '#app/services/MailgunService'
+import { MailgunService } from '#src/services/MailgunService'
 import { Option, Argument, BaseCommand } from '@athenna/artisan'
 
 export class SendEmails extends BaseCommand {
@@ -1285,7 +1286,7 @@ of the RC configuration file.
 ```typescript
 const rcKey = 'commands'
 const key = 'make:repository'
-const value = '#app/console/commands/UserRepository'
+const value = '#src/console/commands/UserRepository'
 
 this.rc.setTo(rcKey, key, value)
 ```
@@ -1297,7 +1298,7 @@ multiple properties at once:
 const rcKey = 'commands'
 
 this.rc.setTo(rcKey, {
-  'make:repository': '#app/console/commands/UserRepository'
+  'make:repository': '#src/console/commands/UserRepository'
 })
 ```
 
@@ -1308,7 +1309,7 @@ Push a new value to some array property of the RC file:
 ```typescript
 const rcKey = 'services'
 
-this.rc.pushTo(rcKey, '#app/repositories/MyRepository')
+this.rc.pushTo(rcKey, '#src/repositories/MyRepository')
 ```
 
 #### `this.rc.save()`
@@ -1345,7 +1346,7 @@ assert.isTrue(stdout.includes('[ MAKING CONTROLLER ]'))
 assert.isUndefined(stderr)
 ```
 
-By default this method will look to the `Path.boostrap('artisan.ts')`
+By default this method will look to the <Path father="bin" child="artisan.ts" />
 file to execute your command, but you can change the file to be used
 setting the path to it as second parameter:
 

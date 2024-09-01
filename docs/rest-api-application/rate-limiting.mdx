@@ -4,6 +4,8 @@ sidebar_position: 7
 description: See how to create rate limiting rules for Athenna REST API application.
 ---
 
+import Path from '@site/src/components/path'
+
 # Rate Limiting
 
 See how to create rate-limiting rules for Athenna REST API application.
@@ -18,7 +20,7 @@ a user can request your application in a given time-frame.
 
 Athenna uses the [`@fastify/rate-limit`](https://github.com/fastify/fastify-rate-limit) 
 plugin inside `HttpKernel`. All the configurations that 
-`@fastify/rate-limit` supports can be set inside `Path.config('http.ts')` 
+`@fastify/rate-limit` supports can be set inside <Path father="config" child="http.ts" /> 
 file in the `rateLimit` object:
 
 ```typescript title="Path.config('http.ts')"
@@ -40,7 +42,7 @@ export default {
 
 In Athenna you can set specific options of rate limit 
 for specific routes. You can also disable the `global` 
-option of your `rateLimit` configuration in `Path.config('http.ts')` 
+option of your `rateLimit` configuration in <Path father="config" child="http.ts" />
 and set different rules in your routes:
 
 ```typescript title="Path.route('http.ts')"

@@ -4,6 +4,8 @@ sidebar_position: 2
 description: See how to graceful shutdown any kind of Athenna application.
 ---
 
+import Path from '@site/src/components/path'
+
 # Graceful Shutdown
 
 See how to graceful shutdown any kind of Athenna application.
@@ -104,7 +106,7 @@ listeners you want, this means that you can use the default
 your own. We recommend doing this implementation in the bootstrap
 file of your like application:
 
-```typescript title="Path.bootstrap('main.ts')"
+```typescript title="Path.bin('main.ts')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url)
@@ -122,7 +124,7 @@ process.on('SIGTERM', () => {
 
 If you wish to remove or change the default listeners of
 Athenna, or also listen to new signals, you can create 
-the `signals` property in the `Path.config('app.ts')`
+the `signals` property in the  <Path father="config" child="app.ts" /> 
 file:
 
 ```typescript

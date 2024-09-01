@@ -1,0 +1,43 @@
+/* Basic styling for the container and link */
+.hoverCardContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.hoverCardLink {
+  text-decoration: none;
+  color: #007BFF;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Initial state of the card - hidden */
+.hoverCard {
+  position: absolute;
+  width: 200px;
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 1000;
+  top: auto;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 5px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.hoverCardContainer:hover .hoverCard {
+  opacity: 1;
+  pointer-events: auto;
+}
