@@ -1,7 +1,1 @@
-.navbar__title {
-    font-weight: bold !important;
-    font-size: 20px !important;
-    background: linear-gradient(135deg, #9580ff 0, #80ffea 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-}
+.navbar__title{background:linear-gradient(135deg,#9580ff,#80ffea)!important;-webkit-background-clip:text!important;font-size:20px!important;font-weight:700!important;-webkit-text-fill-color:#0000!important}
