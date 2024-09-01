@@ -4,6 +4,8 @@ sidebar_position: 11
 description: Understand how you can use the Athenna view API for rendering HTML pages.
 ---
 
+import Path from '@site/src/components/path'
+
 # Views
 
 Understand how you can use the Athenna view API for rendering HTML pages.
@@ -83,7 +85,7 @@ your project:
 ## Configuration
 
 All the configuration options for your application's views 
-behavior is housed in the `Path.config('view.ts')` 
+behavior is housed in the <Path father="config" child="view.ts" />
 configuration file. We will see later on this documentation 
 the purpose of each option:
 
@@ -114,7 +116,7 @@ node artisan make:view greeting
 ```
 
 This command will place a new `greeting.edge` template
-within your `Path.views()` directory. In this view we 
+within your <Path father="views" /> directory. In this view we 
 will render a simple profile with an avatar and the user name:
 
 ```html title="Path.views('greeting.edge')
@@ -155,7 +157,7 @@ await View.render('greeting')
 ```
 
 As you can see, the first argument passed to the method corresponds 
-to the name of the view file in the `Path.views()` directory as defined
+to the name of the view file in the <Path father="views" /> directory as defined
 in the `disk` options of the [configuration file](/docs/rest-api-application/views#configuration)
 of the view package. The second argument is an object of data that 
 should be made available to the view. In this case, we are passing 
@@ -165,7 +167,7 @@ the `name` variable, which is displayed in the view using [Edge syntax](https://
 
 Views may also be nested within subdirectories of your views 
 directory. "Slash" notation may be used to reference nested views. 
-For example, if your view is stored at `Path.views('admin/profile.edge')`, 
+For example, if your view is stored at <Path father="views" child="admin/profile.edge" />, 
 you may return it from one of your application's routes / controllers 
 like so:
 
@@ -193,7 +195,7 @@ as there are not associated with a unique path.
 
 ## Defining & rendering named disks
 
-Named disks could be defined inside `Path.config('view.ts')`
+Named disks could be defined inside <Path father="config" child="view.ts" />
 file, in the `namedDisks` configuration:
 
 ```typescript
@@ -229,7 +231,7 @@ return response.view('greeting', { name: 'Lenon' })
 
 But sometimes you may need to share data with all views that are 
 rendered by your application. You may do so by using the `properties`
-option inside of the `Path.config('view.ts')` file:
+option inside of the <Path father="config" child="view.ts" /> file:
 
 ```typescript
 export default {
@@ -262,7 +264,7 @@ of your `disk` root path. This helps create a visual boundary between
 the components and the rest of the templates used by your application.
 
 Let's start by creating a button component. We will store it inside 
-the `Path.views('components/button.edge')` file:
+the <Path father="views" child="components/button.edge" /> file:
 
 ```html
 <button type="{{ type || 'submit' }}">{{ text }}</button>
@@ -306,7 +308,7 @@ page](https://edgejs.dev/docs/components/introduction#components).
 ### In-memory components
 
 You can register in-memory views components by defining them
-in the `components` property of you `Path.config('view.ts')`
+in the `components` property of you <Path father="config" child="view.ts" />
 file. You can find it useful whenever you want to split a large 
 template file into several smaller ones or also if you want to 
 provide some templates as part of a npm package:
@@ -356,7 +358,7 @@ time-consuming process, and hence it is recommended to cache
 the compiled templates in production.
 
 You can control the template caching using the `edge.cache`
-property inside `Path.config('view.ts')` file. Just make sure to set
+property inside <Path father="config" child="view.ts" /> file. Just make sure to set
 the value to `true` in the production environment:
 
 ```typescript
@@ -399,7 +401,7 @@ node artisan template:customize
 ```
 
 The customized templates will be located in the 
-`Path.resources('templates')` directory. Any change
+<Path father="resources" child="templates" /> directory. Any change
 you make to these files will be reflected when you
 generate their correspoding files using Artisan's 
 `make` commands.

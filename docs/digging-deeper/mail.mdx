@@ -4,6 +4,8 @@ sidebar_position: 4
 description: See how to send emails in Athenna.
 ---
 
+import Path from '@site/src/components/path'
+
 # Mail
 
 See how to send emails in Athenna.
@@ -37,7 +39,7 @@ your project:
 ## Configuration
 
 Athenna's email services may be configured via your application's 
-`Path.config('mail.ts')` configuration file. Each mailer configured 
+<Path father="config" child="mail.ts" />  configuration file. Each mailer configured 
 within this file may have its own unique configuration and even 
 its own unique "transport", allowing your application to use different 
 email services to send certain email messages.
@@ -48,7 +50,7 @@ Each mailer is powered by a "driver". The driver determines how
 the mail will be transported. The following mail drivers are 
 available in every Athenna application. An entry for most of 
 these drivers is already present in your application's 
-`Path.config('mail.ts')` configuration file, so be sure to 
+<Path father="config" child="mail.ts" /> configuration file, so be sure to 
 review this file to become familiar with its contents:
 
 | Driver name |           Website            |                                            Built with |

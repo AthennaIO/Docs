@@ -4,6 +4,8 @@ sidebar_position: 1
 description: How to install and set up your first Athenna project.
 ---
 
+import Path from '@site/src/components/path'
+
 # Installation
 
 How to install and set up your first Athenna project.
@@ -62,7 +64,7 @@ easily scaled to handle hundreds of millions of requests per month.
 ### An agnostic framework
 
 Athenna is perpect for building modern software using microservices architecture. 
-No matter what type of application you are creating, be it a REST API, a CLI, a Cron Job, 
+No matter what type of application you are creating, be it a REST API, a CLI, a CRON Job, 
 Athenna has a reliable solution foundation for each occasion, the only thing you will
 need to take care is how your application will communicate with the external world.
 
@@ -85,8 +87,7 @@ We recommend using [nvm](https://github.com/nvm-sh/nvm) to do that.
 running on your machine.](https://github.com/nvm-sh/nvm#installing-and-updating)
 
 After you install `nvm`, we recommend you to install
-Node.js v20.x or above, this is the current version that
-the project is being developed, but you can still use
+Node.js v20.x or above, but you can still use
 Node.js v16.x and above. Install Node.js v20.x by running:
 
 ```bash
@@ -124,45 +125,41 @@ The installation process prompts for the following selections:
 using REST architecture.
 - `CLI` application is ideal for creating global CLI's to publish
 in some registry like npm.
-
-#### Project structure
-
-The installation process will ask if you want to create your
-project with a `slim` project structure. All the Athenna
-packages implementation assumes that you are using the default 
-project structure, but you will always be able to use your own 
-and configure the packages to work with it.
+- `CRON` application is ideal for creating schedulers that will run
+periodic jobs, such as for maintenance or calling third-party APIs
+to collect up-to-date data.
 
 ## Running your application
 
-To run your application in development mode,
-run the following command:
+To run your application in development mode, run the following 
+command:
 
 ```bash
 node artisan serve --watch
 ```
 
-- The `serve` command will look up for your `Path.bootstrap('main.ts')`
+- The `serve` command will look up for your <Path father="bin" child="main.ts" /> 
 file to bootstrap your application with predefined configurations.
 - The `watch` flag is meant to watch the file system for
 changes and restart your application automatically when
 doing some change on it.
 
-### What the 🤬 is `Path.boostrap('main.ts')`?
+### What the 🤬 is `Path.bin('main.ts')`?
 
 Well, Athenna tries a lot to be a framework without opinion, one thing
 that some frameworks do that makes them to have a lot of opinion is defining
 crucial file paths where you can't touch that file without breaking everything.
 
 Athenna is not totally different from them in this aspect, as you can see,
-the `node artisan serve` command depends on the existence of the `./bootstrap/main.ts`
+the `node artisan serve` command depends on the existence of the `./bin/main.ts`
 file. To be able to be "opinion less" without losing DX (Developer Experience) 
 we ensure that you can easily configure this path the way you want by doing two 
 things:
 
-1. In all places of our documentation you will see that we always use the [`Path`](/docs/the-basics/helpers#path)
-helper to reference file paths, so your brain could detect that the directory path 
-you just see is configurable.
+1. In all places of our documentation you will see that we always use the 
+[`Path`](/docs/the-basics/helpers#path) helper to reference file paths, this
+way is easier for you to understand that the path directory you just see is 
+configurable.
 2. Inside `.athennarc.json` file or the `athenna` property of your `package.json` you 
 have the [`directories` property](/docs/getting-started/athennarc-file#the-directories-property) 
 where you can modify any path supported by the [`Path`](/docs/the-basics/helpers#path) helper.
@@ -173,13 +170,13 @@ gonna see later on this documentation page 😆.
 ## Initial configuration
 
 All of the configuration files for the Athenna framework are stored 
-in the `Path.config()` directory. Each option is documented, so feel 
+in the <Path father="config" /> directory. Each option is documented, so feel 
 free to look through the files and get familiar with the options available 
 to you.
 
 Athenna needs almost no additional configuration out of the box. You are 
 free to get started developing! However, you may wish to review the 
-`Path.config('app.ts')` file and its documentation. It contains several 
+<Path father="config" child="app.ts" /> file and its documentation. It contains several 
 options such as locale that you may wish to change according to your 
 application.
 
@@ -269,3 +266,11 @@ advantage of all Athenna's powerful foundation.
 
 If this is how you plan to use Athenna, you may want to check out our documentation
 on [commands](/docs/cli-application/commands).
+
+### CRON Job application
+
+Use the CRON Job application to create schedulers for running periodic jobs, such 
+as for maintenance or calling third-party APIs to collect up-to-date data.
+
+If this is how you plan to use Athenna, you may want to check out our documentation
+on [schedulers](/docs/cron-application/schedulers).

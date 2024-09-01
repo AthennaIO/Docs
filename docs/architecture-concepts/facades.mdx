@@ -140,8 +140,8 @@ node artisan make:provider HelperProvider
 Now let's register all of our helpers inside the `register()` method:
 
 ```typescript
-import { File } from '#app/helpers/File'
-import { String } from '#app/helpers/String'
+import { File } from '#src/helpers/File'
+import { String } from '#src/helpers/String'
 import { ServiceProvider } from '@athenna/ioc'
 
 export class HelperProvider extends ServiceProvider {
@@ -172,7 +172,7 @@ generic type:
 
 ```typescript
 import { Facade } from '@athenna/ioc'
-import { String as StringImpl } from '#app/helpers/String'
+import { String as StringImpl } from '#src/helpers/String'
 
 export const String = Facade.createFor<StringImpl>('App/Helpers/String')
 ```
@@ -181,7 +181,7 @@ Now we can start using our new `String` facade:
 
 ```typescript
 import { Route } from '@athenna/http' // Route Facade
-import { String } from '#providers/facades/String' // String Facade
+import { String } from '#src/facades/String' // String Facade
 
 Route.get('/welcome', ({ response }) => {
   return response

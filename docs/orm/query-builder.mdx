@@ -27,7 +27,7 @@ fluently query the database table associated with the model. The model's
 associated database table:
 
 ```typescript
-import { Flight } from '#app/models/Flight'
+import { Flight } from '#src/models/Flight'
 
 const where = { active: 1 }
 const flights = await Flight.findMany(where)
@@ -269,7 +269,7 @@ if (!flight.isPersisted()) {
 :::
 
 In this example, we assign the `name` field to the name attribute of 
-the `#app/models/Flight` model instance. When we call the `save()` 
+the `#src/models/Flight` model instance. When we call the `save()` 
 method, a record will be inserted into the database. The model's 
 `createdAt` and `updatedAt` timestamps will automatically be set 
 when the `save()` method is called, so there is no need to set them 
@@ -506,7 +506,7 @@ To delete a model, you may call the `delete()` method on the model
 instance:
 
 ```typescript
-import { Flight } from '#app/models/Flight'
+import { Flight } from '#src/models/Flight'
 
 const where = { id: 1 }
 await Flight.delete(where)
@@ -515,7 +515,7 @@ await Flight.delete(where)
 You can also delete an instance directly:
 
 ```typescript
-import { Flight } from '#app/models/Flight'
+import { Flight } from '#src/models/Flight'
 
 const where = { id: 1 }
 const flight = await Flight.find(where)

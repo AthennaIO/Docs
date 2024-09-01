@@ -4,6 +4,8 @@ sidebar_position: 1
 description: See how to create database connections in Athenna Framework.
 ---
 
+import Path from '@site/src/components/path'
+
 # Database: Getting Started 
 
 See how to create database connections in Athenna Framework.
@@ -42,7 +44,7 @@ database you selected.
 ## Configuration
 
 All the configuration options for your application's database 
-behavior is housed in the `Path.config('database.ts')` 
+behavior is housed in the <Path father="config" child="database.ts" /> 
 configuration file. This file allows you to configure your 
 application's database connections, so be sure to review each 
 of the available connections and their options. We'll review 
@@ -54,7 +56,7 @@ Each database connection is powered by a "driver". The driver
 determines how and where the data is actually transported.
 The following database connection drivers are available in 
 every Athenna application. An entry for most of these drivers 
-is already present in your application's `Path.config('database.ts')` 
+is already present in your application's <Path father="config" child="database.ts" /> 
 configuration file, so be sure to review this file to become
 familiar with its contents:
 
@@ -315,11 +317,11 @@ await query.whereBetween('id', [1, 10]).delete()
 ## Using multiple database connections
 
 If your application defines multiple connections in your 
-`Path.config('database.ts')` configuration file, you may access each
+<Path father="config" child="database.ts" />  configuration file, you may access each
 connection via the `connection()` method provided by the `Database` 
 facade. The connection name passed to the `connection()` method should 
 correspond to one of the connections listed in your 
-`Path.config('database.ts')` configuration file. You also need
+<Path father="config" child="database.ts" />  configuration file. You also need
 to explicit call the `connect()` method when working with other 
 connection that is not the default:
 

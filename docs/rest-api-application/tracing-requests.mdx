@@ -4,6 +4,8 @@ sidebar_position: 8
 description: Understand how to trace requests in your REST API application of Athenna.
 ---
 
+import Path from '@site/src/components/path'
+
 # Tracing Requests
 
 Understand how to trace requests in your REST API application of Athenna.
@@ -21,7 +23,7 @@ identify bottlenecks and focus on improving performance.
 Athenna uses the [`cls-rtracer`](https://github.com/puzpuzpuz/cls-rtracer) 
 plugin inside `HttpKernel`. All the configurations 
 that `cls-rtracer` supports can be set inside 
-`Path.config('http.ts')` file in the `rTracer` object:
+<Path father="config" child="http.ts" /> file in the `rTracer` object:
 
 ```typescript title="Path.config('http.ts')"
 export default {
@@ -83,7 +85,7 @@ export default {
 Or by setting the `trace` option as `false` when booting the
 server in `Ignite.httpServer()` method:
 
-```typescript title="Path.bootstrap('main.ts')"
+```typescript title="Path.bin('main.ts')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url)

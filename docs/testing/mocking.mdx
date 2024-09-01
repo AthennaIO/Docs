@@ -530,7 +530,7 @@ of it (`prototype`).
 Let's see how to mock a single class instance:
 
 ```typescript
-import { ApiHelper } from '#app/helpers/ApiHelper'
+import { ApiHelper } from '#src/helpers/ApiHelper'
 import { Test, Mock, type Context  } from '@athenna/test'
 
 export default class MockTest {
@@ -553,7 +553,7 @@ To mock a class method for all instances of a given class, you
 need to mock the class `prototype`:
 
 ```typescript
-import { ApiHelper } from '#app/helpers/ApiHelper'
+import { ApiHelper } from '#src/helpers/ApiHelper'
 import { Test, Mock, type Context } from '@athenna/test'
 
 export default class MockTest {
@@ -574,7 +574,7 @@ is the same process of mocking a simple class
 using the `prototype` property:
 
 ```typescript
-import { AppService } from '#app/services/AppService'
+import { AppService } from '#src/services/AppService'
 import { Test, Mock, type Context } from '@athenna/test'
 
 export default class MockTest {
@@ -603,7 +603,7 @@ of the service within your test class, registering it in the service
 container and then mocking the method you want in each test case:
 
 ```typescript
-import { AppService } from '#app/services/AppService'
+import { AppService } from '#src/services/AppService'
 import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
 import { Test, type Context, BeforeAll, Mock } from '@athenna/test'
 
@@ -643,7 +643,7 @@ With `ioc.instance()` method, you can also create an entire different
 implementation of your service that will be used only for testing:
 
 ```typescript title="Path.fixtures('services/FakeAppService.ts')"
-import { AppServiceInterface } from '#app/interfaces/AppServiceInterface'
+import { AppServiceInterface } from '#src/interfaces/AppServiceInterface'
 
 export class FakeAppService implements AppServiceInterface {
   public findOne() {
@@ -1045,7 +1045,7 @@ that is responsible to find a user in database by the id using
 an `User` model. To mock this scenario, we could do the following:
 
 ```typescript
-import { UserService } from '#app/services/UserService'
+import { UserService } from '#src/services/UserService'
 import { Database, DatabaseProvider } from '@athenna/database'
 import { Test, Mock, BeforeAll, AfterEach, type Context } from '@athenna/test'
 
@@ -1083,7 +1083,7 @@ that is responsible to create a user in database using an `User`
 model. To mock this scenario, we could do the following:
 
 ```typescript
-import { UserService } from '#app/services/UserService'
+import { UserService } from '#src/services/UserService'
 import { Database, DatabaseProvider } from '@athenna/database'
 import { Test, Mock, BeforeAll, AfterEach, type Context } from '@athenna/test'
 
