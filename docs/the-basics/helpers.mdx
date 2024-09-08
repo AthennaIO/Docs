@@ -3920,9 +3920,9 @@ full paths:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.dirs.services) // app/services
-console.log(Path.dirs.controllers) // app/http/controllers
-console.log(Path.dirs.bootstrap) // bootstrap
+console.log(Path.dirs.services) // src/services
+console.log(Path.dirs.controllers) // src/http/controllers
+console.log(Path.dirs.bin) // bin 
 ```
 
 #### `Path::mergeDirs()`
@@ -3933,8 +3933,8 @@ Merge the `Path.dirs` object with a new object:
 import { Path } from '@athenna/common'
 
 Path.mergeDirs({
-  services: 'app/internal/services',
-  controllers: 'app/internal/http/controllers',
+  services: 'src/internal/services',
+  controllers: 'src/internal/http/controllers',
   bootstrap: 'bin',
 })
 ```
@@ -3960,16 +3960,16 @@ console.log(Path.ext()) // js
 Parse a path extension relying on the `IS_TS` environment variable:
 
 ```typescript
-const tsPath = 'app/services/MyService.ts'
-const jsPath = 'app/services/MyService.js'
+const tsPath = 'src/services/MyService.ts'
+const jsPath = 'src/services/MyService.js'
 
 process.env.IS_TS = 'true'
-console.log(Path.parseExt(tsPath)) // app/services/MyService.ts
-console.log(Path.parseExt(jsPath)) // app/services/MyService.ts
+console.log(Path.parseExt(tsPath)) // src/services/MyService.ts
+console.log(Path.parseExt(jsPath)) // src/services/MyService.ts
 
 process.env.IS_TS = 'false'
-console.log(Path.parseExt(tsPath)) // app/services/MyService.js
-console.log(Path.parseExt(jsPath)) // app/services/MyService.js
+console.log(Path.parseExt(tsPath)) // src/services/MyService.js
+console.log(Path.parseExt(jsPath)) // src/services/MyService.js
 ```
 
 #### `Path::toURL()`

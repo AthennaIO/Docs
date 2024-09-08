@@ -26,7 +26,7 @@ This documentation will cover about error handling in the **CLI**
 application, which means that only errors that happens inside 
 the `handle()` method of commands and bellow that will be handled:
 
-```typescript title="app/console/commands/AppCommand.ts"
+```typescript title="src/console/commands/AppCommand.ts"
 import { BaseCommand } from '@athenna/artisan'
 import { AppService } from '#src/services/AppService'
 
@@ -127,7 +127,7 @@ Simple exceptions are recognized by `ConsoleExceptionHandler` by
 the `code`. If the code is `E_SIMPLE_CLI`, it will be considered
 as a simple exception:
 
-```typescript title="app/console/exceptions/NotFoundDatabaseExceptio.ts"
+```typescript title="src/console/exceptions/NotFoundDatabaseExceptio.ts"
 import { Exception } from '@athenna/common'
 
 export class NotFoundDatabaseException extends Exception {
@@ -145,7 +145,7 @@ Let's suppose you want to write a custom logic for handling
 your exceptions. You can do so by creating your own
 exception handler:
 
-```typescript title="app/console/exceptions/Handler.ts"
+```typescript title="src/console/exceptions/Handler.ts"
 import { ConsoleExceptionHandler } from '@athenna/artisan'
 
 export class Handler extends ConsoleExceptionHandler {

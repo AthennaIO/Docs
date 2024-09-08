@@ -192,7 +192,7 @@ node artisan make:interceptor InterceptMiddleware
 Just like `make:middleware`, Athenna will auto register the
 middleware if using `make:interceptor` command. The above
 command will produce the following content at
-`app/http/interceptors/InterceptMiddleware.ts` file:
+`src/http/interceptors/InterceptMiddleware.ts` file:
 
 ```typescript
 import { Interceptor } from '@athenna/http'
@@ -248,7 +248,7 @@ node artisan make:terminator TerminateMiddleware
 Just like `make:middleware`, Athenna will auto register the
 middleware if using `make:terminator` command. The above
 command will produce the following content at
-`app/http/terminators/TerminateMiddleware.ts` file:
+`src/http/terminators/TerminateMiddleware.ts` file:
 
 ```typescript
 import { Terminator } from '@athenna/http'
