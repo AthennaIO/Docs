@@ -157,7 +157,7 @@ scheduler when bootstrapping your Athenna application.
 ## Dependency injection in schedulers
 
 When using schedulers classes you are able to use the `@Inject()`
-annotation to inject dependencies from you application within your
+annotation to inject dependencies from your application within your
 scheduler class:
 
 ```typescript
@@ -179,7 +179,7 @@ export class DeleteRecentUsers {
 ### Automatic constructor injection
 
 You can also use the automatic constructor injection if
-your don't want to use the `@Inject()` annotation:
+you don't want to use the `@Inject()` annotation:
 
 ```typescript
 import { Scheduler, type Context } from '@athenna/cron'
