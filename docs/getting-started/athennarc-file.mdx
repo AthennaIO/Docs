@@ -1,10 +1,10 @@
 ---
-title: AthennaRC File
+title: Athenna RC File
 sidebar_position: 3
 description: Understand what is the purpose of the .athennarc.json file.
 ---
 
-# AthennaRC File
+# Athenna RC File
 
 Understand what is the purpose of the .athennarc.json file.
 
@@ -17,12 +17,12 @@ application.
 
 ## RC file vs Configurations
 
-The responsible for the RC file is configuring the workspace
+The responsible of the `.athennarc.json` is configuring the workspace
 and certain runtime settings to bootstrap your Athenna
 application properly. Also, when working with `.json` files is
 very easy to manipulate the values of it, making it possible
 to make changes on the file in runtime. Let's see an example
-where Athenna manipulates your RC file:
+where Athenna manipulates your `.athennarc.json`:
 
 ```bash
 node artisan make:service UserService
@@ -42,7 +42,7 @@ also register it inside your `.athennarc.json` file:
 ## Custom RC file path
 
 You can change the name and the path of your RC file or even 
-create customized ones for each environement (`.athennarc.dev.json`, 
+create customized ones for each environment (`.athennarc.dev.json`, 
 `.athennarc.prod.json`). To do that you need to set the new 
 path to `Ignite::load()` static method:
 
@@ -86,7 +86,12 @@ Athenna will check if the `athenna` property exists in your `package.json`:
 }
 ```
 
-## The `preloads` property
+## RC File properties
+
+Let's cover all of the `.athennarc.json` file properties and
+understand how to use each one of them:
+
+### The `preloads` property
 
 An array of files that will be loaded when your application
 is bootstrapping. The files are loaded after booting the
@@ -99,7 +104,8 @@ import { Config } from '@athenna/core'
 
 Log.info(`Hello from ${Config.get('app.name')} application!`)
 ```
-```json
+
+```json title=".athennarc.json"
 {
   "preloads": [
     "./bin/preloads/say-hello.js"
@@ -107,12 +113,12 @@ Log.info(`Hello from ${Config.get('app.name')} application!`)
 }
 ```
 
-## The `providers` property
+### The `providers` property
 
 An array of service providers to load when the application
 is bootstrapping:
 
-```json
+```json title=".athennarc.json"
 {
   "providers": [
     "@athenna/core/providers/CoreProvider",
@@ -129,7 +135,7 @@ More information about service providers could be found at
 
 :::
 
-## The `services` property
+### The `services` property
 
 This property is responsible to register your application
 services or from some library inside the service container.
@@ -139,7 +145,7 @@ some interface, using [inversion of control](https://www.educative.io/answers/wh
 in these cases could be an exceptional idea to register your
 services in the container:
 
-```json
+```json title=".athennarc.json"
 {
   "services": [
     "#src/services/AppService",
@@ -148,7 +154,7 @@ services in the container:
 }
 ```
 
-## The `commands` property
+### The `commands` property
 
 An object that is responsible to register your application
 commands and their respective settings. The key of the
@@ -157,7 +163,7 @@ without any arguments, flags or spaces. Also, the value
 of it could be the command path or an object with the
 "path" key inside:
 
-```json
+```json title=".athennarc.json"
 {
   "commands": {
     "make:exception": "@athenna/core/commands/MakeExceptionCommand",
@@ -208,14 +214,14 @@ More information about commands could be found at
 
 :::
 
-## The `templates` property
+### The `templates` property
 
 Map your application commands templates with their respective
 path. The templates mapped in this object will be used by your
 `make` commands to generate the resource with some specific
 code template:
 
-```json
+```json title=".athennarc.json"
 {
   "templates": {
     "exception": "node_modules/@athenna/core/templates/exception.edge",
@@ -224,14 +230,14 @@ code template:
 }
 ```
 
-## The `directories` property
+### The `directories` property
 
 Map your application directories with their respective
 base path. The [`Path`](https://athenna.io/docs/digging-deeper/helpers#path)
 class will use the directories mapped in this object to
 resolve the paths of your application:
 
-```json
+```json title=".athennarc.json"
 {
   "directories": {
     "bin": "bin",
@@ -291,14 +297,14 @@ internally by the framework, like configuration file, route
 files, entry points and many others. Changing the `directories` property
 could be very useful when you are building your own project structure.
 
-## The `controllers` property
+### The `controllers` property
 
 An array with the controllers of your application. The
 controllers registered in this array will be registered
 in the service container to be accessed easily by your
 Route facade:
 
-```json
+```json title=".athennarc.json"
 {
   "controllers": [
     "#src/http/controllers/AppController",
@@ -307,14 +313,14 @@ Route facade:
 }
 ```
 
-## The `middlewares` property
+### The `middlewares` property
 
 An array with the middlewares of your application. The
 middlewares registered in this array will be registered
 in the service container to be accessed easily by your
 `Route` facade:
 
-```json
+```json title=".athennarc.json"
 {
   "middlewares": [
     "#src/http/middlewares/AppMiddleware",
@@ -342,16 +348,16 @@ More information about middlewares could be found at
 
 :::
 
-## The `namedMiddlewares` property
+### The `namedMiddlewares` property
 
 Map the named middlewares of your application. Named
-middlewares could be configured using the `@Middleware`
+middlewares could be configured using the `@Middleware()`
 annotation, but if you are not using TypeScript in your
 application, you can use this object to map your named
 middlewares. Named middlewares are very useful to be used
 in your route declaration:
 
-```json
+```json title=".athennarc.json"
 {
   "namedMiddlewares": {
     "app": "#src/http/middlewares/AppMiddleware",
@@ -360,16 +366,16 @@ in your route declaration:
 }
 ```
 
-## The `globalMiddlewares` property
+### The `globalMiddlewares` property
 
 An array with the global middlewares of your application.
-Global middlewares could be configured using the `@Middleware`
+Global middlewares could be configured using the `@Middleware()`
 annotation, but if you are not using TypeScript in your
 application, you can use this object to map your named
 middlewares. Global middlewares are executed every time
 in any request of your application:
 
-```json
+```json title=".athennarc.json"
 {
   "globalMiddlewares": [
     "#src/http/middlewares/AppMiddleware",
@@ -378,7 +384,7 @@ in any request of your application:
 }
 ```
 
-## The `artisan` property
+### The `artisan` property
 
 An object with a variety of Artisan configurations.
 At this point the only configurations accepted are `artisan.child.executor`
@@ -386,7 +392,7 @@ and `artisan.child.path`. Both configurations are used to define
 how the `Artisan.callInChild()` method will behave when no options
 are set to it as second argument:
 
-```json
+```json title=".athennarc.json"
 {
   "artisan": {
     "child": {
