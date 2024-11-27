@@ -27,13 +27,13 @@ path to the entry point file of your CLI:
 
 ```json
 "bin": {
-  "yourCliCommand": "./bootstrap/main.js"
+  "yourCliCommand": "./bin/main.js"
 }
 ```
 
 ## Entrypoint file
 
-In our example we defined the `./bootstrap/main.js` 
+In our example we defined the `./bin/main.js` 
 file as the entrypoint file of our CLI. By default, this 
 file comes with the shebang line `#!/usr/bin/env node`
 in the top of the file. Without this line the `npm link` 
@@ -66,7 +66,7 @@ By default, Artisan always display the `Artisan` name, but you can
 change it for your own display name by setting the `displayName` 
 property in `Ignite.console()` method:
 
-```typescript title="Path.bootstrap('main.ts')"
+```typescript title="Path.bin('main.ts')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url)
@@ -81,7 +81,7 @@ await ignite.console(process.argv, {
 If you wish to disable the display name, set the `displayName`
 as `null`:
 
-```typescript title="Path.bootstrap('main.ts')"
+```typescript title="Path.bin('main.ts')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url)

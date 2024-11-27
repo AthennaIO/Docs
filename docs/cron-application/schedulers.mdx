@@ -1,0 +1,200 @@
+---
+title: Schedulers 
+sidebar_position: 1
+description: See how to create and configure your CRON job schedulers.
+---
+
+import Path from '@site/src/components/path'
+
+# Schedulers 
+
+See how to create and configure your CRON job schedulers.
+
+## Introduction
+
+Athenna's scheduler offers a fresh approach to managing 
+scheduled tasks on your server. The scheduler allows you 
+to fluently and expressively define your scheduler within 
+your Athenna application itself. When using the scheduler, 
+only a single cron entry is needed on your server. Your 
+task schedule can be defined in your application's 
+<Path father="routes" child="cron.ts" /> file or as a class 
+inside <Path father="cron" child="schedulers/MyScheduler.ts" />.
+
+## Defining Schedulers
+
+Schedulers are typically stored in the `src/cron/scheduelrs` 
+directory; however, you are free to choose your own storage 
+location as long as your schedulers can be imported and registered.
+
+To create a new scheduler, you may use the `make:scheduler` 
+Artisan command. This command will create a new command class 
+in the `src/cron/schedulers` directory and register it inside 
+`schedulers` array of `.athennarc.json` file. Don't worry if 
+this directory does not exist in your application—it will be 
+created the first time you run the `make:scheduler` Artisan command:
+
+```bash
+node artisan make:scheduler DeleteRecentUsers
+```
+
+This will create the schedulers file and automatically register 
+it for you:
+
+```json title=".athennarc.json"
+{
+  "schedulers": [
+    "#src/cron/schedulers/DeleteRecentUsers" 👈
+  ]
+}
+```
+
+### Defining schedulers logic
+
+In this example, we will schedule a `handler` method to be called 
+**every day at midnight**. Within the method we will execute a 
+database query to clear a table:
+
+```typescript
+import { Database } from '@athenna/database'
+import { Scheduler, type Context } from '@athenna/cron'
+
+@Scheduler({ pattern: '0 0 * * *' })
+export class DeleteRecentUsers {
+  public async handler(ctx: Context) {
+    await Database.table('recent_users').delete()
+  }
+}
+```
+
+:::tip
+
+You can use [Crontab.guru](https://crontab.guru/) to help you
+create your CRON pattern, or simply ask [ChatGPT](https://chatgpt.com/) 🤩.
+
+:::
+
+#### Defining schedulers in route file
+
+If you prefer, you can use the <Path father="routes" child="cron.ts" />
+file to register your schedulers:
+
+```typescript
+import { Cron } from '@athenna/cron'
+import { Database } from '@athenna/database'
+
+Cron.schedule().name('delete_recent_users')
+  .pattern('0 0 * * *')
+  .handler(async (ctx) => {
+    await Database.table('recent_users').delete()
+  })
+```
+
+### Listing schedulers (Coming Soon)
+
+If you would like to view an overview of your scheduled tasks and the 
+next time they are scheduled to run, you may use the cron:list Artisan 
+command:
+
+```shell
+node artisan cron:list
+```
+
+## Running scheduler locally (Coming Soon)
+
+When developing or even in production you might need to 
+force the scheduler to run. To do so you can use the 
+`node artisan cron:run` command:
+
+```typescript
+node artisan cron:run DeleteRecentUsers
+```
+
+You can also use a CRON pattern, this will trigger all the
+schedulers registered with the same pattern:
+
+```typescript
+node artisan cron:run "0 0 * * *"
+```
+
+### Using `runOnInit` option
+
+Another way to run your schedulers locally is to define the
+`runOnInit=true` option:
+
+```typescript
+import { Database } from '@athenna/database'
+import { Scheduler, type Context } from '@athenna/cron'
+
+@Scheduler({ 
+  runOnInit: true, 👈
+  pattern: '0 0 * * *'
+})
+export class DeleteRecentUsers {
+  public async handler(ctx: Context) {
+    await Database.table('recent_users').delete()
+  }
+}
+```
+
+If using routes you may call the `runOnInit()` method:
+
+```typescript
+import { Cron } from '@athenna/cron'
+import { Database } from '@athenna/database'
+
+Cron.schedule().name('delete_recent_users')
+  .runOnInit(true) 👈
+  .pattern('0 0 * * *')
+  .handler(async (ctx) => {
+    await Database.table('recent_users').delete()
+  })
+```
+
+If this option is set to `true`, it will automatically run your
+scheduler when bootstrapping your Athenna application.
+
+## Dependency injection in schedulers
+
+When using schedulers classes you are able to use the `@Inject()`
+annotation to inject dependencies from your application within your
+scheduler class:
+
+```typescript
+import { Inject } from '@athenna/ioc'
+import { Scheduler, type Context } from '@athenna/cron'
+import { RecentUserService } from '#src/services/RecentUserService'
+
+@Scheduler({ pattern: '0 0 * * *' })
+export class DeleteRecentUsers {
+  @Inject()
+  public recentUserService: RecentUserService
+
+  public async handler(ctx: Context) {
+    await this.recentUserService.deleteAll()
+  }
+}
+```
+
+### Automatic constructor injection
+
+You can also use the automatic constructor injection if
+you don't want to use the `@Inject()` annotation:
+
+```typescript
+import { Scheduler, type Context } from '@athenna/cron'
+import type { RecentUserService } from '#src/services/RecentUserService'
+
+@Scheduler({ pattern: '0 0 * * *' })
+export class DeleteRecentUsers {
+  public recentUserService: RecentUserService
+
+  public constructor(recentUserService: RecentUserService) {
+    this.recentUserService = recentUserService
+  }
+
+  public async handler(ctx: Context) {
+    await this.recentUserService.deleteAll()
+  }
+}
+```

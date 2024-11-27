@@ -4,6 +4,8 @@ sidebar_position: 4
 description: Understand how you can handle the errors of the CLI Application.
 ---
 
+import Path from '@site/src/components/path'
+
 # Error Handling
 
 Understand how you can handle the errors of the CLI Application.
@@ -24,9 +26,9 @@ This documentation will cover about error handling in the **CLI**
 application, which means that only errors that happens inside 
 the `handle()` method of commands and bellow that will be handled:
 
-```typescript title="app/console/commands/AppCommand.ts"
+```typescript title="src/console/commands/AppCommand.ts"
 import { BaseCommand } from '@athenna/artisan'
-import { AppService } from '#app/services/AppService'
+import { AppService } from '#src/services/AppService'
 
 export class AppCommand extends BaseCommand {
   public static signature(): string {
@@ -59,7 +61,7 @@ bootstrap failure has been found in your application.
 
 ## Configuration
 
-The `debug` option in your `Path.config('app.ts')` configuration
+The `debug` option in your <Path father="config" child="app.ts" /> configuration
 file determines how much information about an error is
 actually displayed to the user. By default, this option is
 set to respect the value of the `APP_DEBUG` environment
@@ -74,13 +76,13 @@ users.
 
 Every error will be logged by default using the `console`
 driver from `@athenna/logger`. By default, Athenna uses the
-`exception` channel of your `Path.config('logging.ts')` file to log
+`exception` channel of your <Path father="config" child="logging.ts" /> file to log
 all exceptions that happens in your application.
 
 :::tip
 
 You can change the driver and formatter of `exception`
-channel inside `Path.config('logging.ts')` file. This way you can
+channel inside <Path father="config" child="logging.ts" /> file. This way you can
 send all your error logs to another provider and with
 a different formatter.
 
@@ -98,7 +100,7 @@ node artisan make:exception BadCommandException
 Next, import and raise the exception as follows.
 
 ```typescript
-import { BadCommandException } from '#app/exceptions/BadCommandException'
+import { BadCommandException } from '#src/exceptions/BadCommandException'
 
 throw new BadCommandException('Your command is bad.')
 ```
@@ -125,7 +127,7 @@ Simple exceptions are recognized by `ConsoleExceptionHandler` by
 the `code`. If the code is `E_SIMPLE_CLI`, it will be considered
 as a simple exception:
 
-```typescript title="app/console/exceptions/NotFoundDatabaseExceptio.ts"
+```typescript title="src/console/exceptions/NotFoundDatabaseExceptio.ts"
 import { Exception } from '@athenna/common'
 
 export class NotFoundDatabaseException extends Exception {
@@ -143,7 +145,7 @@ Let's suppose you want to write a custom logic for handling
 your exceptions. You can do so by creating your own
 exception handler:
 
-```typescript title="app/console/exceptions/Handler.ts"
+```typescript title="src/console/exceptions/Handler.ts"
 import { ConsoleExceptionHandler } from '@athenna/artisan'
 
 export class Handler extends ConsoleExceptionHandler {
@@ -156,9 +158,9 @@ export class Handler extends ConsoleExceptionHandler {
 Now you need to register your exception handler when 
 bootstrapping your application:
 
-```typescript title="Path.bootstrap('main.ts')"
+```typescript title="Path.bin('main.ts')"
 await ignite.console(process.argv, {
   displayName: 'Athenna',
-  exceptionHandlerPath: '#app/console/exceptions/Handler', 👈
+  exceptionHandlerPath: '#src/console/exceptions/Handler', 👈
 })
 ```

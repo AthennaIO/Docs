@@ -4,6 +4,8 @@ sidebar_position: 4
 description: Understand the initial configurations of your project.
 ---
 
+import Path from '@site/src/components/path'
+
 # Configuration
 
 Understand the initial configurations of your project.
@@ -21,14 +23,6 @@ directory of your application will contain a `.env.example` file
 that defines many common environment variables. During the
 Athenna installation process, this file will automatically
 be copied to `.env` and `.env.test`.
-
-:::note
-
-If you are not using the slim project structure, you can
-create a `.env` file in the root path of your application 
-and Athenna will automatically resolve it for you.
-
-:::
 
 Athenna default `.env` file contains some common configuration
 values that may differ based on whether your application is
@@ -193,7 +187,7 @@ console.log(Env('APP_URL')) // "http://localhost:3000"
 You can also change the name and the path of your `.env` file. 
 To do that you need to set the new path to `Ignite::load()` static method:
 
-```typescript title="Path.bootstrap('dev.ts')"
+```typescript title="Path.bin('dev.ts')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url, {
@@ -214,18 +208,9 @@ just like in the example above.
 ## Configuration files
 
 All the configuration files for the Athenna framework are
-stored in the `config` directory if you are using the 
-default project template. Each option is documented, so 
+stored in the `src/config` directory. Each option is documented, so 
 feel free to look through the files and get familiar with 
 the options available to you.
-
-:::info
-
-The slim template is configured to use `src/config` path 
-instead. But the folder does not exist in the project by 
-default. You can check how to change this path [in here](/docs/getting-started/configuration#define-my-own-configuration-path).
-
-:::
 
 Athenna needs almost no additional configuration out of
 the box. You are free to get started developing! Each
@@ -359,7 +344,7 @@ Config.set('app.name', builders.functionCall('Env', ['MY_APP_NAME']))
 await Config.rewrite('app')
 ```
 
-The example above will produce the following code in `Path.config('app.ts')`:
+The example above will produce the following code in <Path father="config" child="app.ts" />:
 
 ```typescript
 export default {
@@ -443,7 +428,8 @@ file path:
 import { Path } from '@athenna/common'
 import { Config } from '@athenna/config'
 
-await Config.load(Path.stubs('config/test.ts'))
+const testConfig = Path.stubs('config/test.ts') // /path/to/your/project/tests/stubs/config/test.ts
+await Config.load(testConfig)
 
 console.log(Config.get('test')) // { ... }
 ```
@@ -457,7 +443,8 @@ is not defined:
 import { Path } from '@athenna/common'
 import { Config } from '@athenna/config'
 
-await Config.safeLoad(Path.stubs('config/app.js'))
+const appConfig = Path.stubs('config/app.js') // /path/to/your/project/tests/stubs/config/app.js
+await Config.safeLoad(appConfig)
 ```
 
 #### `Config.loadAll()`
@@ -469,7 +456,8 @@ configuration path:
 import { Path } from '@athenna/common'
 import { Config } from '@athenna/config'
 
-await Config.loadAll(Path.stubs('config'))
+const config = Path.stubs('config') // /path/to/your/project/tests/stubs/config
+await Config.loadAll(config)
 ```
 
 ### Get configuration with `@Value()` decorator
@@ -500,63 +488,43 @@ when using the `@Value()` annotation:
 
 ### Define my own configuration path
 
-If you are using the [slim](https://athenna.io/docs/getting-started/installation#project-structure)
-project structure, or you are building your own project
-structure, you are not going to have the `config` directory
-in your project root path.
-
-You will have two options now:
-
-1. If you are using the [slim](https://athenna.io/docs/getting-started/installation#project-structure)
-project structure, you can create the `config` directory inside your `src` folder.
-2. Specify to Athenna a different path to your `config` directory.
-
-:::note
-
-The [slim](https://athenna.io/docs/getting-started/installation#project-structure)
-project structure is using the second option above to
-specify to Athenna that the configuration files will
-be inside of `src/config` directory. Check the examples
-bellow to see how this implementation works.
-
-:::
+If you are building your own project structure you might want to
+change the configurations directory from `src/config` to something
+else. For this case you can specify to Athenna a different path to
+what <Path fatherPath="config" /> will resolve.
 
 To specify your application directories to Athenna, you can
 open the `.athennarc.json` file and add the `directories`
-property to it. If you are using [slim](https://athenna.io/docs/getting-started/installation#project-structure)
-project structure, you will already have this property
-defined.
-
-The `directories` property is an object that maps the directory
+property to it. The `directories` property is an object that maps the directory
 base path that the [`Path`](https://athenna.io/docs/digging-deeper/helpers#path)
 helper will use to resolve your application paths:
 
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.config()) // /path/to/your/project/config
+console.log(Path.config()) // /path/to/your/project/src/config
 ```
 
 All the `directories` key names follow the [`Path`](https://athenna.io/docs/digging-deeper/helpers#path)
 class methods names. This means that if you want to change
-what is returned by the `Path.config()` method, you will
+what is returned by the <Path fatherPath="config" /> method, you will
 need to add the `config` key to the `directories` object:
 
 ```json
 {
   "directories": {
-    "config": "src/config"
+    "config": "src/app/config"
   }
 }
 ```
 
-Now when calling the `Path.config()` method, it will return
+Now when calling the <Path father="config" /> method, it will return
 a different path:
 
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.config()) // /path/to/your/project/src/config 👈
+console.log(Path.config()) // /path/to/your/project/src/app/config 👈
 ```
 
 Athenna always rely on [`Path`](https://athenna.io/docs/digging-deeper/helpers#path)
@@ -583,7 +551,7 @@ your environment it could become one. To avoid reloading configuration
 files in these situations, you can set the `loadConfigSafe` option as `true`
 in `Ignite::load()` static method:
 
-```typescript title="Path.bootstrap('main.ts')"
+```typescript title="Path.bin('main.ts')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url, {
@@ -595,7 +563,7 @@ await ignite.httpServer()
 
 ## Debug mode
 
-The `debug` option in your `Path.config('app.ts')` configuration
+The `debug` option in your <Path path="config" child="app.ts" /> configuration
 file determines how much information about your application
 is actually displayed to you and for who is going to consume
 your application. By default, this option is set to respect

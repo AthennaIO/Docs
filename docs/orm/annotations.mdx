@@ -260,7 +260,7 @@ The `@HasOne()` annotation marks a model property as an
 [one-to-one relation](/docs/orm/relationships#one-to-one):
 
 ```typescript
-import { Pilot } from '#app/models/Pilot'
+import { Pilot } from '#src/models/Pilot'
 import type { Relation } from '@athenna/database'
 import { Column, HasOne, BaseModel } from '@athenna/database'
 
@@ -369,7 +369,7 @@ The `@HasMany()` annotation marks a model property as an
 [one-to-many relation](/docs/orm/relationships#one-to-many):
 
 ```typescript
-import { Comment } from '#app/models/Comment'
+import { Comment } from '#src/models/Comment'
 import type { Relation } from '@athenna/database'
 import { Column, HasOne, BaseModel } from '@athenna/database'
 
@@ -479,7 +479,7 @@ an [one-to-one relation](/docs/orm/relationships#defining-the-inverse-of-the-rel
 the inverse side of an [one-to-many relation (many-to-one)](/docs/orm/relationships#defining-the-inverse-of-the-relationship-many-to-one):
 
 ```typescript
-import { User } from '#app/models/User'
+import { User } from '#src/models/User'
 import type { Relation } from '@athenna/database'
 import { Column, BelongsTo, BaseModel } from '@athenna/database'
 
@@ -591,9 +591,9 @@ The `@BelongsToMany()` annotation marks a model property as a
 [many-to-many relation](/docs/orm/relationships#many-to-many):
 
 ```typescript
-import { Role } from '#app/models/Role'
+import { Role } from '#src/models/Role'
 import type { Relation } from '@athenna/database'
-import { RolesUsers } from '#app/models/RolesUsers'
+import { RolesUsers } from '#src/models/RolesUsers'
 import { Column, BaseModel, BelongsToMany } from '@athenna/database'
 
 export class User extends BaseModel {

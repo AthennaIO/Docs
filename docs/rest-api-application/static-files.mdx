@@ -4,6 +4,8 @@ sidebar_position: 12
 description: See how to serve static files in Athenna REST API application.
 ---
 
+import Path from '@site/src/components/path'
+
 # Static Files 
 
 See how to serve static files in Athenna REST API application.
@@ -17,7 +19,7 @@ files from a given directory.
 
 Athenna uses the [`@fastify/static`](https://github.com/fastify/fastify-static) 
 plugins inside `HttpKernel`. All the configurations that `@fastify/static` 
-supports can be set inside `Path.config('http.ts')` file in the `static` 
+supports can be set inside  <Path father="config" child="http.ts" /> file in the `static` 
 object. 
 
 ```typescript title="Path.config('http.ts')"
@@ -33,7 +35,7 @@ export default {
 ```
 
 Now you can use the `response.sendFile()` methods to serve
-files from `Path.public()` directory: 
+files from <Path father="public" /> directory: 
 
 ```typescript title="Path.route('http.ts')"
 Route.get('/hello', ({ response }) => {

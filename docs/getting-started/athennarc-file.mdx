@@ -34,7 +34,7 @@ also register it inside your `.athennarc.json` file:
 ```json
 {
   "services": [
-    "#app/services/UserService"
+    "#src/services/UserService"
   ]
 }
 ```
@@ -46,11 +46,11 @@ create customized ones for each environment (`.athennarc.dev.json`,
 `.athennarc.prod.json`). To do that you need to set the new 
 path to `Ignite::load()` static method:
 
-```typescript title="Path.bootstrap('dev.ts')"
+```typescript title="Path.bin('dev.ts')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url, {
-  athennaRcPath: './bootstrap/athennadevrc.json' 👈
+  athennaRcPath: './bin/athennadevrc.json' 👈
 })
 
 await ignite.httpServer()
@@ -80,7 +80,7 @@ Athenna will check if the `athenna` property exists in your `package.json`:
       "@athenna/http/providers/HttpServerProvider"
     ],
     "directories": {
-      "bootstrap": "bin"
+      "bin": "bootstrap"
     }
   }
 }
@@ -108,7 +108,7 @@ Log.info(`Hello from ${Config.get('app.name')} application!`)
 ```json title=".athennarc.json"
 {
   "preloads": [
-    "./bootstrap/preloads/say-hello.js"
+    "./bin/preloads/say-hello.js"
   ]
 }
 ```
@@ -148,8 +148,8 @@ services in the container:
 ```json title=".athennarc.json"
 {
   "services": [
-    "#app/services/AppService",
-    "./app/services/OtherService.js"
+    "#src/services/AppService",
+    "./src/services/OtherService.js"
   ]
 }
 ```
@@ -243,39 +243,45 @@ resolve the paths of your application:
     "bin": "bin",
     "src": "src",
     "app": "app",
-    "models": "app/models",
-    "services": "app/services",
-    "exceptions": "app/exceptions",
-    "repositories": "app/repositories",
-    "console": "app/console",
-    "commands": "app/console/commands",
-    "http": "app/http",
-    "controllers": "app/http/controllers",
-    "middlewares": "app/http/middlewares",
-    "interceptors": "app/http/interceptors",
-    "terminators": "app/http/terminators",
     "bootstrap": "bootstrap",
-    "config": "config",
-    "database": "database",
-    "seeders": "database/seeders",
-    "migrations": "database/migrations",
-    "lang": "lang",
-    "resources": "resources",
-    "views": "resources/views",
-    "locales": "resources/locales",
-    "nodeModules": "node_modules",
-    "nodeModulesBin": "node_modules/.bin",
-    "providers": "providers",
-    "facades": "providers/facades",
     "public": "public",
     "static": "public/static",
     "assets": "public/assets",
-    "routes": "routes",
-    "storage": "storage",
-    "logs": "storage/logs",
+    "nodeModules": "node_modules",
+    "nodeModulesBin": "node_modules/.bin",
     "tests": "tests",
     "stubs": "tests/stubs",
-    "fixtures": "tests/fixtures"
+    "fixtures": "tests/fixtures",
+    "models": "src/models",
+    "services": "src/services",
+    "jobs": "src/jobs",
+    "workers": "src/workers",
+    "exceptions": "src/exceptions",
+    "repositories": "src/repositories",
+    "console": "src/console",
+    "commands": "src/console/commands",
+    "http": "src/http",
+    "guards": "src/http/guards",
+    "controllers": "src/http/controllers",
+    "middlewares": "src/http/middlewares",
+    "interceptors": "src/http/interceptors",
+    "terminators": "src/http/terminators",
+    "validators": "src/validators",
+    "cron": "src/cron",
+    "schedulers": "src/cron/schedulers",
+    "config": "src/config",
+    "database": "src/database",
+    "seeders": "src/database/seeders",
+    "migrations": "src/database/migrations",
+    "lang": "src/lang",
+    "resources": "src/resources",
+    "views": "src/resources/views",
+    "locales": "src/resources/locales", 
+    "providers": "src/providers",
+    "facades": "src/facades", 
+    "routes": "src/routes",
+    "storage": "src/storage",
+    "logs": "src/storage/logs"
   }
 }
 ```
@@ -301,8 +307,8 @@ Route facade:
 ```json title=".athennarc.json"
 {
   "controllers": [
-    "#app/http/controllers/AppController",
-    "./app/http/controllers/OtherController.js"
+    "#src/http/controllers/AppController",
+    "./src/http/controllers/OtherController.js"
   ]
 }
 ```
@@ -317,8 +323,8 @@ in the service container to be accessed easily by your
 ```json title=".athennarc.json"
 {
   "middlewares": [
-    "#app/http/middlewares/AppMiddleware",
-    "./app/http/interceptors/AppInterceptor.js"
+    "#src/http/middlewares/AppMiddleware",
+    "./src/http/interceptors/AppInterceptor.js"
   ]
 }
 ```
@@ -354,8 +360,8 @@ in your route declaration:
 ```json title=".athennarc.json"
 {
   "namedMiddlewares": {
-    "app": "#app/http/middlewares/AppMiddleware",
-    "intercept": "./app/http/interceptors/AppInterceptor.js"
+    "app": "#src/http/middlewares/AppMiddleware",
+    "intercept": "./src/http/interceptors/AppInterceptor.js"
   }
 }
 ```
@@ -372,8 +378,8 @@ in any request of your application:
 ```json title=".athennarc.json"
 {
   "globalMiddlewares": [
-    "#app/http/middlewares/AppMiddleware",
-    "./app/http/interceptors/AppInterceptor.js"
+    "#src/http/middlewares/AppMiddleware",
+    "./src/http/interceptors/AppInterceptor.js"
   ]
 }
 ```

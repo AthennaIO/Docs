@@ -4,6 +4,8 @@ sidebar_position: 3
 description: See how to create and run database migrations in Athenna Framework.
 ---
 
+import Path from '@site/src/components/path'
+
 # Database: Migrations 
 
 See how to create and run database migrations in Athenna Framework.
@@ -20,7 +22,7 @@ solve.
 ## Generating migrations
 
 You may use the `make:migration` Artisan command to generate a database migration. The new migration will be placed in your
-`Path.migrations()` directory. Each migration filename contains a
+<Path father="migrations" />  directory. Each migration filename contains a
 timestamp that allows Athenna to determine the order of
 the migrations:
 

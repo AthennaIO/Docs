@@ -4,6 +4,8 @@ sidebar_position: 3
 description: Understand the purpose and how to use the Athenna service providers.
 ---
 
+import Path from '@site/src/components/path'
+
 # Service Providers
 
 Understand the purpose and how to use the Athenna service providers.
@@ -60,7 +62,7 @@ which provides access to the service container:
 
 ```typescript
 import { ServiceProvider } from '@athenna/ioc'
-import { AppHelper } from '#app/helpers/AppHelper'
+import { AppHelper } from '#src/helpers/AppHelper'
 
 export default class AppProvider extends ServiceProvider {
    public register() {
@@ -83,7 +85,7 @@ the framework:
 
 ```typescript
 import { ServiceProvider } from '@athenna/ioc'
-import { AppHelper } from '#app/helpers/AppHelper'
+import { AppHelper } from '#src/helpers/AppHelper'
 
 export default class AppProvider extends ServiceProvider {
    public boot() {
@@ -135,7 +137,7 @@ might need to register it manually, just add the path to it to the array:
   "providers": [
     // Other service providers...
 
-    "#providers/AppProvider"
+    "#src/providers/AppProvider"
   ]
 }
 ```
@@ -169,8 +171,9 @@ The following environments are available by default in Athenna at this moment:
 - http
 - repl
 - console
+- cron
 
-You could also create your own environments. In your `Path.bootstrap('main.ts')` file
+You could also create your own environments. In your <Path father="bin" child="main.ts" /> file
 you can add an `environments` option when calling `Ignite.load()` method:
 
 ```typescript

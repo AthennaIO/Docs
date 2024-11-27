@@ -28,11 +28,11 @@ import {
   type Relation,
 } from '@athenna/database'
 
-import { Course } from '#app/models/Course'
-import { Profile } from '#app/models/Profile'
-import { Comment } from '#app/models/Comment'
-import { Customer } from '#app/models/Customer'
-import { UsersCourses } from '#app/models/UsersCourses'
+import { Course } from '#src/models/Course'
+import { Profile } from '#src/models/Profile'
+import { Comment } from '#src/models/Comment'
+import { Customer } from '#src/models/Customer'
+import { UsersCourses } from '#src/models/UsersCourses'
 
 export class User extends BaseModel {
   @Column()
@@ -78,7 +78,7 @@ To define this relationship, we will place a `phone` property on the `User`
 model and annotate it with the `@HasOne()` annotation:
 
 ```typescript
-import { Phone } from '#app/models/Phone'
+import { Phone } from '#src/models/Phone'
 import type { Relation } from '@athenna/database'
 import { Column, BaseModel, HasOne, type Relation } from '@athenna/database'
 
@@ -154,7 +154,7 @@ the inverse of a `@HasOne()` relationship using the `@BelongsTo()`
 annotation:
 
 ```typescript
-import { User } from '#app/models/User'
+import { User } from '#src/models/User'
 import type { Relation } from '@athenna/database'
 import { Column, BelongsTo, BaseModel } from '@athenna/database'
 
@@ -208,7 +208,7 @@ Athenna relationships, one-to-many relationships are defined by
 defining a `@HasMany()` annotation in your model class property:
 
 ```typescript
-import { Comment } from '#app/models/Comment'
+import { Comment } from '#src/models/Comment'
 import type { Relation } from '@athenna/database'
 import { Column, BaseModel, HasMany } from '@athenna/database'
 
@@ -275,7 +275,7 @@ relationship property on the child model annotated with the
 `@BelongsTo()` annotation:
 
 ```typescript
-import { Post } from '#app/models/Post'
+import { Post } from '#src/models/Post'
 import type { Relation } from '@athenna/database'
 import { Column, BaseModel, BelongsTo } from '@athenna/database'
 
@@ -381,8 +381,8 @@ with the `@BelongsToMany()` annotation. But before we check how to define
 this annotation, we need to first create our `RolesUsers` pivot model:
 
 ```typescript
-import { Role } from '#app/models/Role'
-import { User } from '#app/models/User'
+import { Role } from '#src/models/Role'
+import { User } from '#src/models/User'
 import type { Relation } from '@athenna/database'
 import { Column, BaseModel, BelongsTo } from '@athenna/database'
 
@@ -410,9 +410,9 @@ model class and the second argument is a closure that returns the pivot
 model:
 
 ```typescript
-import { Role } from '#app/models/Role'
+import { Role } from '#src/models/Role'
 import type { Relation } from '@athenna/database'
-import { RolesUsers } from '#app/models/RolesUsers'
+import { RolesUsers } from '#src/models/RolesUsers'
 import { Column, BaseModel, BelongsToMany } from '@athenna/database'
 
 export class User extends BaseModel {
@@ -479,9 +479,9 @@ user / role example, let's define the `users` property on the `Role`
 model:
 
 ```typescript
-import { User } from '#app/models/User'
+import { User } from '#src/models/User'
 import type { Relation } from '@athenna/database'
-import { RolesUsers } from '#app/models/RolesUsers'
+import { RolesUsers } from '#src/models/RolesUsers'
 import { Column, BaseModel, BelongsToMany } from '@athenna/database'
 
 export class Role extends BaseModel {
@@ -524,7 +524,7 @@ Eager loading alleviates the "N + 1" query problem. To illustrate the N + 1
 query problem, consider a `Book` model that "belongs to" to an `Author` model:
 
 ```typescript
-import { Author } from '#app/models/Author'
+import { Author } from '#src/models/Author'
 import type { Relation } from '@athenna/database'
 import { Column, BelongsTo, BaseModel } from '@athenna/database'
 
@@ -697,9 +697,9 @@ When working with many-to-many relationships you need to use the pivot model to
 create the relation between the other two models:
 
 ```typescript
-import { User } from '#app/models/User'
-import { Role } from '#app/models/Role'
-import { RolesUsers } from '#app/models/RolesUsers'
+import { User } from '#src/models/User'
+import { Role } from '#src/models/Role'
+import { RolesUsers } from '#src/models/RolesUsers'
 
 const user = await User.find()
 const role = await Role.find()

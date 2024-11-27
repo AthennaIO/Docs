@@ -4,6 +4,7 @@ sidebar_position: 1
 description: Understand each one of the Athenna applications lifecycles.
 ---
 
+import Path from '@site/src/components/path'
 import ThemedImage from '@theme/ThemedImage'
 
 # Application Lifecycle
@@ -32,7 +33,7 @@ application you are using. Meaning that no matter what is the type of
 application you are using to build your solution, the explanation bellow
 is valid for all of them.
 
-The entry point of an Athenna application is the `Path.bootstrap('main.ts')`. 
+The entry point of an Athenna application is the <Path father="bin" child="main.ts" />. 
 The first action taken by Athenna itself is to create an instance of the 
 application and then boot it.
 
@@ -78,7 +79,7 @@ configuration documentation section](/docs/getting-started/configuration#environ
 #### Configuration files
 
 Afterwards Athenna will load all the configuration files found inside
-the path returned by the `Path.config` method. You can learn more about
+the path returned by the <Path father="config" /> method. You can learn more about
 what is and how to configure your configuration files in
 [the configuration files documentation section](/docs/getting-started/configuration#configuration-files).
 
@@ -115,7 +116,7 @@ in the `.athennarc.json` in the `preloads` array.
 :::note
 
 The process of firing the Athenna foundation is triggered by the
-`Ignite::fire()` static method. But if you check your `Path.bootstrap('main.ts')` 
+`Ignite::fire()` static method. But if you check your <Path father="bin" child="main.ts" /> 
 entrypoint file, you will see that this method is not called directly. 
 The reason for this is that this method is called internally depending 
 on the type of application you are using. Let's cover some examples 
@@ -138,7 +139,7 @@ the foundation will be fired before executing your command.
 ### Kernel
 
 The Kernel class is responsible by defining some bootstraps that will
-be run before reading your `Path.routes('http.ts')` file. These bootstraps
+be run before reading your <Path father="routes" child="http.ts" /> file. These bootstraps
 configure error handling for requests, tracing and logging, detect the
 application environment, and perform other tasks that need to be done
 before the request is actually handled. Typically, these classes handle
@@ -166,7 +167,7 @@ implementation code.
 
 :::
 
-Then, you can register your `CustomKernel` in your `Path.bootstrap('main.ts')`
+Then, you can register your `CustomKernel` in your <Path father="bin" child="main.ts" /> 
 file:
 
 ```typescript
@@ -174,19 +175,19 @@ import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url)
 
-await ignite.httpServer({ kernelPath: '#app/http/CustomKernel' })
+await ignite.httpServer({ kernelPath: '#src/http/CustomKernel' })
 ```
 
 ### Routes
 
-The `Path.routes('http.ts')` file is the entrypoint for all your http requests.
+The <Path father="routes" child="http.ts" /> file is the entrypoint for all your http requests.
 This file is responsible to create a contract between your client and
 your application. It Is in here that we define all our routes and the
 handlers/controllers who will handle the client request.
 
 One of the most important service providers in your application is the
 `HttpRouteProvider`. This service provider adds in the container the
-`Route` class instance used inside `Path.routes('http.ts')` file.
+`Route` class instance used inside <Path father="routes" child="http.ts" /> file.
 
 When the client request arrives, the server first executes all your
 global middlewares, then it will execute all your route middlewares.
@@ -274,7 +275,7 @@ kernel implementation taking a look at [ConsoleKernel](https://github.com/Athenn
 :::
 
 Then, you can register your `CustomKernel` in your 
-`Path.bootstrap('main.ts')` or `Path.bootstrap('artisan.ts')` file:
+<Path father="bin" child="main.ts" />  or <Path father="bin" child="artisan.ts" />  file:
 
 ```typescript
 import { Ignite } from '@athenna/core'
@@ -284,13 +285,13 @@ const ignite = await new Ignite().load(import.meta.url, {
 })
 
 await ignite.console(process.argv, { 
-  kernelPath: '#app/http/CustomKernel' 
+  kernelPath: '#src/http/CustomKernel' 
 })
 ```
 
 ### Execution
 
-The `Path.routes('console.ts')` and the `commands` property of 
+The <Path father="routes" child="console.ts" /> and the `commands` property of 
 `.athennarc.json` file is where that we define all ours commands 
 and the handlers who will handle the terminal arguments.
 
@@ -302,7 +303,7 @@ executed the `hello` command defined in our `.athennarc.json` file:
 {
   "commands": {
     "hello": {
-      "path": "#app/console/commands/HelloCommand",
+      "path": "#src/console/commands/HelloCommand",
       "env": "local",
       "loadApp": false,
       "stayAlive": false,

@@ -4,6 +4,8 @@ sidebar_position: 1
 description: Understand how you can use the Athenna logging API.
 ---
 
+import Path from '@site/src/components/path'
+
 # Logging
 
 Understand how you can use the Athenna logging API.
@@ -24,7 +26,7 @@ the http requests that your application receives.
 ## Configuration
 
 All the configuration options for your application's logging
-behavior are housed in the `Path.config('logging.ts')` configuration
+behavior are housed in the <Path father="config" child="logging.ts" /> configuration
 file. This file allows you to configure your application's
 log channels, so be sure to review each of the available
 channels and their options. We'll review a few common options
@@ -36,7 +38,7 @@ Each log channel is powered by a "driver". The driver determines
 how and where the log message is actually transported. The
 following log channel drivers are available in every Athenna
 application. An entry for most of these drivers is already
-present in your application's `Path.config('logging.ts')` configuration
+present in your application's <Path father="config" child="logging.ts" /> configuration
 file, so be sure to review this file to become familiar with
 its contents:
 
@@ -54,7 +56,7 @@ its contents:
 
 Almost all channels doesn't need any additional configuration to
 work. But some of than need a couple of changes in
-`Path.config('logging.ts')` file to be able to use. They are `slack`,
+<Path father="config" child="logging.ts" /> file to be able to use. They are `slack`,
 `discord` and `telegram`.
 
 #### Configuring the Slack channel
@@ -154,7 +156,7 @@ import { DriverFactory } from '@athenna/logger'
 DriverFactory.createDriver('consoleLog', ConsoleLogDriver)
 ```
 
-Finally, we can start using our new driver in channels of `Path.config('logging.ts')`:
+Finally, we can start using our new driver in channels of <Path father="config" child="logging.ts" />:
 
 ```typescript
 channels: {
@@ -190,10 +192,10 @@ Log.fatal(message)
 You may call any of these methods to log a message for the
 corresponding level. By default, the message will be written
 to the default log channel as configured by your
-`Path.config('logging.ts')` configuration file:
+<Path father="config" child="logging.ts" /> configuration file:
 
 ```typescript
-import { WelcomeService } from '#app/services/WelcomeService'
+import { WelcomeService } from '#src/services/WelcomeService'
 
 export class WelcomeController {
   @Inject()
@@ -230,7 +232,7 @@ example configuration that you might see in a production
 application:
 
 Take note of the `level` configuration option present in
-`slack` channel of your `Path.config('logging.ts')` file:
+`slack` channel of your <Path father="config" child="logging.ts" /> file:
 
 ```typescript
 channels: {
@@ -318,7 +320,7 @@ Log.info(`${chalk.yellow.bold('Hello')} ${chalk.green.italic('World')}!`)
 
 It is also possible to set runtime configurations when using
 the `Log` facade. This way you will never be total
-dependent from `Path.config('logging.ts')` configuration file. To
+dependent from <Path father="config" child="logging.ts" /> configuration file. To
 accomplish this, you may pass a configuration object to the
 `config` method of Log facade and then call the `channel`
 method again to set up the configurations for the specified
@@ -340,7 +342,7 @@ Each log channel is powered by a "formatter". The formatter
 determines how the log message is actually formatted.
 The following log channel formatters are available in every
 Athenna application. An entry for most of these formatters is
-already present in your application's `Path.config('logging.ts')`
+already present in your application's <Path father="config" child="logging.ts" />
 configuration file, so be sure to review this file to become
 familiar with its contents:
 
@@ -406,7 +408,7 @@ FormatterFactory.createFormatter('consoleLog', ConsoleLogFormatter)
 ```
 
 Finally, we can start using our new formatter in channels
-of `Path.config('logging.ts')`:
+of <Path father="config" child="logging.ts" />:
 
 ```typescript
 channels: {
@@ -431,7 +433,7 @@ down.
 If you wish to run your application in silent mode, you can disable this kind 
 of logs using the `Ignite::load()` static method:
 
-```typescript title="Path.bootstrap('main.ts')"
+```typescript title="Path.bin('main.ts')"
 import { Ignite } from '@athenna/core'
 
 const ignite = await new Ignite().load(import.meta.url, {
