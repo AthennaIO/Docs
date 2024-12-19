@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[9647],{7121:(e,s,a)=>{a.r(s),a.d(s,{default:()=>h});a(6540);var n=a(4164),r=a(1003),c=a(7559),t=a(2831),u=a(8244),d=a(4848);function h(e){return(0,d.jsx)(r.e3,{className:(0,n.A)(c.G.wrapper.docsPages),children:(0,d.jsx)(u.A,{children:(0,t.v)(e.route.routes)})})}}}]);
