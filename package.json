@@ -25,12 +25,14 @@
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@mdx-js/react": "^3.0.1",
+    "@mendable/search": "^0.0.206",
     "clsx": "^2.1.1",
     "prism": "^4.1.2",
     "prism-react-renderer": "^2.4.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-player": "^2.16.0"
+    "react-player": "^2.16.0",
+    "swizzle": "^1.1.0"
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.0.0"
