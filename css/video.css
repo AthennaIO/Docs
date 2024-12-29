@@ -1,1 +1,6 @@
-.react-player-center{border-radius:var(--ifm-code-border-radius);margin:0 auto;overflow:hidden;position:relative}
+.react-player-center {
+  margin: 0 auto;
+  position: relative;
+  border-radius: var(--ifm-code-border-radius);
+  overflow: hidden;
+}

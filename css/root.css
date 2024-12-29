@@ -1,1 +1,124 @@
-@import url(https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap);@import url(css/alert.css);@import url(css/markdown.css);@import url(css/navbar.css);@import url(css/icons.css);@import url(css/root.css);@import url(css/footer.css);@import url(css/sidebar.css);@import url(css/toc.css);@import url(css/video.css);:root,[data-theme=dark]{--ifm-color-primary:#9580ff!important;--ifm-color-primary-dark:#755aff!important;--ifm-color-primary-darker:#6547ff!important;--ifm-color-primary-darkest:#563ce7!important;--ifm-color-primary-light:#b5a6ff!important;--ifm-color-primary-lighter:#c5b9ff!important;--ifm-color-primary-lightest:#f5f3ff!important}:root{--ifm-card-background-color:#f6f6f7;--ifm-scrollbar-size:5px!important;--ifm-font-size-base:90%!important;--ifm-code-font-size:85%!important;--doc-sidebar-width:320px!important;--docusaurus-highlighted-code-line-bg:#9580ff1a!important;--ifm-font-family-base:"BlinkMacSystemFont","Helvetica","Arial","sans-serif","apple color emoji"!important;--ifm-font-family-monospace:"JetBrains Mono"!important;--ifm-font-family-monospace-base:"JetBrains Mono",monospace!important;--ifm-navbar-background-color:#f5f5fa!important}[data-theme=dark]{--ifm-card-background-color:#252529;--ifm-background-color:#1d1e26!important;--ifm-navbar-background-color:#15171b!important}.flex{display:flex}.justify-center{justify-content:center}.align-center{align-items:center}.pt-12{padding-top:3rem}.pt-16{padding-top:4rem}.pb-16{padding-bottom:4rem}.pb-24{padding-bottom:6rem}.py-12{padding-bottom:3rem;padding-top:3rem}.py-16{padding-bottom:4rem;padding-top:4rem}@media (min-width:640px){.md\:pt-16{padding-top:4rem}.md\:pt-24{padding-top:6rem}.md\:pt-48{padding-top:12rem}}@media (min-width:960px){.lg\:pt-36{padding-top:9rem}.lg\:pt-48{padding-top:12rem}}@media (min-width:997px){article>.markdown{font-size:16px!important;margin-left:auto!important;margin-right:auto!important;max-width:100%!important}}@media (max-width:996px){.col{margin-top:10px}}
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800&display=swap');
+
+@import url('alert.css');
+@import url('markdown.css');
+@import url('navbar.css');
+@import url('icons.css');
+@import url('root.css');
+@import url('footer.css');
+@import url('sidebar.css');
+@import url('toc.css');
+@import url('video.css');
+
+@media (max-width: 996px) {
+  .col {
+    margin-top: 10px;
+  }
+}
+
+@media (min-width: 997px) {
+    article > .markdown {
+        max-width: 100% !important;
+        font-size: 16px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+}
+
+:root {
+    /* --ifm-container-width: 1140px !important;
+    --ifm-container-width-xl: 900px !important; */
+    --ifm-card-background-color: #f6f6f7;
+    --ifm-scrollbar-size: 5px !important;
+    --ifm-font-size-base: 90% !important;
+    --ifm-color-primary: #9580ff !important;
+    --ifm-color-primary-dark: #755aff !important;
+    --ifm-color-primary-darker: #6547ff !important;
+    --ifm-color-primary-darkest: #563ce7 !important;
+    --ifm-color-primary-light: #b5a6ff !important;
+    --ifm-color-primary-lighter: #c5b9ff !important;
+    --ifm-color-primary-lightest: #f5f3ff !important;
+    --ifm-code-font-size: 85% !important;
+    --doc-sidebar-width: 320px !important;
+    --docusaurus-highlighted-code-line-bg: rgba(149,128,255,.1) !important;
+    --ifm-font-family-base: 'BlinkMacSystemFont', 'Helvetica', 'Arial', 'sans-serif', 'apple color emoji' !important;
+    --ifm-font-family-monospace: 'JetBrains Mono' !important;
+    --ifm-font-family-monospace-base: 'JetBrains Mono', monospace !important;
+    --ifm-navbar-background-color: #f5f5fa !important;
+}
+
+[data-theme='dark'] {
+    --ifm-card-background-color: #252529; 
+    --ifm-color-primary: #9580ff !important;
+    --ifm-color-primary-dark: #755aff !important;
+    --ifm-color-primary-darker: #6547ff !important;
+    --ifm-color-primary-darkest: #563ce7 !important;
+    --ifm-color-primary-light: #b5a6ff !important;
+    --ifm-color-primary-lighter: #c5b9ff !important;
+    --ifm-color-primary-lightest: #f5f3ff !important;
+    --ifm-background-color: #1d1e26 !important;
+    --ifm-navbar-background-color: #15171b !important;
+}
+
+.flex {
+  display: flex;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.pt-12 {
+  padding-top: 3rem;
+}
+
+.pt-16 {
+  padding-top: 4rem;
+}
+
+.pb-16 {
+  padding-bottom: 4rem;
+}
+
+.pb-24 {
+  padding-bottom: 6rem;
+}
+
+.py-12 {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.py-16 {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 960px) {
+  .lg\:pt-36 {
+    padding-top: 9rem;
+  }
+
+  .lg\:pt-48 {
+      padding-top: 12rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .md\:pt-16 {
+    padding-top: 4rem;
+  }
+
+  .md\:pt-24 {
+    padding-top: 6rem;
+  }
+
+  .md\:pt-48 {
+      padding-top: 12rem;
+  }
+}
+

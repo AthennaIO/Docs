@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[9720],{9720:(e,c,a)=>{a.d(c,{createArchitectureServices:()=>s.S});var s=a(9936);a(9369)}}]);

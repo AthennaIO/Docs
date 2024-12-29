@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_athenna_docs=self.webpackChunk_athenna_docs||[]).push([[890],{890:(e,a,s)=>{s.d(a,{createInfoServices:()=>c.v});var c=s(7021);s(9369)}}]);
