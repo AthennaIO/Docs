@@ -11,7 +11,7 @@ export default function SearchBarWrapper() {
       <MendableSearchBar
         anon_key={customFields?.mendableAnonKey}
         style={{ accentColor: "#179C54", darkMode: false }}
-        placeholder="Ask Mendable..."
+        placeholder="Ask..."
         dialogPlaceholder="How to run Athenna HTTP server?"
       />
     </div>
