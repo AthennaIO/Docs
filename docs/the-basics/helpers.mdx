@@ -1,6 +1,6 @@
 ---
 title: Helpers
-sidebar_position: 3
+sidebar_position: 2
 description: Understand how to use all the Athenna Helpers from @athenna/common and other packages.
 ---
 
@@ -226,7 +226,7 @@ Color.httpMethod('OPTIONS').bold('Request Received')
 
 Return all the keys of your enum:
 
-```ts
+```typescript
 import { Enum } from '@athenna/common'
 
 class Status extends Enum {
@@ -241,7 +241,7 @@ const keys = Status.keys() // ['PENDING', 'APPROVED']
 
 Return all the values of your enum:
 
-```ts
+```typescript
 import { Enum } from '@athenna/common'
 
 class Status extends Enum {
@@ -256,7 +256,7 @@ const values = Status.values() // [0, 1]
 
 Return all the entries of your enum:
 
-```ts
+```typescript
 import { Enum } from '@athenna/common'
 
 class Status extends Enum {

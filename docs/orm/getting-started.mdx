@@ -166,8 +166,8 @@ export class Flight extends BaseModel {
 
 As you can see we are defining an `id` property in our static method 
 `attributes()`. This property will have the value of a generated
-uuid randomly everytime that Athenna calls the `attributes()` method. 
-Athenna will call the `attributes()` method everytime that `create()`, 
+uuid randomly every time that Athenna calls the `attributes()` method. 
+Athenna will call the `attributes()` method every time that `create()`, 
 `createMany()`, `update()` and `createOrUpdate()` methods are called, 
 this means that a new uuid will be generated for each call:
 
