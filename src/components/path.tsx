@@ -83,6 +83,9 @@ export default function Path(props: { father: string; child: string }) {
     case 'routes':
       father = 'src/routes'
       break
+    case 'validators':
+      father = 'src/validators'
+      break
   }
 
   return (

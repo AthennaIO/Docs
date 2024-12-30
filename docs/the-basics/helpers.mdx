@@ -1,6 +1,6 @@
 ---
 title: Helpers
-sidebar_position: 3
+sidebar_position: 2
 description: Understand how to use all the Athenna Helpers from @athenna/common and other packages.
 ---
 
@@ -31,7 +31,7 @@ more details to handle them easily.
 - [`Exec`](/docs/the-basics/helpers#exec) - Simple helpers that executes
 some operation, like executing a command in a child process.
 - [`FakeApi`](/docs/the-basics/helpers#fakeapi) - Create a fake REST API
-using `json` files to map the routes and their returns (similiar to [WireMock](https://wiremock.org/)).
+using `json` files to map the routes and their returns (similar to [WireMock](https://wiremock.org/)).
 - [`File`](/docs/the-basics/helpers#file) - Create, copy, move, 
 delete and get information about files.
 - [`Folder`](/docs/the-basics/helpers#folder) - Create, copy, move, 
@@ -63,8 +63,10 @@ folder starting from your application
 route params, query params and more.
 - [`String`](/docs/the-basics/helpers#string) - Simple helpers to manipulate
 strings.
+- [`Ulid`](/docs/the-basics/helpers#ulid) - Create customized ULID and 
+check if they are valid.
 - [`Uuid`](/docs/the-basics/helpers#uuid) - Create customized UUID v4 and 
-validate if they are valid.
+check if they are valid.
 
 ### Clean
 
@@ -98,7 +100,7 @@ console.log(cleanedArray)
 ```
 
 The `cleanArray()` method supports two options, `removeEmpty` to remove empty 
-values like `{}` and `[]` and `recursive` to recursivelly remove data
+values like `{}` and `[]` and `recursive` to recursively remove data
 from objects and arrays:
 
 ```typescript
@@ -144,7 +146,7 @@ console.log(cleanedObject)
 ```
 
 The `cleanObject()` method supports two options, `removeEmpty` to remove empty 
-values like `{}` and `[]` and `recursive` to recursivelly remove data
+values like `{}` and `[]` and `recursive` to recursively remove data
 from objects and arrays:
 
 ```typescript
@@ -224,7 +226,7 @@ Color.httpMethod('OPTIONS').bold('Request Received')
 
 Return all the keys of your enum:
 
-```ts
+```typescript
 import { Enum } from '@athenna/common'
 
 class Status extends Enum {
@@ -239,7 +241,7 @@ const keys = Status.keys() // ['PENDING', 'APPROVED']
 
 Return all the values of your enum:
 
-```ts
+```typescript
 import { Enum } from '@athenna/common'
 
 class Status extends Enum {
@@ -254,7 +256,7 @@ const values = Status.values() // [0, 1]
 
 Return all the entries of your enum:
 
-```ts
+```typescript
 import { Enum } from '@athenna/common'
 
 class Status extends Enum {
@@ -277,7 +279,7 @@ the available documentation for error handling by application:
 
 #### `Exception.toJSON()`
 
-Get the informations of the exception as JSON:
+Get the information of the exception as JSON:
 
 ```typescript
 import { Exception } from '@athenna/common'
@@ -297,7 +299,7 @@ const json = exception.toJSON() // { status: 500, name: 'ErrorName', ... }
 
 #### `Exception.prettify()`
 
-Transform the exception to a human redable format:
+Transform the exception to a human readable format:
 
 ```typescript
 import { Exception } from '@athenna/common'
@@ -308,7 +310,7 @@ const exception = new Exception({
   otherInfos: {},
   name: 'ErrorName',
   code: 'ERROR_CODE',
-  message: 'Some exception has ocurred.',
+  message: 'Some exception has occurred.',
   help: 'Try restarting your computer, should work.'
 })
 
@@ -598,7 +600,7 @@ await FakeApi.registerFolder(Path.resources('fake-api'))
 
 #### `FakeApi::build()`
 
-Use this method to programatically build the routes u
+Use this method to programmatically build the routes u
 sing the builder pattern:
 
 ```typescript
@@ -648,7 +650,7 @@ await existent.load({ withContent: true })  👈
 nonExistent.loadSync() 👈
 ```
 
-After loading process, the file will contain new informations:
+After loading process, the file will contain new information:
 
 - createdAt - The date when the file was created.
 - accessedAt - The date when the file was last accessed.
@@ -860,7 +862,7 @@ const stream = file.createWriteStream()
 
 #### `File.toJSON()`
 
-Get the informations of the file as JSON:
+Get the information of the file as JSON:
 
 ```typescript
 const infos = file.toJSON() 👈
@@ -969,7 +971,7 @@ await existent.load({ withSub: true, withContent: true })  👈
 nonExistent.loadSync() 👈
 ```
 
-After loading process, the folder will contain new informations:
+After loading process, the folder will contain new information:
 
 - createdAt - The date when the folder was created.
 - accessedAt - The date when the folder was last accessed.
@@ -1057,7 +1059,7 @@ await folder.remove() 👈
 
 #### `Folder.toJSON()`
 
-Get the informations of the folder as JSON:
+Get the information of the folder as JSON:
 
 ```typescript
 const infos = folder.toJSON() 👈
@@ -2650,6 +2652,17 @@ Is.Module(new File('./hello.ts')) // true
 Is.Module(new File('./hello.json')) // false
 ```
 
+#### `Is::Ulid()`
+
+Validate if the value is a valid ULID:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Ulid('adm::01JG9J4KEDQ9KJCZNYAZCG5ECK') // true
+Is.Ulid('adm::01JG9J4KEDQ9KJCZNYAZCG5ECK', { prefix: 'adm' }) // true
+```
+
 #### `Is::Uuid()`
 
 Validate if the value is a valid UUID v4:
@@ -4083,14 +4096,14 @@ import { Path } from '@athenna/common'
 Path.setModels('app/models/models')
 ```
 
-#### `Path::boostrap()`
+#### `Path::bootstrap()`
 
-Merge the project root path with `Path.dirs.boostrap`:
+Merge the project root path with `Path.dirs.bootstrap`:
 
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.boostrap()) // /home/user/athenna-project/boostrap
+console.log(Path.bootstrap()) // /home/user/athenna-project/bootstrap
 ```
 
 #### `Path::setBootstrap()`
@@ -4220,7 +4233,7 @@ Set the `Path.dirs.facades` value:
 ```typescript
 import { Path } from '@athenna/common'
 
-Path.setFacades('pfacades/app')
+Path.setFacades('facades/app')
 ```
 
 #### `Path::public()`
@@ -5104,6 +5117,129 @@ import { String } from '@athenna/common'
 
 const base64 = String.normalizeBase64('+++///===')
 // '---___'
+```
+
+### Ulid 
+
+#### `Ulid::generate()`
+
+Generate a ULID:
+
+```typescript
+import { Ulid } from '@athenna/common'
+
+const ulid = Ulid.generate()
+// 01JG9J4KEDQ9KJCZNYAZCG5ECK
+```
+
+You can also generate an UUID with a prefixed string:
+
+```typescript
+const prefixedUlid = Ulid.generate('adm')
+// adm::01JG9J4KEDQ9KJCZNYAZCG5ECK
+```
+
+#### `Ulid::verify()`
+
+Verify if a string is a valid ULID:
+
+```typescript
+import { Ulid } from '@athenna/common'
+
+if (Ulid.verify('01JG9J4KEDQ9KJCZNYAZCG5ECK')) {
+  // do something
+}
+```
+
+You can also verify if a string is a valid ULID and if 
+the prefix matches:
+
+```typescript
+const prefixedUlid = 'adm::01JG9J4KEDQ9KJCZNYAZCG5ECK'
+
+// Verify if the string is a valid ULID and the prefix 
+// is equals to adm
+if (Ulid.verify(prefixedUlid, { prefix: 'adm' })) {
+  // do something
+}
+```
+
+By default, the `verify()` method will ignore the prefix to verify
+if the string is a valid ULID, to avoid this set the `ignorePrefix`
+option as `false`:
+
+```typescript
+const prefixedUlid = 'adm::01JG9J4KEDQ9KJCZNYAZCG5ECK'
+
+if (Ulid.verify(prefixedUlid, { ignorePrefix: false })) {
+  // will never enter here with the example above, 
+  // only with plain ULID's.
+}
+```
+
+#### `Ulid::getToken()`
+
+Get the ULID token without the prefix:
+
+```typescript
+import { Ulid } from '@athenna/common'
+
+const prefixedUlid = 'adm::01JG9J4KEDQ9KJCZNYAZCG5ECK'
+const uuid = Ulid.getToken(prefixedUlid)
+// 01JG9J4KEDQ9KJCZNYAZCG5ECK
+```
+
+#### `Ulid::getPrefix()`
+
+Get the prefix without the UUID token:
+
+```typescript
+import { Ulid } from '@athenna/common'
+
+const prefixedUlid = 'adm::01JG9J4KEDQ9KJCZNYAZCG5ECK'
+const prefix = Ulid.getPrefix(prefixedUlid) // adm
+```
+
+#### `Ulid::injectPrefix()`
+
+Inject a prefix in the UUID token, if the UUID token is not 
+valid, this method will throw:
+
+```typescript
+import { Ulid } from '@athenna/common'
+
+const uuid = '01JG9J4KEDQ9KJCZNYAZCG5ECK'
+const prefixedUlid = Ulid.injectPrefix(uuid, 'adm')
+// adm::01JG9J4KEDQ9KJCZNYAZCG5ECK
+```
+
+#### `Ulid::changePrefix()`
+
+Change the prefix of an UUID token, if the UUID token is not 
+valid, this function will throw:
+
+```typescript
+import { Ulid } from '@athenna/common'
+
+const ulid = 'adm::01JG9J4KEDQ9KJCZNYAZCG5ECK'
+const prefixedUlid = Ulid.changePrefix(ulid, 'mng')
+// mng::01JG9J4KEDQ9KJCZNYAZCG5ECK
+```
+
+#### `Ulid::changeOrGenerate()`
+
+Change the prefix of an ULID token, or generate the token
+if the ULID token is `undefined`:
+
+```typescript
+import { Ulid } from '@athenna/common'
+
+const ulid = undefined
+const prefixedUlid = Ulid.changeOrGenerate('adm', ulid)
+// adm::01JG9J4KEDQ9KJCZNYAZCG5ECK
+
+const changedPrefixUlid = Ulid.changeOrGenerate('mng', prefixedUlid)
+// mng::01JG9J4KEDQ9KJCZNYAZCG5ECK
 ```
 
 ### Uuid

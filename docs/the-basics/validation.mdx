@@ -1,0 +1,324 @@
+---
+title: Validation
+sidebar_position: 5
+description: Understand how you can use the Athenna validation API.
+---
+
+import Path from '@site/src/components/path'
+
+# Validation 
+
+Understand how you can use the Athenna validation API.
+
+## Introduction
+
+Athenna provides several different approaches to validate your 
+application's incoming data by using [VineJS](https://vinejs.dev/docs/introduction) 
+under the hood. It is most common to create a validation 
+class extending the `BaseValidator` class available after installing 
+the `@athenna/validator` package. However, we will discuss other approaches 
+to validation as well.
+
+Athenna includes a wide variety of convenient validation rules that you may 
+apply to data, even providing the ability to validate if values are unique 
+in a given database table. We'll cover each of these validation rules in 
+detail so that you are familiar with all of Athenna's validation features.
+
+## Installation
+
+First of all you need to install `@athenna/validator` package
+and configure it. Artisan provides a very simple command to 
+install and configure the validator library in your project. 
+Simply run the following:
+
+```bash
+node artisan install @athenna/validator
+```
+
+The validator configurer will do the following operations in 
+your project:
+
+- Add all database commands in your `.athennarc.json` file.
+- Add all database templates files in your `.athennarc.json` file.
+- Add all validator providers in your `.athennarc.json` file.
+
+## Validation quickstart
+
+To learn about Athenna's powerful validation features, let's look at a 
+complete example of validating a form and displaying the error messages 
+back to the user. By reading this high-level overview, you'll be able to 
+gain a good general understanding of how to validate incoming request data 
+using Athenna:
+
+### Defining routes
+
+First, let's assume we have the following routes defined in our 
+<Path father="routes" child="http.ts" /> file:
+
+```typescript title="Path.routes('http.ts')"
+import { Route } from '@athenna/http'
+
+Route.post('/articles', 'ArticleController.store')
+```
+
+### Creating the controller
+
+Next, let's take a look at a simple controller that handles incoming 
+requests to this route. We'll leave the `store()` method empty for now:
+
+```typescript title="Path.controllers('article.controller.ts')"
+import { Context, Controller } from '@athenna/http'
+
+@Controller()
+export class ArticleController {
+  public async store({ response }: Context) {
+    // Validator and store the article
+    const article = /** ... */
+
+    return response.status(200).send(article)
+  }
+}
+```
+
+### Writing the validation class
+
+To get started, let's create a validator. Validators typically live in the 
+<Path father="validators" /> and extend the [`BaseValidator`](https://github.com/AthennaIO/Validator/blob/develop/src/validator/BaseValidator.ts) 
+class. You may use the `make:validator` Artisan command to generate a 
+new validator:
+
+```bash
+node artisan make:validator article.validator 
+```
+
+Now we just need to create the validation schema and gave a name to
+our validation class:
+
+```typescript title="Path.validators('article.validator.ts')"
+import { type Context } from '@athenna/http'
+import { v, Validator, BaseValidator } from '@athenna/validator'
+
+@Validator({ name: 'article:create' }) 👈
+export class ArticleValidator extends BaseValidator {
+  public schema = v.object({
+    title: v.string()
+      .unique({ table: 'articles' })
+      .maxLength(255),
+    body: v.string()
+  })
+
+  public async handle({ request }: Context) {
+    const data = request.only(['title', 'body'])
+
+    await v.validate(data)
+  }
+}
+```
+
+With our schema and name defined in our validation class, it's time to define
+it in our route:
+
+```typescript title="Path.routes('http.ts')"
+import { Route } from '@athenna/http'
+
+Route.post('/articles', 'ArticleController.store').validator('article:create')
+```
+
+Now every time that a request to create an article comes, if the validation rule pass, 
+your code will keep executing normally; however, if validation fails, a `ValidationException` 
+exception will be thrown and the proper error response will automatically be sent back to 
+the user.
+
+Voilà! You have defined you first validator using Athenna 🥳
+
+### Validating REST API components
+
+When using validator classes for [REST API](docs/rest-api-application/routing), 
+keep in mind that they are just [middlewares](docs/rest-api-application/middlewares) 
+with some helpers to make validation easier. So you are free to define multiple 
+validation classes:
+
+```typescript
+import { Route } from '@athenna/http'
+
+Route.post('/articles', 'ArticleController.store')
+  .validator('article:create') 👈
+  .validator('article:update') 👈
+```
+
+There might be some cases where you need to validate fields inside request params or query 
+params. Since validators are just like [middlewares](docs/rest-api-application/middlewares),
+You have access to all that information through the `ctx.request` object:
+
+```typescript title="Path.validators('article.validator.ts')"
+import { type Context } from '@athenna/http'
+import { v, Validator, BaseValidator } from '@athenna/validator'
+
+@Validator({ name: 'article:create' })
+export class ArticleValidator extends BaseValidator {
+  public schema = v.object({
+    title: v.string()
+      .unique({ table: 'articles' })
+      .maxLength(255),
+    body: v.string(),
+    created_by: v.string()
+  })
+
+  public async handle({ request }: Context) {
+    const data = {
+      ...request.only(['title', 'body']),
+      created_by: request.query('created_by') 👈
+    }
+
+    await v.validate(data)
+  }
+}
+```
+
+## Validation outside of REST API's
+
+For applications where you don't have an easy integration with a validator class or if
+you simply want to have control over the validation flow you can use the `v` object
+directly, `v` object is the same as `vite` but smaller to write smaller schemas: 
+
+```typescript title="Path.controllers('article.controller.ts')"
+import { v } from '@athenna/validator'
+import { type Context, Controller } from '@athenna/http'
+
+@Controller()
+export class ArticleController {
+  public async store({ request, response }: Context) {
+    const data = request.only(['title', 'body'])
+
+    const schema = v.object({
+      title: v.string()
+        .unique({ table: 'articles' })
+        .maxLength(255),
+      body: v.string()
+    })
+
+    const article = await v.validate({ schema, data })
+
+    return response.status(200).send(article)
+  }
+}
+```
+
+Just like the validation class, if the validation rule pass, your code will keep 
+executing normally; however, if validation fails, a `ValidationException` exception 
+will be thrown and the proper error response will automatically be sent back to the user.
+
+## Available validation rules
+
+All the of the native validation rules can be found in [VineJS](https://vinejs.dev/docs/introduction) 
+documentation. Athenna supports all schema types of VineJS, you can find the documentation for each one here:
+
+- [`v.string()`](https://vinejs.dev/docs/types/string)
+- [`v.boolean()`](https://vinejs.dev/docs/types/boolean)
+- [`v.number()`](https://vinejs.dev/docs/types/number)
+- [`v.date()`](https://vinejs.dev/docs/types/date)
+- [`v.accepted()`](https://vinejs.dev/docs/types/accepted)
+- [`v.enum()`](https://vinejs.dev/docs/types/enum)
+- [`v.literal()`](https://vinejs.dev/docs/types/literal)
+- [`v.object()`](https://vinejs.dev/docs/types/object)
+- [`v.record()`](https://vinejs.dev/docs/types/record)
+- [`v.array()`](https://vinejs.dev/docs/types/array)
+- [`v.tuple()`](https://vinejs.dev/docs/types/tuple)
+- [`v.union()`](https://vinejs.dev/docs/types/union)
+- [`v.any()`](https://vinejs.dev/docs/types/any)
+
+## Custom validation rules
+
+To create custom validations we just need to create a provider where we will
+use the `Validate` facade to extend some of the schema types. Let's check in
+the example bellow a simpler version of the `unique` custom validation rule 
+of Athenna, let's start by creating a validation provider:
+
+```bash
+node artisan make:provider customvalidation.provider
+```
+
+With our provider created and registered in `.athennarc.json`, we just need
+to make use of the `Validate.extend()` method inside the `boot()` method:
+
+```typescript
+import { Database } from '@athenna/database'
+import { Validate } from '@athenna/validator'
+import { ServiceProvider } from '@athenna/ioc'
+
+type UniqueOptions = {
+  table: string
+}
+
+declare module '@vinejs/vine' {
+  interface VineString {
+    unique(options: UniqueOptions): this
+  }
+}
+
+export default class CustomValidationProvider extends ServiceProvider {
+    public async boot() {
+      Validate.extend().string('unique', async (value, options, field) => { 
+        /**
+         * Don't validate non string values, let `string` 
+         * validation rule throw the error.
+         */
+        if (!Is.String(value)) {
+          return
+        }
+
+        const existsRow = await Database.table(options.table)
+          .select(options.column)
+          .where(options.column, value)
+          .exists()
+
+        if (existsRow) {
+          field.report('The {{ field }} field is not unique', 'unique', field)
+        }
+      })
+    }
+}
+```
+
+:::tip
+
+For more information around how to create custom rules for your schemas 
+please rely on [VineJS custom rules documentation](https://vinejs.dev/docs/extend/custom_rules).
+
+:::
+
+## Custom validation messages
+
+For custom validation messages you can use the `Validate.extend().messages()` method.
+So following the same approach of creating [custom validation rules](#custom-validation-rules), we
+need to create a service provider to call this method:
+
+```typescript
+import { Validate } from '@athenna/validator'
+import { ServiceProvider } from '@athenna/ioc'
+
+export default class CustomValidationProvider extends ServiceProvider {
+    public async boot() {
+      Validate.extend().messages({
+        // Applicable for all fields
+        'required': 'The {{ field }} field is required',
+        'string': 'The value of {{ field }} field must be a string',
+        'email': 'The value is not a valid email address',
+   
+         // Error message only for the username field
+        'username.required': 'Please choose a username for your account'
+
+        // For arrays
+        'contacts.0.email.required': 'The primary email of the contact is required',
+        'contacts.*.email.required': 'Contact email is required'
+      })
+    }
+}
+```
+
+:::tip
+
+For more information around syntaxes you can use whe creating custom error messages 
+please rely on [VineJS custom error messages documentation](https://vinejs.dev/docs/custom_error_messages).
+
+:::
