@@ -1,0 +1,354 @@
+---
+title: Web Application
+sidebar_position: 13
+description: See how to create web applications using Vite for asset bundling.
+---
+
+import Path from '@site/src/components/path'
+
+# Web Application
+
+See how to create web applications using Vite for asset bundling.
+
+## Introduction
+
+[Vite](https://vite.dev/) is a modern frontend build tool that provides 
+an extremely fast development environment and bundles your code 
+for production. When building applications with Athenna, you will 
+typically use Vite to bundle your application's CSS and JavaScript 
+files into production ready assets.
+
+Athenna integrates seamlessly with Vite by providing an official 
+plugin and [Edge.js](https://edgejs.dev/docs/introduction) directive 
+to load your assets for development and production. This tool facilitates
+the development of full-stack web applications using Athenna as the backend
+framework.
+
+## Installing
+
+We recommend to start a new Athenna project to setup all the 
+configurations needed to get Athenna + Vite working together: 
+
+```shell
+athenna new my-web-app
+```
+
+:::note
+
+Don't forget to select `WEB EDGE` or `WEB REACT` when prompted about the 
+application type.
+
+:::
+
+## Configuration
+
+The web application adds the `vite.config.ts` file that is used to 
+configure the Vite bundler, and a new plugin to 
+<Path father="config" child="http.ts" /> named `vite` that is used 
+by Athenna on the backend.
+
+### Vite configuration file
+
+The `vite.config.ts` file is a regular configuration 
+file used by Vite. Per your project requirements, you can install and register 
+additional Vite plugins inside this file. By default, Vite file will use the 
+Athenna plugin, which accepts the following options:
+
+#### entrypoints
+
+The entrypoints refers to the entry point file of your frontend codebase. 
+Usually, it will be a JavaScript or a TypeScript file with additional 
+imports. Each entry point will result in a separate output bundle.
+
+Also, if needed, you can define multiple entrypoints. For example, an 
+entry point for your user-facing app and another for the admin panel.
+
+#### buildDirectory
+
+The `buildDirectory` option defines a relative path to the output 
+directory. The option value is supplied to Vite as the `build.outDir` option.
+
+If you decide to change the default value, make sure also to update the 
+`buildDirectory` path in the `vite` object inside <Path father="config" child="http.ts" /> 
+configuration file.
+
+Default: `public/assets`
+
+#### reload
+
+It contains an array of glob patterns to watch and reload the browser 
+on file change. By default, we watch for Edge templates in `WEB EDGE` 
+application and `.tsx` files on `WEB REACT`. However, you can 
+configure additional patterns as well.
+
+#### assetsUrl
+
+It contains the URL to prefix when generating links for assets in 
+production. If you upload the Vite output to a CDN, then the value 
+of this property should be the CDN server URL.
+
+Ensure you update the backend configuration to use the same `assetsUrl` 
+value.
+
+### Vite backend configuration
+
+#### dev
+
+Tell Athenna if should create vite development server or not.
+By default, this is controlled by the `Config.get('app.environment')` 
+configuration which points to the `APP_ENV` environment variable 
+defined in your `.env` file.
+
+#### buildDirectory
+
+It contains the path to the Vite's build output directory. 
+You must also update this backend config if you change the 
+default value inside the `vite.config.ts` file.
+
+#### assetsUrl
+
+The URL to prefix when generating links for assets in production. 
+If you upload the Vite output to a CDN, then the value of this 
+property should be the CDN server URL.
+
+#### scriptAttributes
+
+You can use the `scriptAttributes` property to set attributes 
+on the script tags generated using the `@vite` tag. The attributes 
+are a collection of key-value pairs.
+
+```ts title="Path.config('http.ts')"
+export default {
+  vite: {
+    scriptAttributes: {
+      defer: true,
+      async: true
+    }
+  }
+}
+```
+
+#### styleAttributes
+
+You can use the `styleAttributes` property to set attributes on 
+the link tags generated using the `@vite` tag. The attributes 
+are a collection of key-value pairs.
+
+```ts title="Path.config('http.ts')"
+export default {
+  vite: {
+    styleAttributes: {
+      'data-turbo-track': 'reload'
+    }
+  }
+}
+```
+
+You can also apply the attributes conditionally by assigning a 
+function to the `styleAttributes` option.
+
+```ts title="Path.config('http.ts')"
+export default {
+  vite: {
+    styleAttributes: ({ src, url }) => {
+      if (src === 'src/resources/css/admin.css') {
+        return {
+          'data-turbo-track': 'reload'
+        }
+      }
+    }
+  }
+}
+```
+
+## Starting the dev server
+
+You can start your application as usual, and Athenna will automatically 
+proxy the needed requests to Vite if the `dev` option is `true` in your
+backend vite configuration:
+
+```shell
+node artisan serve
+```
+
+## Including entrypoints in Edge templates
+
+You can render the script and the style tags for the entrypoints defined 
+inside the `vite.config.ts` file using the `@vite` Edge tag. The tag 
+accepts an array of entrypoints and returns the script and the link tags.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @vite(['src/resources/js/app.ts'])
+</head>
+<body>
+    
+</body>
+</html>
+```
+
+We recommend importing CSS files inside your TypeScript files and not 
+registering them separately as an entry point. For example:
+
+```
+src
+└── resources
+    └── css
+        └── app.css
+    └── js
+        └── app.ts
+```
+
+```typescript title="Path.resources("js/app.ts")"
+import '../css/app.css'
+```
+
+## Referencing assets inside Edge templates
+
+Vite creates a dependency graph of files imported by the entrypoints 
+and auto-updates their paths per the bundled output. However, Vite 
+is unaware of Edge templates and cannot detect their referenced assets.
+
+Therefore, we provide an Edge helper you can use to create URLs for 
+files processed by Vite. In the following example:
+
+- The `asset` helper will return a URL pointing to the Vite dev server 
+during development.
+- Return a URL pointing to the output filename during production.
+
+```edge
+<link rel="stylesheet" href="{{ asset('src/resources/css/app.css') }}">
+```
+
+```edge title="Output in development"
+<link rel="stylesheet" href="http://localhost:5173/src/resources/css/app.css">
+```
+
+```edge title="Output in production"
+<link rel="stylesheet" href="/public/assets/app-3bc29777.css">
+```
+
+## Processing additional assets with Vite
+
+Vite ignores static assets not imported by the frontend code. It could 
+be static images, fonts, or SVG icons only referenced inside the Edge templates.
+
+Therefore, you will have to notify Vite about the existence of these 
+assets using its [Glob imports](https://vite.dev/guide/features.html#glob-import) API.
+
+In the following example, we ask Vite to process all the files within the 
+`src/resources/img` directory. This code should be written within an entry point file:
+
+```typescript
+import.meta.glob(['../img/**'])
+```
+
+Now you can reference the images within your Edge templates as follows:
+
+```edge
+<img src="{{ asset('src/resources/img/hero.jpg') }}" />
+```
+
+## Enabling HMR with React
+
+To enable [react-refresh](https://www.npmjs.com/package/react-refresh) during 
+development, you must use the `@viteReactRefresh` Edge tag. It should be 
+written before you include the entrypoints using the `@vite` tag.
+
+```edge
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @viteReactRefresh()
+    @vite(['src/resources/js/app.ts'])
+</head>
+<body>
+    
+</body>
+</html>
+```
+
+Once done, you can configure the React plugin as usual in a regular Vite project.
+
+```typescript
+import { defineConfig } from 'vite'
+
+import react from '@vitejs/plugin-react'
+import athenna from '@athenna/vite/plugins/client'
+
+export default defineConfig({
+  plugins: [
+    athenna({
+      entrypoints: ["src/resources/js/app.ts"],
+    }),
+    react() 👈
+  ]
+})
+```
+
+:::tip
+
+We highly recommend you to bootstrap a new project using Athenna CLI
+to select `WEB REACT` application type. Will be easier if you start
+this new project with everything configured then to try to do it manually,
+just run the following and select `WEB REACT` when prompted:
+
+```shell
+athenna new my-react-app
+```
+
+:::
+
+## Deploying assets to a CDN
+
+After you create the production build using Vite, you can upload 
+the bundled output to a CDN server to serve the files.
+
+However, before you do that, you must register the URL of your 
+CDN server with both Vite and Athenna so that the output URLs 
+inside the `manifest.json` file or lazy loaded chunks should 
+point to your CDN server.
+
+You must define the `assetsUrl` inside the `vite.config.ts` 
+file and in `vite` object of <Path father="config" child="http.ts" /> 
+file.
+
+```typescript title="vite.config.ts"
+import { defineConfig } from 'vite'
+import athenna from '@athenna/vite/plugins/client'
+
+export default defineConfig({
+  plugins: [
+    athenna({
+      entrypoints: ['src/resources/js/app.ts'],
+      reloads: ['src/resources/views/**/*.edge'],
+      assetsUrl: 'https://cdn.example.com/',
+    }),
+  ]
+})
+```
+
+```typescript title="Path.config("http.ts")"
+export default {
+  vite: {
+    buildDirectory: 'public/assets',
+    assetsUrl: 'https://cdn.example.com/'
+  }
+}
+```
+
+## Manifest file
+
+Vite generates the manifest file alongside the production build 
+of your assets.
+
+The manifest file contains the URLs to the assets processed by Vite, 
+and Athenna uses this file to create URLs for assets referenced 
+inside the Edge templates either using the `asset` helper or the `@vite` 
+tag.
