@@ -18,13 +18,14 @@ The environment used to run the benchmarks:
 
 ```bash title="npx envinfo --system --binaries"
   System:
-    OS: macOS 12.2.1
-    CPU: (8) arm64 Apple M1
-    Memory: 456.81 MB / 8.00 GB
-    Shell: 5.8 - /bin/zsh
+    OS: macOS 15.1.1
+    CPU: (8) arm64 Apple M1 Pro
+    Memory: 94.91 MB / 16.00 GB
+    Shell: 3.7.1 - /opt/homebrew/bin/fish
   Binaries:
-    Node: 20.8.1 - ~/.nvm/versions/node/v20.8.1/bin/node
-    npm: 10.1.0 - ~/.nvm/versions/node/v20.8.1/bin/npm
+    Node: 21.7.1 - /opt/homebrew/bin/node
+    npm: 10.5.0 - /opt/homebrew/bin/npm
+    pnpm: 9.13.2 - ~/Library/pnpm/pnpm
 ```
 
 ## Results
