@@ -47,41 +47,6 @@ to get started.
 
 :::
 
-## Views support
-
-Our focus at the moment is to be a framework for backend 
-applications development. But since the `View` API exists in 
-Athenna ecosystem for creating template files for `make` commands 
-of Artisan, providing this feature for you to create monolith 
-applications with Athenna is possible, but remember that 
-supporting this kind of application is not our focus right 
-now.
-
-If you think this is an interesting feature to improve, feel 
-free to open a [discussion](https://github.com/orgs/AthennaIO/discussions)
-at Athenna organization, any contribution is welcome!
-
-## Installation
-
-By default, `@athenna/view` package will already be installed 
-in your Athenna project. But you still need to configure it
-to be able to use all of it features.
-
-Artisan provides a very simple command to configure the view
-library in your project. Simply run the following:
-
-```bash
-node artisan configure @athenna/view
-```
-
-The view configurer will do the following operations in 
-your project:
-
-- Create the `view.ts` configuration file.
-- Add all view providers in your `.athennarc.json` file.
-- Add all view commands in your `.athennarc.json` file.
-- Add all view template files in your `.athennarc.json` file.
-
 ## Configuration
 
 All the configuration options for your application's views 
@@ -380,7 +345,7 @@ not be a problem.
 
 ## More details about views syntax
 
-If you want to know more informations about the views syntax like loops,
+If you want to know more information about the views syntax like loops,
 "if" statements and declaring properties, check out the full [Edge documentation](https://edgejs.dev/docs/introduction) 
 for all the details around it syntax.
 
@@ -403,5 +368,5 @@ node artisan template:customize
 The customized templates will be located in the 
 <Path father="resources" child="templates" /> directory. Any change
 you make to these files will be reflected when you
-generate their correspoding files using Artisan's 
+generate their corresponding files using Artisan's 
 `make` commands.
