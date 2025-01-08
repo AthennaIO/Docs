@@ -31,8 +31,8 @@ The environment used to run the benchmarks:
 
 | Framework | Version | Requests/sec |
 |:----------|:-------:|-------------:|
-| Fastify   |  4.24.3 |      119.741 |
-| Athenna   |  4.27.0 |      102.781 |
-| AdonisJS  |   5.0.0 |       84.915 |
-| Express   |  4.18.2 |       22.713 |
-| NestJS    |   9.0.0 |       20.192 |
+| Fastify   |  4.24.3 |       80.810 |
+| Athenna   |  5.11.0 |       72.569 |
+| AdonisJS  |   5.0.0 |       54.366 |
+| Express   |  4.18.2 |       16.005 |
+| NestJS    |   9.0.0 |       15.291 |
