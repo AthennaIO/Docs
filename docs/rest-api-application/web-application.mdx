@@ -220,15 +220,15 @@ files processed by Vite. In the following example:
 during development.
 - Return a URL pointing to the output filename during production.
 
-```edge
+```html
 <link rel="stylesheet" href="{{ asset('src/resources/css/app.css') }}">
 ```
 
-```edge title="Output in development"
+```html title="Output in development"
 <link rel="stylesheet" href="http://localhost:5173/src/resources/css/app.css">
 ```
 
-```edge title="Output in production"
+```html title="Output in production"
 <link rel="stylesheet" href="/public/assets/app-3bc29777.css">
 ```
 
@@ -249,7 +249,7 @@ import.meta.glob(['../img/**'])
 
 Now you can reference the images within your Edge templates as follows:
 
-```edge
+```html
 <img src="{{ asset('src/resources/img/hero.jpg') }}" />
 ```
 
@@ -259,7 +259,7 @@ To enable [react-refresh](https://www.npmjs.com/package/react-refresh) during
 development, you must use the `@viteReactRefresh` Edge tag. It should be 
 written before you include the entrypoints using the `@vite` tag.
 
-```edge
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
