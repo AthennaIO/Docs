@@ -117,7 +117,7 @@ You can use the `scriptAttributes` property to set attributes
 on the script tags generated using the `@vite` tag. The attributes 
 are a collection of key-value pairs.
 
-```ts title="Path.config('http.ts')"
+```typescript title="Path.config('http.ts')"
 export default {
   vite: {
     scriptAttributes: {
@@ -134,7 +134,7 @@ You can use the `styleAttributes` property to set attributes on
 the link tags generated using the `@vite` tag. The attributes 
 are a collection of key-value pairs.
 
-```ts title="Path.config('http.ts')"
+```typescript title="Path.config('http.ts')"
 export default {
   vite: {
     styleAttributes: {
@@ -147,7 +147,7 @@ export default {
 You can also apply the attributes conditionally by assigning a 
 function to the `styleAttributes` option.
 
-```ts title="Path.config('http.ts')"
+```typescript title="Path.config('http.ts')"
 export default {
   vite: {
     styleAttributes: ({ src, url }) => {
