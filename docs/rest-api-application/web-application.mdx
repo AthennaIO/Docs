@@ -35,8 +35,8 @@ athenna new my-web-app
 
 :::note
 
-Don't forget to select `WEB EDGE` or `WEB REACT` when prompted about the 
-application type.
+Don't forget to select `WEB EDGE`, `WEB REACT` or `WEB REACT SSR` when 
+prompted about the application type.
 
 :::
 
@@ -63,6 +63,15 @@ imports. Each entry point will result in a separate output bundle.
 Also, if needed, you can define multiple entrypoints. For example, an 
 entry point for your user-facing app and another for the admin panel.
 
+#### assetsUrl
+
+It contains the URL to prefix when generating links for assets in 
+production. If you upload the Vite output to a CDN, then the value 
+of this property should be the CDN server URL.
+
+Ensure you update the backend configuration to use the same `assetsUrl` 
+value.
+
 #### buildDirectory
 
 The `buildDirectory` option defines a relative path to the output 
@@ -72,7 +81,7 @@ If you decide to change the default value, make sure also to update the
 `buildDirectory` path in the `vite` object inside <Path father="config" child="http.ts" /> 
 configuration file.
 
-Default: `public/assets`
+Default: `Path.public('assets')` 
 
 #### reload
 
@@ -80,15 +89,6 @@ It contains an array of glob patterns to watch and reload the browser
 on file change. By default, we watch for Edge templates in `WEB EDGE` 
 application and `.tsx` files on `WEB REACT`. However, you can 
 configure additional patterns as well.
-
-#### assetsUrl
-
-It contains the URL to prefix when generating links for assets in 
-production. If you upload the Vite output to a CDN, then the value 
-of this property should be the CDN server URL.
-
-Ensure you update the backend configuration to use the same `assetsUrl` 
-value.
 
 ### Vite backend configuration
 
@@ -99,17 +99,33 @@ By default, this is controlled by the `Config.get('app.environment')`
 configuration which points to the `APP_ENV` environment variable 
 defined in your `.env` file.
 
+#### assetsUrl
+
+The URL to prefix when generating links for assets in production. 
+If you upload the Vite output to a CDN, then the value of this 
+property should be the CDN server URL.
+
 #### buildDirectory
 
 It contains the path to the Vite's build output directory. 
 You must also update this backend config if you change the 
 default value inside the `vite.config.ts` file.
 
-#### assetsUrl
+#### ssrEntrypoint
 
-The URL to prefix when generating links for assets in production. 
-If you upload the Vite output to a CDN, then the value of this 
-property should be the CDN server URL.
+With this option set, SSR will be turn on into your application.
+This defines where Vite needs to look when compiling your server
+entrypoint files and when searching for the default entrypoint to
+render when using `response.render()` method. 
+
+Default: `src/resources/app/app.tsx` 
+
+#### ssrBuildDirectory
+
+It contains the path to the Vite's SSR build output directory, which
+needs to export the components so the server could import and serve it.
+
+Default: `Path.public('assets/server')` 
 
 #### scriptAttributes
 
@@ -341,6 +357,97 @@ export default {
     assetsUrl: 'https://cdn.example.com/'
   }
 }
+```
+
+## Server Side Rendering (SSR)
+
+:::note
+
+If you want to use SSR we recommend bootstrapping an application choosing
+`WEB REACT SSR` application type which will come with everything already
+configured for you.
+
+:::
+
+If you bootstrap your project using the `WEB REACT` application type
+your application will not be using SSR by default and would require
+some configurations:
+
+#### Add SSR properties
+
+In your `vite` object inside <Path father="config" child="http.ts" />,
+add the SSR properties:
+
+```typescript
+export default {
+  vite: {
+    // ...
+
+    ssrEntrypoint: 'src/resources/app/app.tsx',
+    ssrBuildDirectory: Path.public('assets/server')
+  }
+}
+```
+
+- `ssrEntrypoint` will map your server entrypoint for serving your 
+component.
+- `ssrBuildDirectory` will map where the server entrypoint compiled 
+code should be stored. This property also defines where the manifest 
+file of your server code will stored, in this case our manifest file 
+would be stored inside <Path father="public" child="assets/server/.vite/manifest.json" />.
+
+:::note
+
+Vite never will compile your backend code, this will still be done by 
+`tsc`. The `ssrEntrypoint` file is the entrypoint of your backend 
+code to the client code, Vite compiles your entrypoint in runtime 
+(in development) so we avoid adding features to `tsc` to load files 
+like CSS, JSX, SASS and etc. 
+
+:::
+
+### Rendering React components
+
+The `@athenna/vite` package exposes the `React` helper which you
+can use to load and render components inside your backend routes.
+The following example is the default example that comes with the
+`WEB REACT SSR` application type:
+
+```typescript
+import { React } from '@athenna/vite'
+import { Controller, type Context } from '@athenna/http'
+
+@Controller()
+export class AppController {
+  public async index({ request, response }: Context) {
+    const { createApp } = await React.loadEntrypoint()
+
+    const element = await React.renderComponent(createApp(request.baseUrl))
+
+    return response.view('index', { element })
+  }
+}
+```
+
+1. First we use the `loadEntrypoint()` method that internally will
+use Vite to compile (or search in manifest file) the content of your
+`ssrEntrypoint` file. After that the module is imported and you can
+use all the resources from the file.
+2. After importing the `createApp()` function from our entrypoint, 
+we call the function to create our `<App/>` component and send as
+parameter to the `renderComponent()` method which will use `react-dom/server`
+to transform the component to an HTML string.
+3. Now is simple, we just need to send our element to `index.edge`
+view which will render all the elements.
+
+
+#### Importing other components
+
+In case you want to import other components beside the entrypoint
+you can use the `loadComponent()` method:
+
+```typescript
+const { createApp } = await React.loadComponent('src/resources/app/app.tsx')
 ```
 
 ## Manifest file
