@@ -246,6 +246,17 @@ Route.get('/welcome', ({ response }) => {
 })
 ```
 
+#### The `html()` method
+
+Terminate the request rendering an HTML string in the response 
+body to the client:
+
+```typescript
+Route.get('/welcome', ({ response }) => {
+    response.html('<h1>Hello World!</h1>')
+})
+```
+
 #### The `view()` method
 
 Terminate the request rendering a view in the response 
