@@ -361,22 +361,27 @@ export default {
 
 ## Server Side Rendering (SSR)
 
-:::note
+SSR, short for Server-Side Rendering, is a technique in web development 
+where the webpage's content is rendered on the server instead of the client's 
+browser. The primary advantage of SSR lies in its ability to significantly 
+enhance user experience by facilitating faster page transitions and quick 
+loading times. 
 
-If you want to use SSR we recommend bootstrapping an application choosing
-`WEB REACT SSR` application type which will come with everything already
-configured for you.
+If you use `WEB EDGE` application type you will be already using
+SSR by default, but you can't use nice frameworks like React without some heavy
+configuration.
 
-:::
+That's why Athenna exposes the `WEB REACT SSR` application type that will come
+with everything configured for you to start building your application. The key
+difference from `WEB REACT` and `WEB REACT SSR` is that instead of letting the
+client create and load React root, we do that on the server and just hydrate the
+root in the client, which is way less expensive for the client machine.
 
-If you bootstrap your project using the `WEB REACT` application type
-your application will not be using SSR by default and would require
-some configurations:
+### Configurations
 
-#### Add SSR properties
-
-In your `vite` object inside <Path father="config" child="http.ts" />,
-add the SSR properties:
+The configurations in your `vite` object of <Path father="config" child="http.ts" /> 
+that make your application understand you want to use some framework 
+with SSR are the following:
 
 ```typescript
 export default {
@@ -403,6 +408,25 @@ Vite never will compile your backend code, this will still be done by
 code to the client code, Vite compiles your entrypoint in runtime 
 (in development) so we avoid adding features to `tsc` to load files 
 like CSS, JSX, SASS and etc. 
+
+:::
+
+### Hydrate part
+
+In the <Path father="resources" child="app/root.tsx" /> we are 
+hydrating the root element using React API: 
+
+```typescript
+import { App } from '#app/app'
+import { hydrateRoot } from 'react-dom/client'
+
+hydrateRoot(document.getElementById('root'), <App />)
+```
+
+:::note
+
+For now Athenna has integration only with React for SSR. If you want
+support for other frameworks, please [open a discussion](https://github.com/orgs/AthennaIO/discussions).
 
 :::
 
