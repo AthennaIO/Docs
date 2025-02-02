@@ -18,7 +18,7 @@
     "@docusaurus/plugin-google-gtag": "^3.2.0",
     "@docusaurus/plugin-pwa": "^3.6.3",
     "@docusaurus/preset-classic": "^3.6.3",
-    "@docusaurus/theme-mermaid": "^3.6.3",
+    "@docusaurus/theme-mermaid": "^3.7.0",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-brands-svg-icons": "^6.7.2",
     "@fortawesome/free-regular-svg-icons": "^6.7.2",
