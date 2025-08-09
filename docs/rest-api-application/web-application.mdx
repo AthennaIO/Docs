@@ -117,7 +117,7 @@ With this option set, SSR will be turn on into your application.
 This defines where Vite needs to look when compiling your server
 entrypoint files. 
 
-Default: `src/resources/app/app.tsx` 
+Default: `resources/app/app.tsx` 
 
 #### ssrBuildDirectory
 
@@ -166,7 +166,7 @@ function to the `styleAttributes` option.
 export default {
   vite: {
     styleAttributes: ({ src, url }) => {
-      if (src === 'src/resources/css/admin.css') {
+      if (src === 'resources/css/admin.css') {
         return {
           'data-turbo-track': 'reload'
         }
@@ -198,7 +198,7 @@ accepts an array of entrypoints and returns the script and the link tags.
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    @vite(['src/resources/js/app.ts'])
+    @vite(['resources/js/app.ts'])
 </head>
 <body>
     
@@ -236,11 +236,11 @@ during development.
 - Return a URL pointing to the output filename during production.
 
 ```html
-<link rel="stylesheet" href="{{ asset('src/resources/css/app.css') }}">
+<link rel="stylesheet" href="{{ asset('resources/css/app.css') }}">
 ```
 
 ```html title="Output in development"
-<link rel="stylesheet" href="http://localhost:5173/src/resources/css/app.css">
+<link rel="stylesheet" href="http://localhost:5173/resources/css/app.css">
 ```
 
 ```html title="Output in production"
@@ -256,7 +256,7 @@ Therefore, you will have to notify Vite about the existence of these
 assets using its [Glob imports](https://vite.dev/guide/features.html#glob-import) API.
 
 In the following example, we ask Vite to process all the files within the 
-`src/resources/img` directory. This code should be written within an entry point file:
+`resources/img` directory. This code should be written within an entry point file:
 
 ```typescript
 import.meta.glob(['../img/**'])
@@ -265,7 +265,7 @@ import.meta.glob(['../img/**'])
 Now you can reference the images within your Edge templates as follows:
 
 ```html
-<img src="{{ asset('src/resources/img/hero.jpg') }}" />
+<img src="{{ asset('resources/img/hero.jpg') }}" />
 ```
 
 ## Enabling HMR with React
@@ -281,7 +281,7 @@ written before you include the entrypoints using the `@vite` tag.
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     @viteReactRefresh()
-    @vite(['src/resources/js/app.ts'])
+    @vite(['resources/js/app.ts'])
 </head>
 <body>
     
@@ -300,7 +300,7 @@ import athenna from '@athenna/vite/plugins/client'
 export default defineConfig({
   plugins: [
     athenna({
-      entrypoints: ["src/resources/js/app.ts"],
+      entrypoints: ["resources/js/app.ts"],
     }),
     react() 👈
   ]
@@ -341,8 +341,8 @@ import athenna from '@athenna/vite/plugins/client'
 export default defineConfig({
   plugins: [
     athenna({
-      entrypoints: ['src/resources/js/app.ts'],
-      reloads: ['src/resources/views/**/*.edge'],
+      entrypoints: ['resources/js/app.ts'],
+      reloads: ['resources/views/**/*.edge'],
       assetsUrl: 'https://cdn.example.com/',
     }),
   ]
@@ -386,7 +386,7 @@ export default {
   vite: {
     // ...
 
-    ssrEntrypoint: 'src/resources/app/app.tsx',
+    ssrEntrypoint: 'resources/app/app.tsx',
     ssrBuildDirectory: Path.public('assets/server')
   }
 }
@@ -468,7 +468,7 @@ In case you want to import other components beside the entrypoint
 you can use the `loadComponent()` method:
 
 ```typescript
-const { createApp } = await React.loadComponent('src/resources/app/app.tsx')
+const { createApp } = await React.loadComponent('resources/app/app.tsx')
 ```
 
 ## Manifest file
