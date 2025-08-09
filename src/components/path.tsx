@@ -5,23 +5,23 @@ export default function Path(props: { father: string; child: string }) {
   let father = props.father
 
   switch (props.father) {
-    case 'resources':
-      father = 'src/resources'
-      break
     case 'storage':
       father = 'src/storage'
       break
     case 'logs':
       father = 'src/storage/logs'
       break
+    case 'resources':
+      father = 'resources'
+      break
     case 'views':
-      father = 'src/resources/views'
+      father = 'resources/views'
       break
     case 'locales':
-      father = 'src/resources/locales'
+      father = 'resources/locales'
       break
     case 'static':
-      father = 'src/resources/static'
+      father = 'public/static'
       break
     case 'config':
       father = 'src/config' 

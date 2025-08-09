@@ -4263,7 +4263,7 @@ Merge the project root path with `Path.dirs.resources`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.resources()) // /home/user/athenna-project/src/resources
+console.log(Path.resources()) // /home/user/athenna-project/resources
 ```
 
 #### `Path::setResources()`
@@ -4276,24 +4276,44 @@ import { Path } from '@athenna/common'
 Path.setResources('resources/app')
 ```
 
-#### `Path::routes()`
+#### `Path::resources()`
 
-Merge the project root path with `Path.dirs.routes`:
+Merge the project root path with `Path.dirs.resources`:
 
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.routes()) // /home/user/athenna-project/src/routes
+console.log(Path.resources()) // /home/user/athenna-project/resources
 ```
 
-#### `Path::setRoutes()`
+#### `Path::setResources()`
 
-Set the `Path.dirs.routes` value:
+Set the `Path.dirs.resources` value:
 
 ```typescript
 import { Path } from '@athenna/common'
 
-Path.setRoutes('routes/app')
+Path.setResources('resources/app')
+```
+
+#### `Path::apiResources()`
+
+Merge the project root path with `Path.dirs.apiResources`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.apiResources()) // /home/user/athenna-project/src/resources
+```
+
+#### `Path::setApiResources()`
+
+Set the `Path.dirs.apiResources` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setApiResources('resources/app')
 ```
 
 #### `Path::storage()`
@@ -4363,7 +4383,7 @@ Merge the project root path with `Path.dirs.views`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.views()) // /home/user/athenna-project/src/resources/views
+console.log(Path.views()) // /home/user/athenna-project/resources/views
 ```
 
 #### `Path::setViews()`
@@ -4423,7 +4443,7 @@ Merge the project root path with `Path.dirs.locales`:
 ```typescript
 import { Path } from '@athenna/common'
 
-console.log(Path.locales()) // /home/user/athenna-project/src/resources/locales
+console.log(Path.locales()) // /home/user/athenna-project/resources/locales
 ```
 
 #### `Path::setLocales()`
