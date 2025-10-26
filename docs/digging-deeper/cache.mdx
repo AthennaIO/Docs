@@ -1,0 +1,186 @@
+---
+title: Cache
+sidebar_position: 5
+description: See how to cache data in Athenna.
+---
+
+import Path from '@site/src/components/path'
+
+# Cache
+
+See how to cache data in Athenna.
+
+## Introduction
+
+Some of the data retrieval or processing tasks performed by your application
+could be CPU intensive or take several seconds to complete. When this is the
+case, it is common to cache the retrieved data for a time so it can be retrieved
+quickly on subsequent requests for the same data. The cached data is usually
+stored in a very fast data store such as in memory or (Redis)[https://redis.io].
+
+Thankfully, Athenna provides an expressive, unified API for various cache backends,
+allowing you to take advantage of their blazing fast data retrieval and speed up
+your web application.
+
+## Installation
+
+First of all you need to install `@athenna/cache` package and configure it. Artisan
+provides a very simple command to install and configure the mail library in your project.
+Simply run the following:
+
+```bash
+node artisan install @athenna/cache
+```
+
+The cache configurer will do the following operations in 
+your project:
+
+- Create the `cache.ts` configuration file.
+- Add all cache providers in your `.athennarc.json` file.
+- Add cache environment variables to `.env`, `.env.test` and `.env.example`.
+
+## Configuration
+
+Athenna's cache services may be configured via your application's 
+<Path father="config" child="cache.ts" />  configuration file. Each store configured 
+within this file may have its own unique configuration, allowing your application to 
+use different cache services in runtime.
+
+### Available cache drivers
+
+Each store is powered by a "driver". The driver determines how 
+the mail will be transported. The following cache drivers are 
+available in every Athenna application. An entry for most of 
+these drivers is already present in your application's 
+<Path father="config" child="cache.ts" /> configuration file, so be sure to 
+review this file to become familiar with its contents:
+
+| Driver name |               Website                   |
+|:------------|:---------------------------------------:|
+| `memory`    | https://www.npmjs.com/package/lru-cache |
+| `redis`     | https://redis.io                        |
+
+:::note
+
+Athenna has another driver called `null` that is very helpful when running tests.
+The `null` driver got the same signature of all other drivers, but it don't execute
+any operation when calling executors methods like `set()`, which is perfect to use
+within the [`Mock`](/docs/testing/mocking) class. For more information about the `null`,
+take a look at the [mocking cache documentation section.](/docs/testing/mocking#mocking-cache)
+
+:::
+
+## Storing in Cache
+
+You may use the `set()` method on the Cache facade to store items in the cache:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const options = { ttl: Parser.timeToMs('1d') }
+
+await Cache.set('key', 'value', options)
+```
+
+If the `ttl` option is not passed to the `set()` method, the item will be stored 
+indefinitely:
+
+```typescript
+await Cache.set('key', 'value')
+```
+
+## Retrieving from Cache
+
+The Cache facade's `get()` method is used to retrieve items from the cache. If the item 
+does not exist in the cache, `null` will be returned. If you wish, you may pass a second 
+argument to the get method specifying the default value you wish to be returned if the 
+item doesn't exist:
+
+```typescript
+const value = await Cache.get('key')
+const value = await Cache.get('key', 'defaultValue')
+```
+
+### Determining item existence
+
+The `has()` method may be used to determine if an item exists in the cache. This method 
+will also return `true` if the item exists but its value is `null`:
+
+```typescript
+if (await Cache.has('key')) {
+  // ...
+}
+```
+
+### Retrieve and store
+
+Sometimes you may wish to retrieve an item from the cache, but also store a default value 
+if the requested item doesn't exist. For example, you may wish to retrieve all users from 
+the cache or, if they don't exist, retrieve them from the database and add them to the 
+cache. You may do this using the `remember()` method:
+
+```typescript
+import { Database } from '@athenna/database'
+
+const value = await Cache.remember('users', async () => {
+  return Database.table('users').findMany()
+})
+```
+
+If the item does not exist in the cache, the closure passed to the `remember()` method will 
+be executed and its result will be placed in the cache.
+
+You may set a third argument to `remember()` method to add the same options you set in `set()` 
+method:
+
+```typescript
+import { Parser } from '@athenna/common'
+import { Database } from '@athenna/database'
+
+const options = { ttl: Parser.timeToMs('1d') }
+const value = await Cache.remember('users', async () => {
+  return Database.table('users').findMany()
+}, options)
+```
+
+### Retrieve and delete
+
+If you need to retrieve an item from the cache and then delete the item, you may use the `pull()` 
+method. Like the `get()` method, `null` will be returned if the item does not exist in the cache:
+
+```typescript
+const value = await Cache.pull('key')
+const value = await Cache.pull('key', 'defaultValue')
+```
+
+## Deleting from Cache
+
+You may remove items from the cache using the `delete()` method:
+
+```typescript
+await Cache.delete('key')
+```
+
+In case you want to remove all values that lives inside a key you may use `*`:
+
+```typescript
+await Cache.delete('key:path:*')
+```
+
+You may clear the entire cache using the `truncate()` method:
+
+```typescript
+await Cache.truncate()
+```
+
+:::warn
+
+Truncating the cache does not respect your configured cache `prefix` and will remove all entries from 
+the cache. Consider this carefully when clearing a cache which is shared by other applications.
+
+:::
+
+## Atomic locks
+
+Coming soon...
+
