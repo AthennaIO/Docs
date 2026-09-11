@@ -996,6 +996,63 @@ export default class GreetTest {
 ```
 
 
+## Mocking storage
+
+The storage library ships a `fake` driver that keeps files in memory.
+Select it as the default disk in your `.env.test` file:
+
+```dotenv title=".env.test"
+STORAGE_DISK=fake
+```
+
+Register the Storage facade with the `StorageProvider` and clear the
+fake disk after each test:
+
+```typescript title="UploadServiceTest.ts"
+import { FakeDriver, StorageProvider } from '@athenna/storage'
+import { Mock, BeforeAll, AfterEach } from '@athenna/test'
+
+export default class UploadServiceTest {
+  @BeforeAll()
+  public beforeAll() {
+    new StorageProvider().register()
+  }
+
+  @AfterEach()
+  public afterEach() {
+    Mock.restoreAll()
+    FakeDriver.clear()
+  }
+}
+```
+
+The fake disk behaves like a real one, so most tests only need to
+assert on what was written:
+
+```typescript
+import { UploadService } from '#src/services/UploadService'
+import { FakeDriver, Storage } from '@athenna/storage'
+import { Test, type Context } from '@athenna/test'
+
+export default class UploadServiceTest {
+  @Test()
+  public async shouldUploadTheAvatar({ assert }: Context) {
+    await new UploadService().uploadAvatar(user, buffer)
+
+    assert.isTrue(await Storage.exists('avatars/user-1.png'))
+    assert.deepEqual(FakeDriver.getFile('avatars/user-1.png').contentType, 'image/png')
+  }
+}
+```
+
+When you need to force a result (a signed URL, a failure), stub the
+`FakeDriver` static methods with `Mock`:
+
+```typescript
+Mock.when(FakeDriver, 'getSignedUrl').resolve({ url: 'https://fake.storage/put/a.png' })
+Mock.when(FakeDriver, 'put').reject(new Error('disk is full'))
+```
+
 ## Mocking database
 
 When working with the database library, you might need to mock
