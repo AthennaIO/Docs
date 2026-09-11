@@ -1,0 +1,318 @@
+---
+title: Storage
+sidebar_position: 7
+description: See how to store, read and serve files in Athenna.
+---
+
+import Path from '@site/src/components/path'
+
+# Storage
+
+See how to store, read and serve files in Athenna.
+
+## Introduction
+
+Athenna provides a filesystem abstraction on top of "disks". A disk
+is a named configuration bound to a driver, so the same code can write
+to the local filesystem in development and to an Amazon S3 bucket in
+production. The `Storage` facade of `@athenna/storage` exposes one API
+for every driver, plus an in-memory fake for tests.
+
+## Installation
+
+First of all you need to install `@athenna/storage` package and
+configure it. Artisan provides a very simple command to install and
+configure the storage library in your project. Simply run the
+following:
+
+```bash
+node artisan install @athenna/storage
+```
+
+The storage configurer will do the following operations in your
+project:
+
+- Create the `storage.ts` configuration file.
+- Add the storage provider in your `.athennarc.json` file.
+- Add storage environment variables to `.env`, `.env.test` and `.env.example`.
+
+## Configuration
+
+Disks are configured in your application's
+<Path father="config" child="storage.ts" /> configuration file.
+Every disk has a `driver` and the options of that driver:
+
+```typescript
+import { Env } from '@athenna/config'
+import { Path } from '@athenna/common'
+
+export default {
+  default: Env('STORAGE_DISK', 'fs'),
+
+  disks: {
+    fs: {
+      driver: 'fs',
+      root: Path.storage(),
+      url: Env('STORAGE_FS_URL')
+    },
+    fake: {
+      driver: 'fake'
+    },
+    s3: {
+      driver: 's3',
+      bucket: Env('AWS_S3_BUCKET_NAME', ''),
+      region: Env('AWS_REGION', ''),
+      credentials: {
+        accessKeyId: Env('AWS_ACCESS_KEY_ID', ''),
+        secretAccessKey: Env('AWS_SECRET_ACCESS_KEY', '')
+      },
+      url: Env('AWS_S3_PUBLIC_URL')
+    }
+  }
+}
+```
+
+### Available storage drivers
+
+| Driver name | Description                                                       |
+|:------------|:------------------------------------------------------------------|
+| `fs`        | Local filesystem, files are stored under `root`.                  |
+| `s3`        | Amazon S3 and S3 compatible services (MinIO, R2, LocalStack).      |
+| `fake`      | In-memory disk for tests, selected with `STORAGE_DISK=fake`.      |
+
+The `s3` driver accepts every option of the AWS SDK `S3Client`
+(`region`, `credentials`, `endpoint`, `forcePathStyle`, ...) plus the
+`bucket` and the optional public `url`. Old configuration files that
+declare `key`/`secret` keep working, the driver maps them to
+`credentials` for you.
+
+### One disk per bucket
+
+Declare one disk per bucket instead of switching buckets at runtime:
+
+```typescript
+disks: {
+  s3: { driver: 's3', bucket: 'public-bucket', url: 'https://cdn.athenna.io', ... },
+  s3_private: { driver: 's3', bucket: 'private-bucket', ... }
+}
+```
+
+Then pick the disk with `Storage.disk('s3_private')`. Runtime options
+can still be merged on top of the disk configuration:
+
+```typescript
+Storage.disk('s3', { bucket: 'another-bucket' })
+```
+
+Driver instances are cached by disk name and options, so calling
+`Storage.disk('s3')` many times does not create a new S3 client every
+time.
+
+## Writing files
+
+```typescript
+import { Storage } from '@athenna/storage'
+
+await Storage.put('avatars/user.png', buffer)
+await Storage.disk('s3').put('reports/report.json', JSON.stringify(report), {
+  contentType: 'application/json',
+  cacheControl: 'max-age=3600',
+  metadata: { owner: 'user-1' }
+})
+```
+
+The content type defaults to the mime type of the key extension and
+falls back to `application/octet-stream`. The `fs` driver ignores
+headers and metadata.
+
+### Streams
+
+Big files should be written as streams. The `s3` driver uses a
+multipart upload and reports progress:
+
+```typescript
+await Storage.disk('s3').putStream('videos/movie.mp4', readable, {
+  partSize: 10 * 1024 * 1024,
+  queueSize: 4,
+  onProgress: ({ loaded, total }) => console.log(loaded, total)
+})
+```
+
+### From a URL
+
+`putFromUrl()` downloads the URL as a stream and writes it to the
+disk. The content type defaults to the `content-type` response header
+and a non 2xx response rejects with the `HttpClient` error:
+
+```typescript
+await Storage.putFromUrl('avatars/user.png', 'https://example.com/user.png')
+```
+
+## Reading files
+
+```typescript
+const text = await Storage.get('notes.txt')
+const buffer = await Storage.getBuffer('avatars/user.png')
+const stream = await Storage.getStream('videos/movie.mp4')
+```
+
+:::tip
+
+`get()` always decodes the file as UTF-8. Use `getBuffer()` for binary
+content.
+
+:::
+
+Both `getBuffer()` and `getStream()` accept a byte range, which is
+handy to sniff a file signature without downloading the whole file:
+
+```typescript
+const header = await Storage.getBuffer('videos/movie.mp4', {
+  range: { start: 0, end: 11 }
+})
+```
+
+### Metadata
+
+`stat()` returns the size, content type, last modification date, etag
+and user metadata of a file and throws `FileNotFoundException` when it
+is missing. `exists()` never throws:
+
+```typescript
+const { size, contentType, lastModified, etag, metadata } = await Storage.stat('avatars/user.png')
+
+if (await Storage.exists('avatars/user.png')) {
+  // ...
+}
+```
+
+## Listing files
+
+`list()` returns one page of files matching a prefix and a cursor to
+fetch the next page:
+
+```typescript
+let cursor: string | null = null
+
+do {
+  const page = await Storage.disk('s3').list('avatars/', { limit: 100, cursor })
+
+  for (const file of page.files) {
+    console.log(file.key, file.size, file.lastModified)
+  }
+
+  cursor = page.nextCursor
+} while (cursor)
+```
+
+## Copying, moving and deleting
+
+```typescript
+await Storage.copy('avatars/user.png', 'avatars/user-backup.png')
+await Storage.move('tmp/user.png', 'avatars/user.png')
+await Storage.delete('avatars/user-backup.png')
+await Storage.deleteAll('tmp/')
+```
+
+### Between disks
+
+Pass `toDisk` to copy or move a file to another disk. Copies between
+two `s3` disks happen server side (`CopyObject`), every other
+combination streams the file and forwards its content type:
+
+```typescript
+await Storage.disk('s3_private').copy('videos/1.mp4', 'videos/1.mp4', {
+  toDisk: 's3'
+})
+```
+
+## URLs
+
+Every disk can build the public URL of a key and resolve a key back
+from a URL:
+
+```typescript
+Storage.disk('s3').url('avatars/user 1.png')
+// https://cdn.athenna.io/avatars/user%201.png
+
+Storage.disk('s3').parseUrl('https://cdn.athenna.io/avatars/user%201.png?w=200')
+// avatars/user 1.png
+
+Storage.disk('s3').parseUrl('https://other-bucket.s3.amazonaws.com/a.png')
+// null
+```
+
+For the `s3` driver, `url()` uses the configured `url` when present,
+then the custom `endpoint` in path-style, then the virtual-hosted AWS
+URL (`https://{bucket}.s3.{region}.amazonaws.com/{key}`). `parseUrl()`
+accepts the configured `url`, virtual-hosted and path-style AWS URLs
+(with or without region) and custom endpoints, always checking that
+the bucket matches. Values that are not URLs are treated as relative
+keys, so `parseUrl('/avatars/user.png')` returns `avatars/user.png`.
+
+The `fs` driver only builds URLs when its `url` option is configured
+and throws `NotImplementedDriverMethodException` otherwise.
+
+### Signed URLs
+
+Signed URLs let clients read or upload files directly against S3:
+
+```typescript
+const { url, expiresAt } = await Storage.disk('s3').getSignedUrl('uploads/user.png', {
+  method: 'put',
+  expiresIn: 300,
+  contentType: 'image/png'
+})
+```
+
+## Testing
+
+The `fake` driver keeps every file in memory, so tests never touch
+the network or the filesystem. Select it as the default disk in your
+`.env.test` file, the same way you do for the database and mail
+libraries:
+
+```dotenv title=".env.test"
+STORAGE_DISK=fake
+```
+
+`Storage.put()`, `Storage.get()`, `Storage.exists()`, `Storage.stat()`,
+`Storage.list()` and the other methods behave like a real disk on top
+of the `FakeDriver.files` map. Clear it between tests and assert on it
+directly:
+
+```typescript
+import { FakeDriver, Storage } from '@athenna/storage'
+import { Test, AfterEach, type Context } from '@athenna/test'
+
+export default class UploadServiceTest {
+  @AfterEach()
+  public afterEach() {
+    FakeDriver.clear()
+  }
+
+  @Test()
+  public async shouldUploadTheAvatar({ assert }: Context) {
+    await new UploadService().uploadAvatar(user, buffer)
+
+    assert.isTrue(await Storage.exists('avatars/user-1.png'))
+    assert.deepEqual(FakeDriver.getFile('avatars/user-1.png').contentType, 'image/png')
+    assert.deepEqual(FakeDriver.files.size, 1)
+  }
+}
+```
+
+Code that names a disk explicitly (`Storage.disk('s3')`) does not go
+through the default disk. Point that disk at the fake driver in your
+test configuration, or stub the driver with the `Mock` class, exactly
+like the `fake` drivers of the other libraries:
+
+```typescript
+import { FakeDriver } from '@athenna/storage'
+import { Mock } from '@athenna/test'
+
+Mock.when(FakeDriver, 'getSignedUrl').resolve({ url: 'https://fake.storage/put/a.png' })
+```
+
+See [mocking storage](/docs/testing/mocking#mocking-storage) for more
+information.
