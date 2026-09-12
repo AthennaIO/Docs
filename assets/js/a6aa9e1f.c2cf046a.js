@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunk_athenna_docs||=[]).push([[7643],{8506(a,c,s){s(6540);var n=s(7010),d=s(8809),h=s(7107),o=s(7875),t=s(6188);h.Yv.add(o.Cvc,t.X7I);const e={...n.A,FAIcon:d.g};s.d(c,["A",0,e])}}]);
