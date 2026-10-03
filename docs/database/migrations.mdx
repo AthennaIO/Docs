@@ -62,8 +62,35 @@ export class FlightsMigration extends BaseMigration {
     })
   }
 
-  public async down({ schema }: DatabaseImpl) {
-    return db.dropTableIfExists(this.tableName)
+  public async down(db: DatabaseImpl) {
+    return db.dropTable(this.tableName)
+  }
+}
+```
+
+### Modifying existing tables
+
+Your application will grow, and sooner or later you will need to 
+change a table that already exists. For that, create a new migration 
+and use the `alterTable()` method. It works exactly like 
+`createTable()`, but for an existing table:
+
+```typescript
+import { BaseMigration, type DatabaseImpl } from '@athenna/database'
+
+export class AddGateToFlightsMigration extends BaseMigration {
+  public tableName = 'flights'
+
+  public async up(db: DatabaseImpl) {
+    return db.alterTable(this.tableName, (table) => {
+      table.string('gate').nullable()
+    })
+  }
+
+  public async down(db: DatabaseImpl) {
+    return db.alterTable(this.tableName, (table) => {
+      table.dropColumn('gate')
+    })
   }
 }
 ```
@@ -137,5 +164,87 @@ node artisan migration:revert --connection=postgres
 If `postgres` is your default connection than all the migrations 
 using the `default` value in the static `connection()` method
 will be reverted too.
+
+:::
+
+## Wiping and refreshing the database
+
+While developing, it's very common to want to start from scratch. 
+The `db:wipe` command reverts all your migrations and drops the 
+migrations table, leaving your database clean:
+
+```bash
+node artisan db:wipe
+```
+
+The `db:fresh` command goes one step further: it wipes your database 
+and runs all your migrations again. If you also want to populate it 
+with your [seeders](/docs/database/seeding), add the 
+`--with-seeders` option:
+
+```bash
+node artisan db:fresh
+
+node artisan db:fresh --with-seeders
+```
+
+Both commands also accept the `--connection` option:
+
+```bash
+node artisan db:fresh --connection=postgres
+```
+
+:::caution
+
+These commands **delete all the data** of your database. Never run 
+them against your production database.
+
+:::
+
+:::note
+
+When using the `mongo` driver, `db:wipe` drops all the collections 
+of your database and `db:fresh` doesn't run migrations, since Mongo 
+doesn't use them.
+
+:::
+
+## The migrations table
+
+Athenna keeps track of which migrations have already run in a table 
+called `migrations`. If you prefer a different name, set the 
+`migrations.tableName` option in your connection configuration inside 
+<Path father="config" child="database.ts" />:
+
+```typescript
+export default {
+  connections: {
+    postgres: {
+      driver: 'postgres',
+      // ...
+      migrations: {
+        tableName: 'schema_migrations'
+      }
+    }
+  }
+}
+```
+
+Migrations are registered in this table **without** the file 
+extension. This way, running your migrations from your TypeScript 
+source code or from your compiled JavaScript code will never register 
+the same migration twice.
+
+:::info
+
+Older versions of `@athenna/database` used to register migrations 
+with their extension (`.ts` or `.js`). Don't worry, Athenna fixes 
+these old records automatically before running or reverting your 
+migrations, removing duplicated ones when needed. 
+
+If you still need to run an older version of `@athenna/database` 
+against the same database, you can turn this behavior off by setting 
+`migrations.normalizeNames` to `false` in your connection 
+configuration.
 
 :::

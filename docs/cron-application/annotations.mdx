@@ -1,16 +1,150 @@
 ---
 title: Annotations 
-sidebar_position: 3
+sidebar_position: 4
 toc_max_heading_level: 2
 description: Check all available CRON annotations and it options.
 ---
-
-import Path from '@site/src/components/path'
 
 # Annotations 
 
 Check all available CRON annotations and it options.
 
-## Introduction
+## `@Scheduler()`
 
-Coming Soon...
+Use this annotation to define all the metadata needed to register
+your scheduler into the service container and to schedule it:
+
+```typescript
+import { Scheduler, type Context } from '@athenna/cron'
+
+@Scheduler({ pattern: '* * * * *' })
+export class MyScheduler {
+  public async handler(ctx: Context) {
+    //
+  }
+}
+```
+
+The `pattern` property is required and you can also define any of 
+the following optional properties:
+
+### `pattern`
+
+> Default: `undefined` (required)
+
+The CRON expression that will determine when the scheduler
+will run:
+
+```typescript
+@Scheduler({ pattern: '0 0 * * *' })
+export class MyScheduler {}
+```
+
+### `name`
+
+> Default: `'MyScheduler'`
+
+Set the name of your scheduler. The name is used to register the
+task inside `node-cron`, is available in the [CRON context](/docs/cron-application/cron-context)
+and is also registered as an alias of your scheduler in the service
+container. Use it to run your scheduler with `Cron.runByName()`:
+
+```typescript
+@Scheduler({ pattern: '* * * * *', name: 'my_scheduler' })
+export class MyScheduler {}
+```
+
+### `timezone`
+
+> Default: `undefined`
+
+Set the timezone that the CRON expression needs to respect
+when running the scheduler. When not set, the timezone of the
+machine running your application will be used:
+
+```typescript
+@Scheduler({ pattern: '0 0 * * *', timezone: 'America/Sao_Paulo' })
+export class MyScheduler {}
+```
+
+### `runOnInit`
+
+> Default: `false`
+
+Define if the scheduler should run when the application boots,
+no matter the CRON expression:
+
+```typescript
+@Scheduler({ pattern: '0 0 * * *', runOnInit: true })
+export class MyScheduler {}
+```
+
+### `scheduled`
+
+> Default: `true`
+
+Define if the scheduler should be started when the application
+boots. If you set it as `false`, your scheduler will be registered
+but disabled, meaning you need to start it manually using the 
+`Cron` facade:
+
+```typescript
+@Scheduler({ pattern: '0 0 * * *', scheduled: false })
+export class MyScheduler {}
+```
+
+### `recoverMissedExecutions`
+
+> Default: `false`
+
+Define if the executions missed while the main thread was blocked
+should be executed instead of skipped:
+
+```typescript
+@Scheduler({ pattern: '* * * * *', recoverMissedExecutions: true })
+export class MyScheduler {}
+```
+
+### `alias`
+
+> Default: `'App/Cron/Schedulers/MyScheduler'`
+
+Set what will be the alias that your scheduler will be registered
+with in the service container:
+
+```typescript
+@Scheduler({ pattern: '* * * * *', alias: 'App/Cron/Schedulers/OtherSchedulerName' })
+export class MyScheduler {}
+```
+
+### `camelAlias`
+
+> Default: `undefined`
+
+Set what will be the camel alias that your scheduler will be
+registered with in the service container. Camel aliases are very
+useful when you need to resolve your dependency from [`@Inject()`
+annotation](/docs/architecture-concepts/service-container#using-inject-annotation) 
+or [automatic constructor injection.](/docs/architecture-concepts/service-container#automatic-constructor-injection)
+
+Since schedulers were not designed to be resolved using the above
+approaches, `camelAlias` will always be `undefined`, but you are
+free to define one:
+
+```typescript
+@Scheduler({ pattern: '* * * * *', camelAlias: 'myScheduler' })
+export class MyScheduler {}
+```
+
+### `type`
+
+> Default: `'transient'`
+
+Set the registration type of the scheduler into the service container.
+With the default `transient` type, a new instance of your scheduler 
+is created for each execution:
+
+```typescript
+@Scheduler({ pattern: '* * * * *', type: 'singleton' })
+export class MyScheduler {}
+```

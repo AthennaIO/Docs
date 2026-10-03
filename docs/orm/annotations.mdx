@@ -1,6 +1,6 @@
 ---
 title: Annotations
-sidebar_position: 5
+sidebar_position: 6
 toc_max_heading_level: 2
 description: Check all available ORM annotations and it options.
 ---
@@ -254,7 +254,7 @@ deleting it:
 public deletedAt: Date
 ```
 
-## `@HasOne()`
+## `@HasOne()` {#has-one}
 
 The `@HasOne()` annotation marks a model property as an 
 [one-to-one relation](/docs/orm/relationships#one-to-one):
@@ -363,7 +363,7 @@ Define the foreign key of the relationship:
 public pilot: Relation<Pilot>
 ```
 
-## `@HasMany()`
+## `@HasMany()` {#has-many}
 
 The `@HasMany()` annotation marks a model property as an 
 [one-to-many relation](/docs/orm/relationships#one-to-many):
@@ -472,7 +472,7 @@ Define the foreign key of the relationship:
 public comments: Relation<Comment[]>
 ```
 
-## `@BelongsTo()`
+## `@BelongsTo()` {#belongs-to}
 
 The `@BelongsTo()` annotation marks a model property as the inverse side of 
 an [one-to-one relation](/docs/orm/relationships#defining-the-inverse-of-the-relationship) and
@@ -585,7 +585,7 @@ Define the foreign key of the relationship:
 public user: Relation<User>
 ```
 
-## `@BelongsToMany()`
+## `@BelongsToMany()` {#belongs-to-many}
 
 The `@BelongsToMany()` annotation marks a model property as a 
 [many-to-many relation](/docs/orm/relationships#many-to-many):
@@ -745,3 +745,246 @@ Define the relation foreign key of the relationship:
 })
 public roles: Relation<Role[]>
 ```
+
+## `@HasOneThrough()` {#has-one-through}
+
+The `@HasOneThrough()` annotation marks a model property as a
+[has one through relation](/docs/orm/relationships#has-one-through). 
+The first argument is the final model and the second one is the 
+intermediate model:
+
+```typescript
+import { Member } from '#src/models/Member'
+import { Article } from '#src/models/Article'
+import type { Relation } from '@athenna/database'
+import { Column, BaseModel, HasOneThrough } from '@athenna/database'
+
+export class Region extends BaseModel {
+  @Column()
+  public id: number
+
+  @HasOneThrough(() => Article, () => Member)
+  public latestArticle: Relation<Article>
+}
+```
+
+The third argument is an object that accepts any of the following 
+options:
+
+### `isIncluded`
+
+> Default: `false`
+
+Set if the relation will be included when fetching data from the
+parent model:
+
+```typescript
+@HasOneThrough(() => Article, () => Member, { isIncluded: true })
+public latestArticle: Relation<Article>
+```
+
+### `inverse`
+
+> Default: `false`
+
+By default, Athenna expects the final model to have the key that 
+points to the intermediate model (e.g. `articles.memberId`). Set this 
+option to `true` when it's the opposite, and the intermediate model 
+has the key that points to the final model (e.g. `sale_items.saleId`):
+
+```typescript
+@HasOneThrough(() => Sale, () => SaleItem, { inverse: true })
+public sale: Relation<Sale>
+```
+
+### `localKey`
+
+> Default: the `isMainPrimary` of the parent model (e.g `id`).
+
+The column of the parent model that is referenced by the intermediate 
+model:
+
+```typescript
+@HasOneThrough(() => Article, () => Member, { localKey: 'code' })
+public latestArticle: Relation<Article>
+```
+
+### `firstKey`
+
+> Default: the parent model name in camel case with an `Id` at 
+> the end (e.g `regionId`). This value needs to be defined in the 
+> intermediate model (e.g Member).
+
+The column of the intermediate model that points to the parent model:
+
+```typescript
+@HasOneThrough(() => Article, () => Member, { firstKey: 'myRegionId' })
+public latestArticle: Relation<Article>
+```
+
+### `secondLocalKey`
+
+> Default: the `isMainPrimary` of the intermediate model (e.g `id`). 
+> When `inverse` is `true`, the final model name in camel case with 
+> an `Id` at the end (e.g `saleId`).
+
+The column of the intermediate model used to connect it to the final 
+model:
+
+```typescript
+@HasOneThrough(() => Article, () => Member, { secondLocalKey: 'code' })
+public latestArticle: Relation<Article>
+```
+
+### `secondKey`
+
+> Default: the intermediate model name in camel case with an `Id` at 
+> the end (e.g `memberId`). When `inverse` is `true`, the 
+> `isMainPrimary` of the final model (e.g `id`).
+
+The column of the final model used to connect it to the intermediate 
+model:
+
+```typescript
+@HasOneThrough(() => Article, () => Member, { secondKey: 'authorId' })
+public latestArticle: Relation<Article>
+```
+
+## `@HasManyThrough()` {#has-many-through}
+
+The `@HasManyThrough()` annotation marks a model property as a
+[has many through relation](/docs/orm/relationships#has-many-through). 
+The first argument is the final model and the second one is the 
+intermediate model:
+
+```typescript
+import { Member } from '#src/models/Member'
+import { Article } from '#src/models/Article'
+import type { Relation } from '@athenna/database'
+import { Column, BaseModel, HasManyThrough } from '@athenna/database'
+
+export class Region extends BaseModel {
+  @Column()
+  public id: number
+
+  @HasManyThrough(() => Article, () => Member)
+  public articles: Relation<Article[]>
+}
+```
+
+The third argument is an object that accepts any of the following 
+options:
+
+### `isIncluded`
+
+> Default: `false`
+
+Set if the relation will be included when fetching data from the
+parent model:
+
+```typescript
+@HasManyThrough(() => Article, () => Member, { isIncluded: true })
+public articles: Relation<Article[]>
+```
+
+### `inverse`
+
+> Default: `false`
+
+By default, Athenna expects the final model to have the key that 
+points to the intermediate model (e.g. `articles.memberId`). Set this 
+option to `true` when it's the opposite, and the intermediate model 
+has the key that points to the final model (e.g. `sale_items.saleId`):
+
+```typescript
+@HasManyThrough(() => Sale, () => SaleItem, { inverse: true })
+public sales: Relation<Sale[]>
+```
+
+### `localKey`
+
+> Default: the `isMainPrimary` of the parent model (e.g `id`).
+
+The column of the parent model that is referenced by the intermediate 
+model:
+
+```typescript
+@HasManyThrough(() => Article, () => Member, { localKey: 'code' })
+public articles: Relation<Article[]>
+```
+
+### `firstKey`
+
+> Default: the parent model name in camel case with an `Id` at 
+> the end (e.g `regionId`). This value needs to be defined in the 
+> intermediate model (e.g Member).
+
+The column of the intermediate model that points to the parent model:
+
+```typescript
+@HasManyThrough(() => Article, () => Member, { firstKey: 'myRegionId' })
+public articles: Relation<Article[]>
+```
+
+### `secondLocalKey`
+
+> Default: the `isMainPrimary` of the intermediate model (e.g `id`). 
+> When `inverse` is `true`, the final model name in camel case with 
+> an `Id` at the end (e.g `saleId`).
+
+The column of the intermediate model used to connect it to the final 
+model:
+
+```typescript
+@HasManyThrough(() => Article, () => Member, { secondLocalKey: 'code' })
+public articles: Relation<Article[]>
+```
+
+### `secondKey`
+
+> Default: the intermediate model name in camel case with an `Id` at 
+> the end (e.g `memberId`). When `inverse` is `true`, the 
+> `isMainPrimary` of the final model (e.g `id`).
+
+The column of the final model used to connect it to the intermediate 
+model:
+
+```typescript
+@HasManyThrough(() => Article, () => Member, { secondKey: 'authorId' })
+public articles: Relation<Article[]>
+```
+
+## Hooks annotations
+
+The hooks annotations mark a **static** method of your model to be 
+called at a specific moment of the model lifecycle:
+
+```typescript
+import { Column, BaseModel, BeforeSave, AfterCreate } from '@athenna/database'
+
+export class User extends BaseModel {
+  @Column()
+  public password: string
+
+  @BeforeSave()
+  public static async hashPassword(user: Partial<User>) {
+    // ...
+  }
+
+  @AfterCreate()
+  public static async sendWelcomeEmail(user: User) {
+    // ...
+  }
+}
+```
+
+These are all the available hooks annotations:
+
+- `@BeforeCreate()` / `@AfterCreate()`
+- `@BeforeUpdate()` / `@AfterUpdate()`
+- `@BeforeSave()` / `@AfterSave()`
+- `@BeforeDelete()` / `@AfterDelete()`
+- `@BeforeFind()` / `@AfterFind()`
+
+To learn when each one is fired and what they receive, check the
+[hooks documentation](/docs/orm/hooks).

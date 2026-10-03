@@ -16,7 +16,7 @@ Some of the data retrieval or processing tasks performed by your application
 could be CPU intensive or take several seconds to complete. When this is the
 case, it is common to cache the retrieved data for a time so it can be retrieved
 quickly on subsequent requests for the same data. The cached data is usually
-stored in a very fast data store such as in memory or (Redis)[https://redis.io].
+stored in a very fast data store such as in memory or [Redis](https://redis.io).
 
 Thankfully, Athenna provides an expressive, unified API for various cache backends,
 allowing you to take advantage of their blazing fast data retrieval and speed up
@@ -25,34 +25,56 @@ your web application.
 ## Installation
 
 First of all you need to install `@athenna/cache` package and configure it. Artisan
-provides a very simple command to install and configure the mail library in your project.
+provides a very simple command to install and configure the cache library in your project.
 Simply run the following:
 
 ```bash
 node artisan install @athenna/cache
 ```
 
-The cache configurer will do the following operations in 
-your project:
+The cache configurer will ask which stores you plan to use and then do the
+following operations in your project:
 
 - Create the `cache.ts` configuration file.
-- Add all cache providers in your `.athennarc.json` file.
+- Add the cache provider in your `.athennarc.json` file.
 - Add cache environment variables to `.env`, `.env.test` and `.env.example`.
+- Install the libraries of the selected stores (`lru-cache` for `memory` and `redis` for `redis`).
+- Add a Redis service to your `docker-compose.yml` file if you have selected `redis`.
 
 ## Configuration
 
-Athenna's cache services may be configured via your application's 
-<Path father="config" child="cache.ts" />  configuration file. Each store configured 
-within this file may have its own unique configuration, allowing your application to 
-use different cache services in runtime.
+Athenna's cache services may be configured via your application's
+<Path father="config" child="cache.ts" /> configuration file. Each store configured
+within this file may have its own unique configuration, allowing your application to
+use different cache services in runtime:
+
+```typescript
+import { Env } from '@athenna/config'
+
+export default {
+  default: Env('CACHE_STORE', 'memory'),
+
+  stores: {
+    memory: {
+      driver: 'memory'
+    },
+
+    redis: {
+      driver: 'redis',
+
+      url: Env('REDIS_URL', 'redis://localhost:6379?database=0')
+    }
+  }
+}
+```
 
 ### Available cache drivers
 
-Each store is powered by a "driver". The driver determines how 
-the mail will be transported. The following cache drivers are 
-available in every Athenna application. An entry for most of 
-these drivers is already present in your application's 
-<Path father="config" child="cache.ts" /> configuration file, so be sure to 
+Each store is powered by a "driver". The driver determines how
+and where the data will be cached. The following cache drivers are
+available in every Athenna application. An entry for each of
+these drivers is already present in your application's
+<Path father="config" child="cache.ts" /> configuration file, so be sure to
 review this file to become familiar with its contents:
 
 | Driver name |               Website                   |
@@ -60,21 +82,68 @@ review this file to become familiar with its contents:
 | `memory`    | https://www.npmjs.com/package/lru-cache |
 | `redis`     | https://redis.io                        |
 
-:::note
+### Store options
 
-Athenna has another driver called `null` that is very helpful when running tests.
-The `null` driver got the same signature of all other drivers, but it don't execute
-any operation when calling executors methods like `set()`, which is perfect to use
-within the [`Mock`](/docs/testing/mocking) class. For more information about the `null`,
-take a look at the [mocking cache documentation section.](/docs/testing/mocking#mocking-cache)
+The following options can be set in any store of your
+<Path father="config" child="cache.ts" /> configuration file:
 
-:::
+| Option         | Default | Description                                                                 |
+|:---------------|:--------|:----------------------------------------------------------------------------|
+| `driver`       | -       | The driver that will power the store.                                       |
+| `ttl`          | -       | The default time to live in milliseconds of the items stored.               |
+| `enabled`      | `true`  | When `false`, the store doesn't read or write anything.                     |
+| `prefix`       | -       | A prefix that will be added in front of your keys (`redis` driver only).    |
+| `maxItems`     | `1000`  | The max number of items that could be stored (`memory` driver only).        |
+| `maxEntrySize` | -       | The max size of an item that could be stored, in bytes or as a string like `'1MB'` (`memory` driver only). |
+
+The `redis` driver also accepts the connection options below. When
+`url` is not set, the driver builds it from the other options:
+
+| Option              | Default   | Description                                              |
+|:--------------------|:----------|:---------------------------------------------------------|
+| `url`               | -         | The connection URL of your Redis server.                 |
+| `host`              | -         | The host of your Redis server.                           |
+| `port`              | `6379`    | The port of your Redis server.                           |
+| `username`          | -         | The username of your Redis server.                       |
+| `password`          | -         | The password of your Redis server.                       |
+| `database`          | `0`       | The Redis database number.                               |
+| `protocol`          | `redis`   | The connection protocol (`redis` or `rediss`).           |
+| `socket`            | -         | The socket options of the `redis` client.                |
+| `reconnectStrategy` | see below | A function that defines how the client should reconnect. |
+
+#### Reconnecting to Redis
+
+By default, the `redis` driver never stops trying to reconnect when the
+connection drops. It waits `retries * 200ms` between each attempt, up to
+5 seconds, and logs a warning every 10 retries. You can define your own
+strategy with the `reconnectStrategy` option. It receives the number of
+retries so far and must return the delay in milliseconds before the next
+attempt, or an `Error` to stop retrying:
+
+```typescript
+redis: {
+  driver: 'redis',
+  url: Env('REDIS_URL'),
+  reconnectStrategy: (retries: number) => {
+    if (retries > 20) {
+      return new Error('Too many retries')
+    }
+
+    return 1000
+  }
+}
+```
+
+Even when your strategy gives up, the next command sent to the store
+will try to reconnect the client, so your application recovers by itself
+once Redis is available again.
 
 ## Storing in Cache
 
 You may use the `set()` method on the Cache facade to store items in the cache:
 
 ```typescript
+import { Cache } from '@athenna/cache'
 import { Parser } from '@athenna/common'
 
 const options = { ttl: Parser.timeToMs('1d') }
@@ -82,18 +151,32 @@ const options = { ttl: Parser.timeToMs('1d') }
 await Cache.set('key', 'value', options)
 ```
 
-If the `ttl` option is not passed to the `set()` method, the item will be stored 
-indefinitely:
+If the `ttl` option is not passed to the `set()` method, the `ttl` of
+your store configuration will be used. If your store doesn't have a `ttl`
+configured, the item will be stored indefinitely:
 
 ```typescript
 await Cache.set('key', 'value')
 ```
 
+:::warning
+
+The `redis` driver only stores strings. If you need to cache objects,
+serialize them before calling `set()` and parse them after `get()`:
+
+```typescript
+await Cache.set('user:1', JSON.stringify(user))
+
+const user = JSON.parse(await Cache.get('user:1'))
+```
+
+:::
+
 ## Retrieving from Cache
 
-The Cache facade's `get()` method is used to retrieve items from the cache. If the item 
-does not exist in the cache, `null` will be returned. If you wish, you may pass a second 
-argument to the get method specifying the default value you wish to be returned if the 
+The Cache facade's `get()` method is used to retrieve items from the cache. If the item
+does not exist in the cache, `undefined` will be returned. If you wish, you may pass a second
+argument to the get method specifying the default value you wish to be returned if the
 item doesn't exist:
 
 ```typescript
@@ -103,8 +186,9 @@ const value = await Cache.get('key', 'defaultValue')
 
 ### Determining item existence
 
-The `has()` method may be used to determine if an item exists in the cache. This method 
-will also return `true` if the item exists but its value is `null`:
+The `has()` method may be used to determine if an item exists in the cache. This method
+will return `false` if the item doesn't exist or if its value is falsy (`null`, `''`,
+`0`, ...):
 
 ```typescript
 if (await Cache.has('key')) {
@@ -114,9 +198,9 @@ if (await Cache.has('key')) {
 
 ### Retrieve and store
 
-Sometimes you may wish to retrieve an item from the cache, but also store a default value 
-if the requested item doesn't exist. For example, you may wish to retrieve all users from 
-the cache or, if they don't exist, retrieve them from the database and add them to the 
+Sometimes you may wish to retrieve an item from the cache, but also store a default value
+if the requested item doesn't exist. For example, you may wish to retrieve all users from
+the cache or, if they don't exist, retrieve them from the database and add them to the
 cache. You may do this using the `remember()` method:
 
 ```typescript
@@ -127,10 +211,10 @@ const value = await Cache.remember('users', async () => {
 })
 ```
 
-If the item does not exist in the cache, the closure passed to the `remember()` method will 
+If the item does not exist in the cache, the closure passed to the `remember()` method will
 be executed and its result will be placed in the cache.
 
-You may set a third argument to `remember()` method to add the same options you set in `set()` 
+You may set a third argument to `remember()` method to add the same options you set in `set()`
 method:
 
 ```typescript
@@ -145,12 +229,11 @@ const value = await Cache.remember('users', async () => {
 
 ### Retrieve and delete
 
-If you need to retrieve an item from the cache and then delete the item, you may use the `pull()` 
-method. Like the `get()` method, `null` will be returned if the item does not exist in the cache:
+If you need to retrieve an item from the cache and then delete the item, you may use the `pull()`
+method. Like the `get()` method, `undefined` will be returned if the item does not exist in the cache:
 
 ```typescript
 const value = await Cache.pull('key')
-const value = await Cache.pull('key', 'defaultValue')
 ```
 
 ## Deleting from Cache
@@ -161,26 +244,99 @@ You may remove items from the cache using the `delete()` method:
 await Cache.delete('key')
 ```
 
-In case you want to remove all values that lives inside a key you may use `*`:
-
-```typescript
-await Cache.delete('key:path:*')
-```
-
 You may clear the entire cache using the `truncate()` method:
 
 ```typescript
 await Cache.truncate()
 ```
 
-:::warn
+:::warning
 
-Truncating the cache does not respect your configured cache `prefix` and will remove all entries from 
-the cache. Consider this carefully when clearing a cache which is shared by other applications.
+The `redis` driver only removes the keys that start with your configured
+`prefix`. If no `prefix` is configured, all entries of the Redis database
+will be removed, so consider this carefully when clearing a cache which
+is shared by other applications. The `memory` driver always removes
+all of its entries.
 
 :::
 
-## Atomic locks
+## Using multiple stores
 
-Coming soon...
+The `store()` method may be used to access a store other than the
+default one configured in your <Path father="config" child="cache.ts" />
+file:
 
+```typescript
+await Cache.store('redis').set('key', 'value')
+
+const value = await Cache.store('memory').get('key')
+```
+
+You may also override the store configuration in runtime using the
+`options` property:
+
+```typescript
+await Cache.store('redis', { options: { prefix: 'users', ttl: 60000 } })
+  .set('1', 'value')
+```
+
+### Managing connections
+
+Stores are connected automatically when they are used for the first
+time, and the connection is shared between all the instances that use
+the same store. You can manage the connections manually if you need:
+
+```typescript
+const redis = Cache.store('redis')
+
+redis.isConnected()
+
+await redis.close()
+
+redis.connect()
+```
+
+The `CacheProvider` closes all opened stores when your application shuts
+down. You can also do it by yourself using the `closeAll()` method:
+
+```typescript
+await Cache.closeAll()
+```
+
+The second argument of the `store()` method also accepts the options
+below to control how the connection is created:
+
+| Option          | Default | Description                                                                                         |
+|:----------------|:--------|:----------------------------------------------------------------------------------------------------|
+| `connect`       | `true`  | Set to `false` to not open the connection when creating the instance.                               |
+| `force`         | `false` | Create a new connection even if the store is already connected. Closing it is your responsibility. |
+| `saveOnFactory` | `true`  | Save the connection so other instances of the same store can reuse it.                             |
+
+## Disabling the cache
+
+Set the `enabled` option to `false` to make your store ignore every
+operation. `set()` and `delete()` will do nothing and `get()`, `has()`
+and `pull()` will always miss. This is very helpful when running tests,
+since your code will always fetch fresh data:
+
+```typescript
+memory: {
+  driver: 'memory',
+  enabled: Env('CACHE_ENABLED', true)
+}
+```
+
+```dotenv title=".env.test"
+CACHE_ENABLED=false
+```
+
+If you need to force a cache result in a specific test, stub the
+facade methods using the facade's `when()` method. Take a look at the
+[mocking facades documentation section](/docs/testing/mocking#mocking-facades)
+for more information:
+
+```typescript
+import { Cache } from '@athenna/cache'
+
+Cache.when('get').resolve('cached-value')
+```

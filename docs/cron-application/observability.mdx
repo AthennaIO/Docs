@@ -1,0 +1,266 @@
+---
+title: Observability
+sidebar_position: 6
+description: See how to add traces, metrics and logs to your CRON application using OpenTelemetry.
+---
+
+import Path from '@site/src/components/path'
+
+# Observability
+
+See how to add traces, metrics and logs to your CRON application using OpenTelemetry.
+
+## Introduction
+
+Schedulers are the kind of code that runs while nobody is watching.
+When a nightly job fails or takes 3 hours instead of 3 minutes, you
+usually find out too late. With OpenTelemetry, every execution of
+your schedulers becomes a trace, so you can see how long each one
+took, what it did and where it failed.
+
+:::info
+
+This page assumes that you have already installed and configured the
+`@athenna/otel` package. If you haven't yet, check the
+[observability getting started](/docs/observability/getting-started)
+documentation first.
+
+:::
+
+## Tracing executions
+
+To run each execution of your schedulers inside its own span and
+[context](/docs/observability/context), set the `otel.contextEnabled`
+option of your <Path father="config" child="cron.ts" /> configuration
+file to `true`:
+
+```typescript title="Path.config('cron.ts')"
+export default {
+  otel: {
+    contextEnabled: true,
+    contextBindings: []
+  }
+}
+```
+
+From now on, every execution will create a new span named
+`cron.execute.{name}`, where `{name}` is the name of your
+scheduler, or just `cron.execute` when your scheduler doesn't
+have one. Everything that happens during the execution, like
+database queries, HTTP calls and your own spans, will be a child
+of this span:
+
+```
+cron.execute.DeleteInactiveUsers                  [============================] 3.2s
+├── UserService.findInactive                       [====]                        0.4s
+│   └── pg.query SELECT users                       [===]                        0.3s
+├── DELETE https://storage.internal/avatars              [==========]            1.1s
+└── pg.query DELETE users                                            [========]  1.5s
+```
+
+The trace ID of the span will be available in the `traceId` property
+of the CRON context:
+
+```typescript title="Path.schedulers('DeleteInactiveUsers.ts')"
+import { Log } from '@athenna/logger'
+import { Scheduler, type Context } from '@athenna/cron'
+
+@Scheduler({ pattern: '0 0 * * *' })
+export class DeleteInactiveUsers {
+  public async handler({ traceId }: Context) {
+    Log.info(traceId) // 4bf92f3577b34da6a3ce929d0e0e4736
+  }
+}
+```
+
+If the handler of your scheduler throws, the exception will be
+recorded in the span and its status will be set as `ERROR`, so you
+can easily find all the failed executions in your tracing tool.
+
+:::info
+
+The spans are only exported when the OpenTelemetry SDK is
+started and configured by `@athenna/otel`. Without it, the
+`traceId` property will still be defined, but it will be
+created by the no-op tracer of `@opentelemetry/api`.
+
+:::
+
+### Creating your own spans
+
+You can split your execution in smaller steps using the `@Span()`
+annotation or the `Otel.record()` method:
+
+```typescript title="Path.schedulers('DeleteInactiveUsers.ts')"
+import { Otel } from '@athenna/otel'
+import { Inject } from '@athenna/ioc'
+import { Scheduler, type Context } from '@athenna/cron'
+import { UserService } from '#src/services/UserService'
+
+@Scheduler({ pattern: '0 0 * * *' })
+export class DeleteInactiveUsers {
+  @Inject()
+  private userService: UserService
+
+  public async handler(ctx: Context) {
+    const users = await Otel.record('users.find_inactive', span => {
+      span.setAttribute('users.inactive_days', 90)
+
+      return this.userService.findInactive(90)
+    })
+
+    await Otel.record('users.delete_inactive', () => {
+      return this.userService.deleteMany(users)
+    })
+  }
+}
+```
+
+Check the [traces](/docs/observability/traces) documentation to see all
+the ways you can create and enrich spans.
+
+## Context bindings
+
+Sometimes you want to make some values available to all the
+code that runs inside an execution, without needing to pass
+them around as arguments. To do so you can use the
+`otel.contextBindings` option. Each binding has a `key` and a
+`resolve()` function that receives the CRON context of the
+current execution:
+
+```typescript title="Path.config('cron.ts')"
+export default {
+  otel: {
+    contextEnabled: true,
+    contextBindings: [
+      {
+        key: 'schedulerName',
+        resolve: ctx => ctx.name
+      },
+      {
+        key: 'schedulerPattern',
+        resolve: ctx => ctx.pattern
+      }
+    ]
+  }
+}
+```
+
+Then, retrieve the values anywhere inside the execution using
+the `Otel` facade:
+
+```typescript title="Path.services('UserService.ts')"
+import { Otel } from '@athenna/otel'
+import { Service } from '@athenna/ioc'
+
+@Service()
+export class UserService {
+  public async deleteMany(users: User[]) {
+    const schedulerName = Otel.getCurrentContextValue('schedulerName')
+
+    // ...
+  }
+}
+```
+
+By default, a binding is ignored when its `resolve()` function
+returns `undefined`. Set the `includeIfUndefined` option of the
+binding to `true` to always register it:
+
+```typescript title="Path.config('cron.ts')"
+export default {
+  otel: {
+    contextEnabled: true,
+    contextBindings: [
+      {
+        key: 'schedulerTimezone',
+        includeIfUndefined: true,
+        resolve: ctx => ctx.timezone
+      }
+    ]
+  }
+}
+```
+
+## Connecting logs to executions
+
+Every log written during an execution with the `json` formatter will
+have the `traceId` and `spanId` fields of the execution span. To also
+send the execution logs to OpenTelemetry, use the `otel` driver in your
+`cronjob` channel:
+
+```typescript title="Path.config('logging.ts')"
+export default {
+  channels: {
+    cronjob: {
+      driver: 'stack',
+      channels: ['simple', 'otel']
+    },
+
+    simple: {
+      driver: 'console',
+      level: 'trace',
+      formatter: 'json'
+    },
+
+    otel: {
+      driver: 'otel',
+      level: 'trace',
+      formatter: 'json'
+    }
+  }
+}
+```
+
+Check the [tracing executions](/docs/cron-application/tracing-executions)
+documentation to see how to log every execution of your schedulers, and
+the [logs](/docs/observability/logs) documentation to see how to add your
+context bindings to every log.
+
+## Measuring executions
+
+Combine your schedulers with [metrics](/docs/observability/metrics) to
+build dashboards and alerts about them. For example, to know how many
+users are deleted per night:
+
+```typescript title="Path.schedulers('DeleteInactiveUsers.ts')"
+import { Otel } from '@athenna/otel'
+import { Inject } from '@athenna/ioc'
+import { Scheduler, type Context } from '@athenna/cron'
+import { UserService } from '#src/services/UserService'
+
+const deletedUsers = Otel.createCounter('users.deleted', {
+  description: 'The number of inactive users deleted'
+})
+
+@Scheduler({ pattern: '0 0 * * *' })
+export class DeleteInactiveUsers {
+  @Inject()
+  private userService: UserService
+
+  public async handler(ctx: Context) {
+    const users = await this.userService.findInactive(90)
+
+    await this.userService.deleteMany(users)
+
+    deletedUsers.add(users.length)
+  }
+}
+```
+
+## Disabling OpenTelemetry
+
+To disable the OpenTelemetry integration of your schedulers, set the
+`otel.contextEnabled` option to `false` or remove it from your
+<Path father="config" child="cron.ts" /> file:
+
+```typescript title="Path.config('cron.ts')"
+export default {
+  otel: {
+    contextEnabled: false
+  }
+}
+```
+
+The integration is also automatically disabled if the `@athenna/otel`
+package is not installed in your application.

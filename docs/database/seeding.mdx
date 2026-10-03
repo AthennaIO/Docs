@@ -58,6 +58,60 @@ node artisan db:seed
 node artisan db:seed --classes=UserSeeder
 ```
 
+You can also run your seeders in a connection that is not the default 
+one using the `--connection` option:
+
+```bash
+node artisan db:seed --connection=postgres
+```
+
+:::tip
+
+Want to start from a clean database and seed it in one go? Use the 
+`db:fresh --with-seeders` command. It wipes your database, runs your 
+migrations and then your seeders. Check the 
+[migrations documentation](/docs/database/migrations#wiping-and-refreshing-the-database)
+for more details.
+
+:::
+
+### Seeders execution order
+
+Seeders run **one after another**, never at the same time. This means 
+a seeder only starts when the previous one has finished, so you don't 
+need to worry about two seeders fighting over the same table.
+
+If one seeder depends on the data of another one (e.g. orders need 
+users to exist first), the simplest way to guarantee the order is 
+calling it explicitly from a "main" seeder:
+
+```typescript
+import { UserSeeder } from './UserSeeder.js'
+import { OrderSeeder } from './OrderSeeder.js'
+import { BaseSeeder, type DatabaseImpl } from '@athenna/database'
+
+export class DatabaseSeeder extends BaseSeeder {
+  public async run(db: DatabaseImpl) {
+    await new UserSeeder().run(db)
+    await new OrderSeeder().run(db)
+  }
+}
+```
+
+```bash
+node artisan db:seed --classes=DatabaseSeeder
+```
+
+:::caution
+
+Remember that running `db:seed` without the `--classes` option runs 
+**all** the seeders inside the <Path father="seeders" /> folder. In the 
+example above, this means `UserSeeder` and `OrderSeeder` would run 
+twice: once by themselves and once again by `DatabaseSeeder`. When 
+using a "main" seeder, always run it with `--classes`.
+
+:::
+
 ### Setting the seeder connection
 
 If your seeder will be interacting with a database connection other 

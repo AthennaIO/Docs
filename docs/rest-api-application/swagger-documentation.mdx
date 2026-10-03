@@ -17,14 +17,22 @@ your APIs so that machines can read them. The
 ability of APIs to describe their own structure 
 is the root of all awesomeness in Swagger.
 
+Athenna lets you describe your whole API in a single 
+<Path father="config" child="openapi.ts" /> file using 
+[Zod](https://zod.dev) schemas. The same schemas are used 
+to generate the Swagger documentation **and** to validate 
+and parse the requests and responses of your routes, so 
+your documentation can never drift away from what your 
+API really accepts and returns.
+
 ## Configuration
 
 Athenna uses the [`@fastify/swagger`](https://github.com/fastify/fastify-swagger) 
 and [`@fastify/swagger-ui`](https://github.com/fastify/fastify-swagger-ui) 
-plugins inside `HttpKernel`. All the configurations that `@fastify/swagger` 
-supports can be set inside  <Path father="config" child="http.ts" /> file in the `swagger.configurations` 
-object. And all the configurations that `@fastify/swagger-ui`
-supports can be set inside  <Path father="config" child="http.ts" /> file in the `swagger.ui` object:
+plugins inside `HttpKernel`. All the configurations that `@fastify/swagger-ui`
+supports can be set inside <Path father="config" child="http.ts" /> file in 
+the `swagger.ui` object, and all the plugin configurations of `@fastify/swagger` 
+can be set in the `swagger.configurations` object:
 
 ```typescript title="Path.config('http.ts')"
 export default {
@@ -32,35 +40,382 @@ export default {
     enabled: true,
     ui: {
       staticCSP: true,
-      routePrefix: '/docs'
+      routePrefix: '/docs',
+      uiConfig: {
+        defaultModelsExpandDepth: 0
+      }
     },
     configurations: {
-      mode: 'dynamic',
-      swagger: {
-        basePath: '/',
-        consumes: ['application/json'],
-        produces: ['application/json'],
-        info: {
-          title: Config.get('app.name'),
-          version: Config.get('app.version'),
-          description: Config.get('app.description')
-        },
-        externalDocs: {
-          url: 'https://athenna.io',
-          description: 'Find more info about Athenna here'
-        },
-      },
-    },
+      mode: 'dynamic'
+    }
   }
 }
 ```
 
-## Basic usage
+:::warning
 
-You can set your Swagger configurations using 
+The `mode` option must be `dynamic`, since the 
+documentation is generated from your routes and 
+from the <Path father="config" child="openapi.ts" /> 
+file when the server boots.
+
+:::
+
+## Documenting with Zod
+
+### Installing Zod
+
+Install the [Zod](https://zod.dev) package in your application:
+
+```bash
+npm install zod
+```
+
+:::info
+
+Zod schemas support is available from `@athenna/http@5.47.0` 
+and requires Zod v4, since Athenna relies on the native 
+JSON Schema generation of Zod v4 to create the Swagger 
+documentation of your schemas.
+
+:::
+
+### The `openapi.ts` configuration file
+
+Create the <Path father="config" child="openapi.ts" /> file. All 
+the root keys of this file, except `paths`, are used as the 
+`swagger` document of `@fastify/swagger`. This is the place 
+to define your `info`, `tags`, `basePath`, `consumes`, `produces`, 
+`externalDocs`, `securityDefinitions`, etc:
+
+```typescript title="Path.config('openapi.ts')"
+import { userRequest, userResponse } from '#src/schemas/user_schema'
+import { response, listRequestSchema } from '#src/schemas/base_schema'
+
+export default {
+  basePath: '/',
+  consumes: ['application/json'],
+  produces: ['application/json'],
+  info: {
+    title: Config.get('app.name'),
+    version: Config.get('app.version'),
+    description: Config.get('app.description')
+  },
+  tags: [{ name: 'User', description: 'User resources.' }],
+  paths: {
+    '/api/v1/users': {
+      get: {
+        tags: ['User'],
+        summary: 'Fetch all users.',
+        querystring: listRequestSchema,
+        response: {
+          200: userResponse.paginated,
+          401: response.unauthorized
+        }
+      },
+      post: {
+        tags: ['User'],
+        summary: 'Create a new user.',
+        body: userRequest.create,
+        response: {
+          201: userResponse.single,
+          401: response.unauthorized,
+          422: response.unprocessableEntity
+        }
+      }
+    },
+    '/api/v1/users/:id': {
+      get: {
+        tags: ['User'],
+        summary: 'Fetch a user by id.',
+        params: userRequest.params,
+        response: {
+          200: userResponse.single,
+          401: response.unauthorized,
+          404: response.notFound
+        }
+      },
+      put: {
+        tags: ['User'],
+        summary: 'Update a user by id.',
+        params: userRequest.params,
+        body: userRequest.update,
+        response: {
+          200: userResponse.single,
+          404: response.notFound,
+          422: response.unprocessableEntity
+        }
+      },
+      delete: {
+        tags: ['User'],
+        summary: 'Delete a user by id.',
+        params: userRequest.params,
+        response: {
+          204: response.noContent,
+          404: response.notFound
+        }
+      }
+    }
+  }
+}
+```
+
+:::tip
+
+If the same key is also defined inside `http.swagger.configurations.swagger`
+in your <Path father="config" child="http.ts" /> file, the value of
+the `http.ts` file will be used.
+
+:::
+
+Each entry of `paths` is matched against the routes registered 
+in your <Path father="routes" child="http.ts" /> file:
+
+- The key must be the **final URL** of the route, including 
+the prefix of route groups (e.g. `/api/v1/users` and not `/users`).
+- Route params can be written in both `/users/:id` and 
+`/users/{id}` formats. Trailing slashes are ignored.
+- The method keys are always lowercase (`get`, `post`, `put`, 
+`patch`, `delete`, etc).
+
+This means that you don't need to change anything in your 
+routes file, the routes and resources are matched automatically:
+
+```typescript title="Path.routes('http.ts')"
+Route.group(() => {
+  Route.resource('/users', 'UserController')
+}).prefix('/api/v1')
+```
+
+Every method entry supports all the options of a Fastify route 
+schema (`tags`, `summary`, `description`, `operationId`, `security`, 
+`deprecated`, `hide`, etc). The `body`, `headers`, `params`, 
+`querystring` and each `response` status code can receive a 
+Zod schema or a plain JSON schema, and you can mix both of them 
+in the same route.
+
+### Organizing your schemas
+
+We recommend creating your Zod schemas inside the `src/schemas` 
+folder, one file per resource. Start with a `base_schema.ts` file 
+holding the helpers and the error responses shared by all 
+your resources:
+
+```typescript title="Path.src('schemas/base_schema.ts')"
+import { z } from 'zod'
+
+export const single = (schema: z.ZodType) => z.object({ data: schema })
+
+export const paginated = (schema: z.ZodType) =>
+  z.object({
+    meta: z.object({
+      itemCount: z.number().int(),
+      totalItems: z.number().int(),
+      totalPages: z.number().int(),
+      currentPage: z.number().int(),
+      itemsPerPage: z.number().int()
+    }),
+    links: z.object({
+      first: z.string(),
+      last: z.string(),
+      next: z.string(),
+      previous: z.string()
+    }),
+    data: z.array(schema)
+  })
+
+export const error = (schema: z.ZodType) => z.object({ error: schema })
+
+export const idSchema = z
+  .string()
+  .min(1)
+  .meta({ example: '6c1a0f0a-0000-4000-8000-000000000000' })
+
+export const pathIdSchema = z.object({ id: idSchema })
+
+export const listRequestSchema = z.object({
+  page: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .default(0)
+    .meta({ description: 'Page index (0-based).' }),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(50)
+    .default(10)
+    .meta({ description: 'Page size (max 50).' })
+})
+
+export const response = {
+  noContent: single(z.unknown().meta({ description: 'No content (204).' })),
+  unauthorized: error(
+    z.object({
+      statusCode: z.number().int().meta({ example: 401 }),
+      code: z.string().meta({ example: 'E_UNAUTHORIZED_ERROR' }),
+      name: z.string().meta({ example: 'UnauthorizedException' }),
+      message: z.string().meta({ example: 'Unauthorized' })
+    })
+  ),
+  notFound: error(
+    z.object({
+      statusCode: z.number().int().meta({ example: 404 }),
+      code: z.string().meta({ example: 'E_NOT_FOUND_ERROR' }),
+      name: z.string().meta({ example: 'NotFoundException' }),
+      message: z.string().meta({ example: 'Not found' })
+    })
+  ),
+  unprocessableEntity: error(
+    z.object({
+      statusCode: z.number().int().meta({ example: 422 }),
+      code: z.string().meta({ example: 'E_VALIDATION_ERROR' }),
+      name: z.string().meta({ example: 'ValidationException' }),
+      message: z.string().meta({ example: 'Validation error happened.' }),
+      details: z.array(z.record(z.string(), z.unknown())).optional()
+    })
+  )
+}
+```
+
+Then create one file for each resource. Each file should 
+export exactly two objects: `<resource>Request`, with the 
+schemas of the request (params, query and bodies), and 
+`<resource>Response`, with the schemas of the response:
+
+```typescript title="Path.src('schemas/user_schema.ts')"
+import { z } from 'zod'
+import { single, idSchema, paginated, pathIdSchema } from '#src/schemas/base_schema'
+
+const userCreateBodySchema = z.object({
+  name: z.string().min(1),
+  email: z.email()
+})
+
+const userUpdateBodySchema = userCreateBodySchema.partial()
+
+export const userResponseSchema = z.looseObject({
+  id: idSchema,
+  name: z.string().meta({ example: 'João Lenon' }),
+  email: z.string().meta({ example: 'lenon@athenna.io' }),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime()
+})
+
+export const userRequest = {
+  params: pathIdSchema,
+  create: userCreateBodySchema,
+  update: userUpdateBodySchema
+}
+
+export const userResponse = {
+  single: single(userResponseSchema),
+  paginated: paginated(userResponseSchema)
+}
+```
+
+Use the `.meta()` and `.describe()` methods of Zod to add 
+`example`, `description` and other OpenAPI properties to 
+your fields. They will be displayed in the Swagger UI.
+
+### Request validation
+
+When a route has Zod schemas for `body`, `headers`, `params` 
+or `querystring`, Athenna will validate them before executing 
+your middlewares and your route handler. The **parsed** values 
+replace the original ones, so inside your controller you will 
+receive the data already coerced and with the defaults applied:
+
+```typescript title="Path.http('controllers/UserController.ts')"
+import { Context, Controller } from '@athenna/http'
+
+@Controller()
+export class UserController {
+  public async index({ request }: Context) {
+    const { page, limit } = request.queries // numbers, defaults applied
+
+    // ...
+  }
+
+  public async store({ request }: Context) {
+    const { name, email } = request.body // already validated
+
+    // ...
+  }
+}
+```
+
+If the validation fails, a `ZodValidationException` is thrown 
+and the request will be answered with the status code `422`. 
+The issues returned by Zod will be available in the `details` 
+property:
+
+```json
+{
+  "statusCode": 422,
+  "code": "E_VALIDATION_ERROR",
+  "name": "ValidationException",
+  "message": "Validation error happened.",
+  "details": [
+    {
+      "origin": "string",
+      "code": "too_small",
+      "minimum": 1,
+      "inclusive": true,
+      "path": ["name"],
+      "message": "Too small: expected string to have >=1 characters"
+    }
+  ]
+}
+```
+
+:::warning
+
+`z.object()` strips unknown keys. If you validate `headers`, 
+use `z.looseObject()`, otherwise `request.headers` will only 
+contain the headers that you have defined in your schema.
+
+:::
+
+### Response parsing
+
+When you call `response.send()`, Athenna will look for a 
+Zod schema matching the response status code. The schema 
+is resolved by the exact status code (e.g. `201`), then by 
+the status code range (e.g. `2xx`) and then by `default`.
+
+If the payload matches the schema, the **parsed** payload 
+is sent to the client. If it does not match, the original 
+payload is sent unchanged and no error is thrown, the 
+response schema never breaks your route.
+
+:::warning
+
+Since the parsed payload is the one sent, `z.object()` will 
+remove from the response every key that is not defined in 
+the schema. This is useful to avoid leaking fields, but if 
+you want to keep the unknown keys, use `z.looseObject()` 
+instead, like the `userResponseSchema` above.
+
+:::
+
+:::danger
+
+Never read the `openapi.paths` configuration with `Config.get()`. 
+This method deep copies the value, and a copied Zod schema 
+loses its internals, breaking both the validation and the 
+documentation generation. Always import the schemas directly 
+from your `src/schemas` files when you need them.
+
+:::
+
+## Documenting in the routes file
+
+You can also set your Swagger configurations using 
 the `Route` facade in `routes/http.ts` file:
 
-```typescript title="Path.route('http.ts')"
+```typescript title="Path.routes('http.ts')"
 Route.get('/hello', 'WelcomeController.show')
     .summary('Hello route')
     .tags('hello', 'world')
@@ -80,7 +435,7 @@ Route.get('/hello', 'WelcomeController.show')
 You can also use the `swagger()` method and use 
 the same configurations of `@fastify/swagger` plugin:
 
-```typescript title="Path.route('http.ts')"
+```typescript title="Path.routes('http.ts')"
 Route.get('/hello', 'WelcomeController.show').swagger({
     summary: 'Hello route',
     tags: ['hello', 'world'],
@@ -105,13 +460,35 @@ Route.get('/hello', 'WelcomeController.show').swagger({
 })
 ```
 
+The `schema()` method also accepts Zod schemas, the same 
+way as the <Path father="config" child="openapi.ts" /> file:
+
+```typescript title="Path.routes('http.ts')"
+import { z } from 'zod'
+
+Route.get('/hello', 'WelcomeController.show').schema({
+  querystring: z.object({ name: z.string() }),
+  response: {
+    200: z.object({ name: z.string() })
+  }
+})
+```
+
+:::tip
+
+If a route is also documented in the <Path father="config" child="openapi.ts" />
+file, both configurations are merged and the configuration set in the
+route will always win. The `response` object is merged by status code.
+
+:::
+
 ### Usage in route groups
 
 You can also use all the swagger methods in route groups. 
 This will set the same configuration for all routes inside 
 the group:
 
-```typescript title="Path.route('http.ts')"
+```typescript title="Path.routes('http.ts')"
 Route.group(() => {
     Route.get('/hello', 'WelcomeController.show').summary('Hello route')
 }).swagger({...})
@@ -129,7 +506,7 @@ the already set methods of routes. Use them to create
 
 Same behavior as route groups, but for resources:
 
-```typescript title="Path.route('http.ts')"
+```typescript title="Path.routes('http.ts')"
 // Set the same configurations for all routes of resource
 Route.resource('/tests', 'WelcomeController').swagger({...})
 
@@ -159,3 +536,11 @@ export default {
   }
 }
 ```
+
+:::note
+
+Disabling Swagger only removes the documentation. The Zod 
+schemas of the <Path father="config" child="openapi.ts" /> file 
+will keep validating your requests and responses.
+
+:::

@@ -16,10 +16,68 @@ Athenna's scheduler offers a fresh approach to managing
 scheduled tasks on your server. The scheduler allows you 
 to fluently and expressively define your scheduler within 
 your Athenna application itself. When using the scheduler, 
-only a single cron entry is needed on your server. Your 
+only a single process is needed on your server. Your 
 task schedule can be defined in your application's 
 <Path father="routes" child="cron.ts" /> file or as a class 
 inside <Path father="cron" child="schedulers/MyScheduler.ts" />.
+
+Under the hood, Athenna uses the [`node-cron`](https://www.npmjs.com/package/node-cron)
+library to schedule and run your tasks.
+
+## Bootstrapping the CRON application
+
+The CRON application is started by the `Ignite.cron()` method
+in your <Path father="bin" child="main.ts" /> file:
+
+```typescript title="Path.bin('main.ts')"
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url)
+
+await ignite.cron()
+```
+
+When booting, Athenna will use the `CronKernel` class to:
+
+- Register the execution logger if `cron.logger.enabled` is `true`.
+- Register the exception handler of your schedulers.
+- Register all the schedulers defined inside the `schedulers` array 
+of your `.athennarc.json` file.
+- Import your <Path father="routes" child="cron.ts" /> file.
+
+You can also set the following options when calling `Ignite.cron()`:
+
+```typescript title="Path.bin('main.ts')"
+await ignite.cron({
+  routePath: Path.routes('cron.ts'),
+  kernelPath: '#src/cron/CronKernel',
+  exceptionHandlerPath: '#src/cron/exceptions/Handler'
+})
+```
+
+- `routePath`: The path to your CRON route file. By default it uses
+the `cron.route` property of `.athennarc.json` or 
+<Path father="routes" child="cron.ts" /> if it is not set.
+- `kernelPath`: The path to your CRON kernel. By default it uses the
+`cron.kernel` property of `.athennarc.json` or `@athenna/cron/kernels/CronKernel`
+if it is not set. You can create your own extending the `CronKernel`
+class of `@athenna/cron`.
+- `exceptionHandlerPath`: The path to your exception handler. Check the
+[error handling documentation](/docs/cron-application/error-handling#implementing-your-own-exception-handler)
+for more details.
+- `forceIgniteFire`: Force Ignite to fire even if it was already fired by
+another application in the same process.
+
+The route file and kernel paths can also be set in your `.athennarc.json`:
+
+```json title=".athennarc.json"
+{
+  "cron": {
+    "route": "#routes/cron",
+    "kernel": "#src/cron/CronKernel"
+  }
+}
+```
 
 ## Defining Schedulers
 
@@ -28,7 +86,7 @@ directory; however, you are free to choose your own storage
 location as long as your schedulers can be imported and registered.
 
 To create a new scheduler, you may use the `make:scheduler` 
-Artisan command. This command will create a new command class 
+Artisan command. This command will create a new scheduler class 
 in the `src/cron/schedulers` directory and register it inside 
 `schedulers` array of `.athennarc.json` file. Don't worry if 
 this directory does not exist in your application—it will be 
@@ -49,6 +107,25 @@ it for you:
 }
 ```
 
+:::tip
+
+You can change the directory where `make:scheduler` creates your
+schedulers by setting the `destination` option of the command in
+your `.athennarc.json` file:
+
+```json title=".athennarc.json"
+{
+  "commands": {
+    "make:scheduler": {
+      "path": "@athenna/cron/commands/MakeSchedulerCommand",
+      "destination": "./src/app/schedulers"
+    }
+  }
+}
+```
+
+:::
+
 ### Defining schedulers logic
 
 In this example, we will schedule a `handler` method to be called 
@@ -67,10 +144,26 @@ export class DeleteRecentUsers {
 }
 ```
 
+The `handler` method receives the CRON context as its first
+argument. Check the [CRON context documentation](/docs/cron-application/cron-context)
+to see all the properties available on it. All the options of the
+`@Scheduler()` annotation are documented in the 
+[annotations documentation](/docs/cron-application/annotations#scheduler).
+
 :::tip
 
 You can use [Crontab.guru](https://crontab.guru/) to help you
 create your CRON pattern, or simply ask [ChatGPT](https://chatgpt.com/) 🤩.
+
+:::
+
+:::warning
+
+Only classes annotated with `@Scheduler()` are scheduled when the
+application boots. If a class registered in the `schedulers` array
+of `.athennarc.json` doesn't have the annotation, Athenna will only
+register it in the service container as `App/Cron/Schedulers/YourClassName`,
+but it will never run by itself.
 
 :::
 
@@ -79,16 +172,40 @@ create your CRON pattern, or simply ask [ChatGPT](https://chatgpt.com/) 🤩.
 If you prefer, you can use the <Path father="routes" child="cron.ts" />
 file to register your schedulers:
 
-```typescript
+```typescript title="Path.routes('cron.ts')"
 import { Cron } from '@athenna/cron'
 import { Database } from '@athenna/database'
 
-Cron.schedule().name('delete_recent_users')
+Cron.schedule()
+  .name('delete_recent_users')
   .pattern('0 0 * * *')
   .handler(async (ctx) => {
     await Database.table('recent_users').delete()
   })
 ```
+
+The `handler()` method must always be the last method called,
+because it's the one responsible to register your scheduler with
+all the options defined before it. It returns the scheduled task
+created by `node-cron`, which you can use to stop and start your
+scheduler later:
+
+```typescript title="Path.routes('cron.ts')"
+const task = Cron.schedule()
+  .pattern('* * * * *')
+  .handler(() => console.log('running every minute'))
+
+task.stop()
+```
+
+:::tip
+
+Always define a `name()` for your route schedulers. The name is
+used to identify your scheduler in logs, in [traces](/docs/cron-application/tracing-executions)
+and also to run it using `Cron.runByName()`. Schedulers without
+a name receive a random one generated by `node-cron`.
+
+:::
 
 ### Listing schedulers (Coming Soon)
 
@@ -100,27 +217,98 @@ command:
 node artisan cron:list
 ```
 
-## Running scheduler locally (Coming Soon)
+## Scheduler options
 
-When developing or even in production you might need to 
-force the scheduler to run. To do so you can use the 
-`node artisan cron:run` command:
+### Timezones
 
-```typescript
-node artisan cron:run DeleteRecentUsers
-```
-
-You can also use a CRON pattern, this will trigger all the
-schedulers registered with the same pattern:
+By default your CRON pattern will respect the timezone of the
+machine running your application. Use the `timezone` option to
+define the timezone that the pattern needs to respect:
 
 ```typescript
-node artisan cron:run "0 0 * * *"
+@Scheduler({ 
+  pattern: '0 0 * * *',
+  timezone: 'America/Sao_Paulo' 👈
+})
+export class DeleteRecentUsers {}
 ```
+
+If using routes you may call the `timezone()` method:
+
+```typescript title="Path.routes('cron.ts')"
+Cron.schedule()
+  .name('delete_recent_users')
+  .pattern('0 0 * * *')
+  .timezone('America/Sao_Paulo') 👈
+  .handler(async (ctx) => {})
+```
+
+### Registering disabled schedulers
+
+Sometimes you might want to register a scheduler without starting
+it right away. To do so, set the `scheduled` option to `false`. Your
+scheduler will be registered but it will only run after you start it 
+manually using the `Cron` facade:
+
+```typescript
+@Scheduler({ 
+  pattern: '0 0 * * *',
+  scheduled: false 👈
+})
+export class DeleteRecentUsers {}
+```
+
+If using routes you may call the `scheduled()` method:
+
+```typescript title="Path.routes('cron.ts')"
+Cron.schedule()
+  .name('delete_recent_users')
+  .pattern('0 0 * * *')
+  .scheduled(false) 👈
+  .handler(async (ctx) => {})
+```
+
+Then, start it whenever you want:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+Cron.getTasks().get('DeleteRecentUsers').start()
+```
+
+### Recovering missed executions
+
+If the main thread of your application gets blocked for any reason 
+(a heavy synchronous operation, for example), your scheduler might
+miss some of its executions. By default these executions are just
+skipped. Set the `recoverMissedExecutions` option to `true` to run
+all the executions that were missed during this period:
+
+```typescript
+@Scheduler({ 
+  pattern: '* * * * *',
+  recoverMissedExecutions: true 👈
+})
+export class SyncProducts {}
+```
+
+If using routes you may call the `recoverMissedExecutions()` method:
+
+```typescript title="Path.routes('cron.ts')"
+Cron.schedule()
+  .name('sync_products')
+  .pattern('* * * * *')
+  .recoverMissedExecutions(true) 👈
+  .handler(async (ctx) => {})
+```
+
+## Running scheduler locally
 
 ### Using `runOnInit` option
 
-Another way to run your schedulers locally is to define the
-`runOnInit=true` option:
+Sometimes you want to run your schedulers right away when
+developing locally, without needing to wait for the CRON
+pattern. To do so, set the `runOnInit=true` option:
 
 ```typescript
 import { Database } from '@athenna/database'
@@ -139,7 +327,7 @@ export class DeleteRecentUsers {
 
 If using routes you may call the `runOnInit()` method:
 
-```typescript
+```typescript title="Path.routes('cron.ts')"
 import { Cron } from '@athenna/cron'
 import { Database } from '@athenna/database'
 
@@ -153,6 +341,57 @@ Cron.schedule().name('delete_recent_users')
 
 If this option is set to `true`, it will automatically run your
 scheduler when bootstrapping your Athenna application.
+
+:::tip
+
+A nice trick is to use an environment variable to define this 
+option, this way you can enable it only in your local environment:
+
+```typescript
+import { Env } from '@athenna/config'
+
+@Scheduler({ 
+  pattern: '0 0 * * *',
+  runOnInit: Env('CRON_RUN_ON_INIT', false) 👈
+})
+export class DeleteRecentUsers {}
+```
+
+:::
+
+### Using `Cron.runByName()` method
+
+You can also force a scheduler to run at any moment using
+the `runByName()` method of the `Cron` facade. The name
+of class schedulers is the class name by default, and the
+name of route schedulers is the one defined with `name()`:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+await Cron.runByName('DeleteRecentUsers')
+await Cron.runByName('delete_recent_users')
+```
+
+If the scheduler does not exist, the `NotFoundTaskNameException`
+will be thrown.
+
+### Using `cron:run` command (Coming Soon)
+
+When developing or even in production you might need to 
+force the scheduler to run. To do so you can use the 
+`node artisan cron:run` command:
+
+```shell
+node artisan cron:run DeleteRecentUsers
+```
+
+You can also use a CRON pattern, this will trigger all the
+schedulers registered with the same pattern:
+
+```shell
+node artisan cron:run "0 0 * * *"
+```
 
 ## Dependency injection in schedulers
 
@@ -198,3 +437,130 @@ export class DeleteRecentUsers {
   }
 }
 ```
+
+## The `Cron` facade
+
+The `Cron` facade gives you access to all the scheduled tasks of 
+your application. Besides `schedule()` and `runByName()`, the
+following methods are available:
+
+### `Cron.validate()`
+
+Validate if a CRON pattern is valid:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+Cron.validate('59 * * * *') // true
+Cron.validate('60 * * * *') // false
+```
+
+### `Cron.getTasks()`
+
+Get a `Map` with all the scheduled tasks, where the key is
+the name of the scheduler:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+const tasks = Cron.getTasks()
+
+tasks.get('DeleteRecentUsers').stop()
+tasks.get('DeleteRecentUsers').start()
+```
+
+### `Cron.close()`
+
+Stop all the scheduled tasks. The tasks will still be
+registered, so you can start them again later:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+Cron.close()
+```
+
+### `Cron.truncate()`
+
+Remove all the scheduled tasks from the registry:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+Cron.close().truncate()
+```
+
+:::info
+
+You don't need to call `close()` and `truncate()` when your 
+application is shutting down. The `CronProvider` does that for
+you during the [graceful shutdown](/docs/digging-deeper/graceful-shutdown)
+of your application.
+
+:::
+
+## Testing schedulers
+
+To create a test for your schedulers, use the `--cron` flag of
+the `make:test` command:
+
+```bash
+node artisan make:test DeleteRecentUsersTest --cron
+```
+
+This command will create a test class that extends `BaseCronTest`.
+This class will boot your CRON application before running your
+tests and close all the tasks after them. Use the `scheduler` 
+property of the test context to run your schedulers by name:
+
+```typescript
+import { Database } from '@athenna/database'
+import { Test, type Context } from '@athenna/test'
+import { BaseCronTest } from '@athenna/core/testing/BaseCronTest'
+
+export default class DeleteRecentUsersTest extends BaseCronTest {
+  @Test()
+  public async shouldBeAbleToDeleteRecentUsers({ assert, scheduler }: Context) {
+    await scheduler.runByName('DeleteRecentUsers')
+
+    assert.lengthOf(await Database.table('recent_users').findMany(), 0)
+  }
+}
+```
+
+To have the `scheduler` property available, register the
+`scheduler` plugin in your <Path father="bin" child="test.ts" /> file:
+
+```typescript title="Path.bin('test.ts')"
+import { Runner } from '@athenna/test'
+import { scheduler } from '@athenna/cron/testing/plugins'
+
+await Runner.setTsEnv()
+  .addAssertPlugin()
+  .addPlugin(scheduler()) 👈
+  .addPath('tests/e2e/**/*.ts')
+  .addPath('tests/unit/**/*.ts')
+  .setCliArgs(process.argv.slice(2))
+  .setGlobalTimeout(5000)
+  .setForceExit()
+  .run()
+```
+
+:::tip
+
+You will probably want to set `scheduled: false` for your schedulers
+when running your tests, this way they will only run when you call
+`scheduler.runByName()`. An environment variable defined in your
+`.env.test` file can help you with that:
+
+```typescript
+import { Env } from '@athenna/config'
+
+@Scheduler({ 
+  pattern: '0 0 * * *',
+  scheduled: Env('CRON_SCHEDULED', true) 👈
+})
+export class DeleteRecentUsers {}
+```
+
+:::

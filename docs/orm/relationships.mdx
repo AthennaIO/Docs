@@ -60,6 +60,8 @@ Check the full documentation of relationships annotations:
 - [`@HasMany()`](/docs/orm/annotations#has-many)
 - [`@BelongsTo()`](/docs/orm/annotations#belongs-to)
 - [`@BelongsToMany()`](/docs/orm/annotations#belongs-to-many)
+- [`@HasOneThrough()`](/docs/orm/annotations#has-one-through)
+- [`@HasManyThrough()`](/docs/orm/annotations#has-many-through)
 
 :::
 
@@ -69,6 +71,8 @@ relationships using the above annotations:
 - [One To One](/docs/orm/relationships#one-to-one)
 - [One To Many](/docs/orm/relationships#one-to-many)
 - [Many To Many](/docs/orm/relationships#many-to-many)
+- [Has One Through](/docs/orm/relationships#has-one-through)
+- [Has Many Through](/docs/orm/relationships#has-many-through)
 
 ## One To One
 
@@ -518,6 +522,150 @@ const rolesUsers = await RolesUsers.query()
   .findMany()
 ```
 
+## Has Many Through
+
+The "has many through" relationship is a handy way to reach distant 
+relations through an intermediate model. Imagine an application where 
+a `Region` has many `Member` models, and each `Member` writes many 
+`Article` models. With a has many through relationship, you can get 
+all the articles of a region directly, without loading the members 
+first. Let's look at the tables needed to define this relationship:
+
+```
+regions
+    id - integer
+    name - string
+
+members
+    id - integer
+    regionId - integer
+    name - string
+
+articles
+    id - integer
+    memberId - integer
+    title - string
+```
+
+Now let's define the relationship in the `Region` model using the 
+`@HasManyThrough()` annotation. The first argument is the final model 
+we want to access, while the second argument is the intermediate model:
+
+```typescript
+import { Member } from '#src/models/Member'
+import { Article } from '#src/models/Article'
+import type { Relation } from '@athenna/database'
+import { Column, BaseModel, HasManyThrough } from '@athenna/database'
+
+export class Region extends BaseModel {
+  @Column()
+  public id: number
+
+  @Column()
+  public name: string
+
+  @HasManyThrough(() => Article, () => Member)
+  public articles: Relation<Article[]>
+}
+```
+
+And that's it! You can load it like any other relationship:
+
+```typescript
+const region = await Region.query()
+  .with('articles')
+  .find()
+
+region.articles.forEach(article => console.log(article.title))
+```
+
+### When the key lives in the intermediate model
+
+In the example above, the final model (`Article`) has the key that 
+points to the intermediate model (`memberId`). But sometimes it's the 
+other way around: the **intermediate** model has the key that points 
+to the final model. A good example is a `SaleItem` that connects an 
+`Appointment` to a `Sale`:
+
+```
+appointments
+    id - integer
+
+sale_items
+    id - integer
+    appointmentId - integer
+    saleId - integer
+
+sales
+    id - integer
+    total - integer
+```
+
+For this shape, set the `inverse` option to `true`:
+
+```typescript
+import { Sale } from '#src/models/Sale'
+import { SaleItem } from '#src/models/SaleItem'
+import type { Relation } from '@athenna/database'
+import { Column, BaseModel, HasManyThrough } from '@athenna/database'
+
+export class Appointment extends BaseModel {
+  @Column()
+  public id: number
+
+  @HasManyThrough(() => Sale, () => SaleItem, { inverse: true })
+  public sales: Relation<Sale[]>
+}
+```
+
+:::tip
+
+Athenna guesses the keys of your relationship by following the 
+conventions above. If your tables use different column names, you can 
+set them using the `localKey`, `firstKey`, `secondLocalKey` and 
+`secondKey` options. Check the
+[`@HasManyThrough()` annotation documentation](/docs/orm/annotations#has-many-through)
+for more details.
+
+:::
+
+## Has One Through
+
+The "has one through" relationship works exactly like the "has many 
+through", but returns a single model instead of an array. Using the 
+same tables of the previous examples, let's define one using the 
+`@HasOneThrough()` annotation:
+
+```typescript
+import { Member } from '#src/models/Member'
+import { Article } from '#src/models/Article'
+import type { Relation } from '@athenna/database'
+import { Column, BaseModel, HasOneThrough } from '@athenna/database'
+
+export class Region extends BaseModel {
+  @Column()
+  public id: number
+
+  @HasOneThrough(() => Article, () => Member)
+  public latestArticle: Relation<Article>
+}
+```
+
+```typescript
+const region = await Region.query()
+  .with('latestArticle', query => query.latest())
+  .find()
+
+console.log(region.latestArticle.title)
+```
+
+The `inverse` option is also available for `@HasOneThrough()`:
+
+```typescript
+@HasOneThrough(() => Sale, () => SaleItem, { inverse: true })
+public sale: Relation<Sale>
+```
+
 ## Eager loading
 
 Eager loading alleviates the "N + 1" query problem. To illustrate the N + 1 
@@ -661,6 +809,131 @@ const books = await Book.query()
         query.where('isCellphone', true)
       })
   })
+  .findMany()
+```
+
+## Lazy loading
+
+When you already have a model instance and need one of its 
+relationships, use the `load()` method. It loads the relationship, 
+sets it in your model and also returns it:
+
+```typescript
+const book = await Book.find({ id: 1 })
+
+const author = await book.load('author')
+
+console.log(book.author.name) // The relationship is now set in the model
+```
+
+You can also pass a closure to add constraints, or use the "dot" 
+syntax to load nested relationships:
+
+```typescript
+await book.load('author', query => query.select('id', 'name'))
+await book.load('author.contacts')
+```
+
+### Loading without changing the model
+
+Sometimes you just want to read a relationship without changing your 
+model instance, for example to avoid returning it inside the JSON of 
+your API response. For that, use the `loadOnly()` method. It works 
+like `load()`, but your model stays untouched:
+
+```typescript
+const book = await Book.find({ id: 1 })
+
+const author = await book.loadOnly('author')
+
+console.log(author.name) // 'João Lenon'
+console.log(book.author) // undefined
+```
+
+## Querying relationship existence
+
+Sometimes you want to retrieve models based on their relationships. 
+For example, imagine you want to retrieve only the posts that have at 
+least one comment. You can do this using the `whereHas()` method:
+
+```typescript
+const posts = await Post.query()
+  .whereHas('comments')
+  .findMany()
+```
+
+You can also pass a closure to add constraints to the relationship. 
+In the example below, we are retrieving only the posts that have at 
+least one comment written by `João Lenon`:
+
+```typescript
+const posts = await Post.query()
+  .whereHas('comments', query => query.where('author', 'João Lenon'))
+  .findMany()
+```
+
+To go deeper in the relationships, just call `whereHas()` again inside 
+your closure:
+
+```typescript
+// Books that have an author with at least one cellphone contact
+const books = await Book.query()
+  .whereHas('author', query => {
+    query.whereHas('contacts', query => query.where('isCellphone', true))
+  })
+  .findMany()
+```
+
+The `whereHas()` method works with all the relationship types: has 
+one, has many, belongs to, belongs to many, has one through and has 
+many through.
+
+### Or where has
+
+The `orWhereHas()` method joins the relationship clause using the `or` 
+operator. It's very useful inside a grouped `where()` to check a 
+column of your model **or** a column of a relationship:
+
+```typescript
+const users = await User.query()
+  .where(query => {
+    query
+      .whereILike('name', '%lenon%')
+      .orWhereHas('profile', query => query.whereILike('bio', '%lenon%'))
+  })
+  .findMany()
+```
+
+:::tip
+
+If what you are trying to build is a search box, take a look at the
+[model `search()` method](/docs/orm/query-builder#searching). It does 
+exactly what the example above does, but in a single line.
+
+:::
+
+### Filtering and loading at the same time
+
+The `whereHas()` method only **filters** your models, it doesn't load 
+the relationship. If you also want the relationship data in your 
+results, combine it with `with()`:
+
+```typescript
+const posts = await Post.query()
+  .whereHas('comments', query => query.where('isApproved', true))
+  .with('comments')
+  .findMany()
+```
+
+The closures of `whereHas()` and `with()` are independent. In the 
+example above, the posts are filtered by approved comments, but all 
+of their comments are loaded. If you only want to load the approved 
+ones, add the same constraint to `with()` as well:
+
+```typescript
+const posts = await Post.query()
+  .whereHas('comments', query => query.where('isApproved', true))
+  .with('comments', query => query.where('isApproved', true))
   .findMany()
 ```
 

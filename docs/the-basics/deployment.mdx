@@ -10,4 +10,66 @@ See how to deploy any kind of Athenna application.
 
 ## Introduction
 
-Coming soon
+When you're ready to deploy your Athenna application to
+production, there are some important things you can do
+to make sure your application is running as efficiently
+as possible. In this documentation, we'll cover some
+great starting points for deploying your application.
+
+## AWS Lambda
+
+Your REST API application can also run inside an 
+[AWS Lambda](https://aws.amazon.com/lambda/) function. 
+Athenna uses the [`@fastify/aws-lambda`](https://github.com/fastify/aws-lambda-fastify)
+plugin to translate the events received from API Gateway or
+from a Lambda function URL into requests for your server. 
+First, install the package:
+
+```bash
+npm install @fastify/aws-lambda
+```
+
+Now create a new entrypoint for your Lambda function and set 
+the `isAWSLambda` option as `true` when booting the HTTP server.
+Instead of listening to a port, the `httpServer()` method will
+return a handler ready to be exported:
+
+```typescript title="Path.bin('lambda.ts')"
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url, { bootLogs: false })
+
+export const handler = await ignite.httpServer({ isAWSLambda: true })
+```
+
+All your routes, middlewares, plugins and exception handler 
+are registered exactly like when running the server with 
+`node artisan serve`. The only difference is that the server
+is created once, when your function starts (the cold start), 
+and reused by all the next invocations of the same instance.
+
+:::tip
+
+Since your application is booted only once per function instance,
+avoid doing heavy work when booting your application, like 
+running migrations. Keep this kind of work in your deployment
+pipeline.
+
+:::
+
+If you need to customize how the events are translated, you can
+use the `@athenna/http/awslambda` export, which is the 
+`@fastify/aws-lambda` plugin itself, with the server returned
+by the `initOnly` option:
+
+```typescript title="Path.bin('lambda.ts')"
+import { Ignite } from '@athenna/core'
+import awsLambda from '@athenna/http/awslambda'
+
+const ignite = await new Ignite().load(import.meta.url, { bootLogs: false })
+const server = await ignite.httpServer({ initOnly: true })
+
+export const handler = awsLambda(server.fastify, {
+  binaryMimeTypes: ['application/octet-stream']
+})
+```

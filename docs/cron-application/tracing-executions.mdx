@@ -1,6 +1,6 @@
 ---
 title: Tracing Executions 
-sidebar_position: 2
+sidebar_position: 5
 description: Understand how to trace executions of your CRON application.
 ---
 
@@ -12,4 +12,82 @@ Understand how to trace executions of your CRON application.
 
 ## Introduction
 
-Coming Soon...
+Briefly, tracing represents the journey of a single
+execution of your scheduler through an entire app stack. 
+By tracing your executions, developers can identify what 
+happened with a determined execution and also identify 
+bottlenecks and focus on improving performance.
+
+Athenna offers two ways to trace your schedulers executions:
+logging each execution and creating OpenTelemetry spans for them.
+
+## Logging executions
+
+Athenna can log the [CRON context](/docs/cron-application/cron-context)
+every time one of your schedulers runs. This feature is disabled
+by default, to enable it set the `logger.enabled` option of your
+<Path father="config" child="cron.ts" /> configuration file to `true`:
+
+```typescript title="Path.config('cron.ts')"
+import { Env } from '@athenna/config'
+
+export default {
+  logger: {
+    enabled: Env('LOG_CRON', true)
+  }
+}
+```
+
+Each execution will be logged using the `cronjob` channel of your
+<Path father="config" child="logging.ts" /> configuration file:
+
+```typescript title="Path.config('logging.ts')"
+export default {
+  channels: {
+    cronjob: {
+      driver: 'console',
+      formatter: 'json',
+      level: 'trace'
+    }
+  }
+}
+```
+
+:::tip
+
+If the `cronjob` channel doesn't exist in your 
+<Path father="config" child="logging.ts" /> file, Athenna will use
+a vanilla logger with the exact same configuration as above.
+
+:::
+
+## Tracing with OpenTelemetry
+
+If the [`@athenna/otel`](https://www.npmjs.com/package/@athenna/otel)
+package is installed in your application, Athenna can run each
+execution of your schedulers inside an OpenTelemetry span and
+context. Check the [CRON observability](/docs/cron-application/observability)
+documentation to see how to enable it and how to share values
+across your executions using context bindings.
+
+## Disabling tracing
+
+Since both features are disabled by default, to disable them
+you just need to set its options to `false` or remove them
+from your <Path father="config" child="cron.ts" /> file:
+
+```typescript title="Path.config('cron.ts')"
+export default {
+  logger: {
+    enabled: false
+  },
+  otel: {
+    contextEnabled: false
+  }
+}
+```
+
+The OpenTelemetry integration will also be automatically disabled
+if the `@athenna/otel` package is not installed in your application.
+Check the [CRON observability](/docs/cron-application/observability#disabling-opentelemetry)
+documentation for more details.

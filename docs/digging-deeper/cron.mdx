@@ -1,0 +1,391 @@
+---
+title: CRON
+sidebar_position: 9
+description: See how to schedule tasks inside any type of Athenna application.
+---
+
+import Path from '@site/src/components/path'
+
+# CRON
+
+See how to schedule tasks inside any type of Athenna application.
+
+## Introduction
+
+The [CRON application](/docs/cron-application/schedulers) is the
+best choice when your process exists only to run scheduled tasks.
+But sometimes you just need a couple of tasks running inside an
+application that already exists, like a REST API that needs to
+clean some table every night or refresh some cache every minute.
+
+For these cases you can use the `@athenna/cron` package directly,
+without booting a CRON application. The package is built on top of
+[`node-cron`](https://www.npmjs.com/package/node-cron) and gives you
+the `Cron` facade to schedule, run and stop your tasks anywhere in
+your code.
+
+## Installation
+
+First of all you need to install the `@athenna/cron` package:
+
+```bash
+npm install @athenna/cron @opentelemetry/api
+```
+
+:::note
+
+The `@opentelemetry/api` package is used by `@athenna/cron` to
+[trace the executions](/docs/cron-application/observability#tracing-executions)
+of your tasks, so make sure it is installed in your project even
+if you don't plan to use OpenTelemetry.
+
+:::
+
+Then register the `CronProvider` inside the `providers` array
+of your `.athennarc.json` file:
+
+```json title=".athennarc.json"
+{
+  "providers": [
+    // Other service providers...
+
+    "@athenna/cron/providers/CronProvider"
+  ]
+}
+```
+
+The `CronProvider` registers the `Cron` facade in the service
+container and also stops and removes all your tasks when your
+application is [shutting down](/docs/digging-deeper/graceful-shutdown).
+
+## Basic usage
+
+Use the `Cron.schedule()` method to create and register a new task.
+The `handler()` method must always be the last one called, because
+it's the one that registers your task with all the options defined
+before it:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+Cron.schedule()
+  .name('clear_tmp_files')
+  .pattern('*/5 * * * *')
+  .handler(async ctx => {
+    console.log(`Running ${ctx.name} with pattern ${ctx.pattern}`)
+  })
+```
+
+The `ctx` argument is the same [CRON context](/docs/cron-application/cron-context)
+object available in the CRON application.
+
+:::tip
+
+You can use [Crontab.guru](https://crontab.guru/) to help you
+create your CRON pattern.
+
+:::
+
+### Where to register your tasks
+
+Since your tasks need the `Cron` facade to be registered in
+the service container, a good place to register them is inside
+the `boot()` method of a [service provider](/docs/architecture-concepts/service-providers):
+
+```typescript title="src/providers/ScheduleProvider.ts"
+import { Cron } from '@athenna/cron'
+import { ServiceProvider } from '@athenna/ioc'
+import { Database } from '@athenna/database'
+
+export default class ScheduleProvider extends ServiceProvider {
+  public get environment() {
+    return ['http'] 👈
+  }
+
+  public async boot() {
+    Cron.schedule()
+      .name('delete_recent_users')
+      .pattern('0 0 * * *')
+      .handler(async () => {
+        await Database.table('recent_users').delete()
+      })
+  }
+}
+```
+
+:::warning
+
+Your tasks will run in **every process** that registers them. If
+you run 3 replicas of your REST API, your tasks will run 3 times.
+Use the `environment` getter of your provider to choose the
+applications that will register them, or move your tasks to a
+dedicated [CRON application](/docs/cron-application/schedulers).
+
+:::
+
+## Task options
+
+The following methods can be called before `handler()` to
+configure your task:
+
+### `name()`
+
+Define the name of your task. The name is used to identify your
+task in the `Cron.getTasks()` map and to run it with 
+`Cron.runByName()`. When not defined, a random UUID will be used:
+
+```typescript
+Cron.schedule()
+  .name('my_task')
+  .pattern('* * * * *')
+  .handler(() => {})
+```
+
+### `pattern()`
+
+Define the CRON expression that will determine when your task
+will run:
+
+```typescript
+Cron.schedule()
+  .pattern('0 0 * * *')
+  .handler(() => {})
+```
+
+### `timezone()`
+
+Define the timezone that the CRON expression needs to respect:
+
+```typescript
+Cron.schedule()
+  .pattern('0 0 * * *')
+  .timezone('America/Sao_Paulo')
+  .handler(() => {})
+```
+
+### `runOnInit()`
+
+Run your task right after registering it, no matter the
+CRON expression:
+
+```typescript
+Cron.schedule()
+  .pattern('0 0 * * *')
+  .runOnInit(true)
+  .handler(() => {})
+```
+
+### `scheduled()`
+
+Define if your task should start right after registering it.
+When set to `false`, your task will be registered but it will
+only run after you start it:
+
+```typescript
+const task = Cron.schedule()
+  .pattern('0 0 * * *')
+  .scheduled(false)
+  .handler(() => {})
+
+task.start()
+```
+
+### `recoverMissedExecutions()`
+
+Run the executions that were missed while the main thread was
+blocked instead of skipping them:
+
+```typescript
+Cron.schedule()
+  .pattern('* * * * *')
+  .recoverMissedExecutions(true)
+  .handler(() => {})
+```
+
+## Managing tasks
+
+### Starting and stopping tasks
+
+The `handler()` method returns the task created by `node-cron`.
+You can use it to stop and start your task whenever you want:
+
+```typescript
+const task = Cron.schedule()
+  .pattern('* * * * *')
+  .handler(() => {})
+
+task.stop()
+task.start()
+```
+
+You can also retrieve any named task using the `Cron.getTasks()`
+method, which returns a `Map` where the key is the task name:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+const task = Cron.getTasks().get('my_task')
+
+task.stop()
+```
+
+### Running tasks manually
+
+Use the `Cron.runByName()` method to force a task to run at any
+moment, no matter its CRON expression:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+await Cron.runByName('my_task')
+```
+
+If the task does not exist, the `NotFoundTaskNameException`
+will be thrown.
+
+### Validating CRON patterns
+
+Use the `Cron.validate()` method to verify if a CRON pattern is
+valid. This is very useful when the pattern comes from your users
+or from your database:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+Cron.validate('59 * * * *') // true
+Cron.validate('60 * * * *') // false
+```
+
+### Closing and removing tasks
+
+Use the `Cron.close()` method to stop all your tasks and the
+`Cron.truncate()` method to remove all of them from the registry:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+Cron.close().truncate()
+```
+
+:::info
+
+The `CronProvider` already calls both methods when your 
+application is shutting down, so you only need to call them 
+if you want to stop your tasks before that.
+
+:::
+
+## Error handling
+
+When using the package without the CRON application, no
+exception handler is registered for your tasks by default.
+To handle the errors of your tasks, set an exception handler
+using the `Cron.setErrorHandler()` method **before** registering
+them. You can use the same `CronExceptionHandler` used by the
+CRON application:
+
+```typescript
+import { Cron, CronExceptionHandler } from '@athenna/cron'
+
+Cron.setErrorHandler(new CronExceptionHandler())
+```
+
+The `CronExceptionHandler` will log your errors using the 
+`exception` channel and will respect the `logger` options of
+your <Path father="config" child="cron.ts" /> file. Check the 
+[CRON error handling documentation](/docs/cron-application/error-handling)
+for more details about it.
+
+You can also set any object with a `handle()` method:
+
+```typescript
+import { Log } from '@athenna/logger'
+import { Cron } from '@athenna/cron'
+
+Cron.setErrorHandler({
+  handle: async ({ error }) => {
+    Log.error(error)
+  }
+})
+```
+
+## Logging executions
+
+To log the [CRON context](/docs/cron-application/cron-context)
+every time one of your tasks runs, call the `Cron.setLogger()`
+method. Each execution will be logged using the `cronjob` channel 
+of your <Path father="config" child="logging.ts" /> file:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+Cron.setLogger(true)
+```
+
+## Using scheduler classes
+
+If you prefer to organize your tasks as [scheduler classes](/docs/cron-application/schedulers#defining-schedulers),
+you can use the `CronKernel` to register all the schedulers
+defined inside the `schedulers` array of your `.athennarc.json`
+file, exactly like the CRON application does:
+
+```typescript title="src/providers/ScheduleProvider.ts"
+import { CronKernel } from '@athenna/cron'
+import { ServiceProvider } from '@athenna/ioc'
+
+export default class ScheduleProvider extends ServiceProvider {
+  public async boot() {
+    const kernel = new CronKernel()
+
+    await kernel.registerLogger()
+    await kernel.registerExceptionHandler()
+    await kernel.registerSchedulers()
+  }
+}
+```
+
+The `registerLogger()` and `registerExceptionHandler()` methods
+will enable the execution logger (if `cron.logger.enabled` is `true`)
+and the `CronExceptionHandler` for your schedulers.
+
+To be able to create schedulers with the `make:scheduler` command,
+register it inside the `commands` property of your `.athennarc.json`
+file:
+
+```json title=".athennarc.json"
+{
+  "commands": {
+    "make:scheduler": "@athenna/cron/commands/MakeSchedulerCommand"
+  }
+}
+```
+
+## Testing
+
+In your tests, you can use the `Cron` facade to run your tasks
+directly, without waiting for their CRON expression. Just make
+sure your application was booted before, this way the provider
+that registers your tasks will be executed. If your tasks live 
+inside a REST API, for example, extend the `BaseHttpTest` class:
+
+```typescript
+import { Cron } from '@athenna/cron'
+import { Test, type Context } from '@athenna/test'
+import { BaseHttpTest } from '@athenna/core/testing/BaseHttpTest'
+
+export default class ClearTmpFilesTest extends BaseHttpTest {
+  @Test()
+  public async shouldBeAbleToClearTmpFiles({ assert }: Context) {
+    await Cron.runByName('clear_tmp_files')
+
+    // assert...
+  }
+}
+```
+
+:::tip
+
+Consider setting `scheduled(false)` in your test environment, 
+this way your tasks will only run when you call `Cron.runByName()`.
+
+:::

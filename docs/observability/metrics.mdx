@@ -1,0 +1,237 @@
+---
+title: Metrics
+sidebar_position: 3
+description: See how to create custom metrics in your Athenna application.
+---
+
+import Path from '@site/src/components/path'
+
+# Metrics
+
+See how to create custom metrics in your Athenna application.
+
+## Introduction
+
+Traces are perfect to understand **one** request, but sometimes you
+need to understand **all** of them together. How many orders were
+created in the last hour? How many jobs are waiting in the queue
+right now? How long does the payment provider take to answer on the
+99th percentile? These are questions answered by metrics.
+
+Metrics are just numbers that are aggregated over time and exported
+from time to time to your metrics backend, like Prometheus. With them
+you can build dashboards and create alerts.
+
+## Configuration
+
+To export metrics, you need to configure at least one metric reader
+in the `sdk.metricReaders` option of your
+<Path father="config" child="otel.ts" /> configuration file:
+
+```typescript title="Path.config('otel.ts')"
+import {
+  HttpOTLPMetricExporter,
+  PeriodicExportingMetricReader
+} from '@athenna/otel'
+
+export default {
+  enabled: true,
+  sdk: {
+    serviceName: 'orders',
+    metricReaders: [
+      new PeriodicExportingMetricReader({
+        exporter: new HttpOTLPMetricExporter({
+          url: 'http://localhost:4318/v1/metrics'
+        }),
+        exportIntervalMillis: 10000
+      })
+    ]
+  }
+}
+```
+
+The `PeriodicExportingMetricReader` will collect and export all your
+metrics every 10 seconds.
+
+### Aggregation temporality
+
+Some metric backends expect your metrics to be sent as the difference
+since the last export (`DELTA`) instead of the total since the
+application started (`CUMULATIVE`, the default). If that's the case of
+your backend, use the `AggregationTemporalityPreference` enum:
+
+```typescript title="Path.config('otel.ts')"
+import {
+  HttpOTLPMetricExporter,
+  PeriodicExportingMetricReader,
+  AggregationTemporalityPreference
+} from '@athenna/otel'
+
+export default {
+  enabled: true,
+  sdk: {
+    metricReaders: [
+      new PeriodicExportingMetricReader({
+        exporter: new HttpOTLPMetricExporter({
+          url: 'http://localhost:4318/v1/metrics',
+          temporalityPreference: AggregationTemporalityPreference.DELTA
+        })
+      })
+    ]
+  }
+}
+```
+
+## Creating metrics
+
+The `Otel` facade has a helper for each kind of metric supported by
+OpenTelemetry. The best place to create them is at the top of your
+file, so they are created only once and reused in every call:
+
+```typescript title="Path.services('OrderService.ts')"
+import { Otel } from '@athenna/otel'
+import { Service } from '@athenna/ioc'
+
+const ordersCreated = Otel.createCounter('orders.created', {
+  description: 'The number of orders created'
+})
+
+@Service()
+export class OrderService {
+  public async create(data: CreateOrderDto) {
+    const order = await Order.create(data)
+
+    ordersCreated.add(1, { 'payment.method': order.paymentMethod })
+
+    return order
+  }
+}
+```
+
+The second argument of `add()`, `record()` and similar methods are
+the **attributes** of the measurement. They allow you to slice your
+metrics in your dashboards, for example, seeing the number of orders
+created per payment method.
+
+:::warning
+
+Avoid using attributes with a lot of possible values, like user IDs
+or order IDs. Each different combination of attributes creates a new
+time series in your backend, which can make it slow and expensive.
+For this kind of information, prefer [span attributes](/docs/observability/traces#enriching-the-current-span).
+
+:::
+
+### Available metrics
+
+| Method                                | Description                                                                                       | Example                                 |
+|:--------------------------------------|:--------------------------------------------------------------------------------------------------|:----------------------------------------|
+| `Otel.createCounter()`                | A value that only goes up.                                                                        | Orders created, emails sent.            |
+| `Otel.createUpDownCounter()`          | A value that goes up and down.                                                                    | Active WebSocket connections.           |
+| `Otel.createHistogram()`              | A distribution of values, used to calculate percentiles.                                          | Request duration, payment amount.       |
+| `Otel.createGauge()`                  | The current value of something, recorded by you.                                                  | Current temperature of a sensor.        |
+| `Otel.createObservableCounter()`      | Like a counter, but the value is read by a callback every time the metrics are collected.         | CPU time used by the process.           |
+| `Otel.createObservableUpDownCounter()`| Like an up-down counter, but the value is read by a callback.                                     | Jobs waiting in the queue.              |
+| `Otel.createObservableGauge()`        | Like a gauge, but the value is read by a callback.                                                | Memory usage, cache size.               |
+
+All of them receive the name of the metric and, optionally, the
+OpenTelemetry `MetricOptions` (`description`, `unit`, etc.).
+
+### Counters
+
+Use counters for things that only increase:
+
+```typescript
+import { Otel } from '@athenna/otel'
+
+const emailsSent = Otel.createCounter('emails.sent')
+
+emailsSent.add(1, { template: 'welcome' })
+```
+
+### Histograms
+
+Use histograms to measure durations or sizes. Your backend will be
+able to calculate the average, the 95th and 99th percentiles, etc:
+
+```typescript
+import { Otel } from '@athenna/otel'
+
+const paymentDuration = Otel.createHistogram('payments.duration', {
+  unit: 'ms',
+  description: 'How long the payment provider takes to answer'
+})
+
+const start = Date.now()
+
+await this.paymentProvider.charge(order)
+
+paymentDuration.record(Date.now() - start, { provider: 'stripe' })
+```
+
+### Up-down counters
+
+Use up-down counters for things that increase and decrease:
+
+```typescript
+import { Otel } from '@athenna/otel'
+
+const activeUploads = Otel.createUpDownCounter('uploads.active')
+
+activeUploads.add(1)
+
+try {
+  await this.upload(file)
+} finally {
+  activeUploads.add(-1)
+}
+```
+
+### Observable metrics
+
+Observable metrics are perfect for values that you can read at any
+time. Instead of recording them yourself, you register a callback
+that OpenTelemetry will call every time the metrics are collected:
+
+```typescript title="Path.providers('MetricsProvider.ts')"
+import { Otel } from '@athenna/otel'
+import { Queue } from '@athenna/queue'
+import { ServiceProvider } from '@athenna/ioc'
+
+export default class MetricsProvider extends ServiceProvider {
+  public async boot() {
+    const pendingJobs = Otel.createObservableGauge('queue.pending_jobs')
+
+    pendingJobs.addCallback(async result => {
+      const length = await Queue.connection('orders').length()
+
+      result.observe(length, { queue: 'orders' })
+    })
+  }
+}
+```
+
+## Node.js runtime metrics
+
+The [auto instrumentations](/docs/observability/getting-started#auto-instrumentations)
+include the `@opentelemetry/instrumentation-runtime-node` instrumentation,
+which exports metrics about the Node.js runtime itself, like event loop
+delay and utilization, garbage collection and memory usage. If you don't
+need them, you can disable it:
+
+```typescript title="Path.config('otel.ts')"
+import { getNodeAutoInstrumentations } from '@athenna/otel'
+
+export default {
+  enabled: true,
+  sdk: {
+    instrumentations: [
+      getNodeAutoInstrumentations({
+        '@opentelemetry/instrumentation-runtime-node': {
+          enabled: false
+        }
+      })
+    ]
+  }
+}
+```

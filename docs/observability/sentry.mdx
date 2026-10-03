@@ -1,0 +1,330 @@
+---
+title: Sentry
+sidebar_position: 7
+description: See how to track the errors of your Athenna application using Sentry.
+---
+
+import Path from '@site/src/components/path'
+
+# Sentry
+
+See how to track the errors of your Athenna application using Sentry.
+
+## Introduction
+
+Logs tell you that an error happened. [Sentry](https://sentry.io) tells
+you **how many times** it happened, **how many users** were affected,
+**since which release** it started happening, and notifies you as soon
+as a new one shows up. It groups similar errors in issues, shows the
+stack trace with your source code and keeps everything in one place, so
+your team can triage and fix them.
+
+The [`@athenna/sentry`](https://www.npmjs.com/package/@athenna/sentry)
+package is a thin integration of the official
+[`@sentry/node`](https://docs.sentry.io/platforms/javascript/guides/node/)
+SDK with Athenna. It initializes Sentry using a configuration file, just
+like any other Athenna package, and exposes the `Sentry` object so you
+can use the full Sentry API.
+
+## Installation
+
+First of all you need to install the `@athenna/sentry` package:
+
+```bash
+npm install @athenna/sentry
+```
+
+### Configuration
+
+Create a `sentry.ts` configuration file in your config directory. The
+`options` object is passed straight to the `Sentry.init()` method, so
+all the [options of the Sentry SDK](https://docs.sentry.io/platforms/javascript/guides/node/configuration/options/)
+are supported:
+
+```typescript title="Path.config('sentry.ts')"
+import { Env } from '@athenna/config'
+
+export default {
+  /*
+  |--------------------------------------------------------------------------
+  | Sentry enabled
+  |--------------------------------------------------------------------------
+  |
+  | When disabled, Sentry will not be initialized and no error will be
+  | sent to it.
+  |
+  */
+
+  enabled: Env('SENTRY_ENABLED', false),
+
+  /*
+  |--------------------------------------------------------------------------
+  | Sentry options
+  |--------------------------------------------------------------------------
+  |
+  | All the options that will be used to initialize the Sentry SDK.
+  |
+  */
+
+  options: {
+    dsn: Env('SENTRY_DSN'),
+    environment: Env('APP_ENV', 'production'),
+    release: Env('APP_VERSION'),
+    sendDefaultPii: false
+  }
+}
+```
+
+Then set the environment variables in your `.env` file. You can find
+your DSN in the **Client Keys (DSN)** page of your project settings in
+Sentry:
+
+```bash title=".env"
+SENTRY_ENABLED=true
+SENTRY_DSN=https://examplePublicKey@o0.ingest.sentry.io/0
+```
+
+### Initializing Sentry
+
+There are two ways to initialize Sentry in your application. Pick
+**one** of them.
+
+#### Using the provider
+
+The simplest way is to register the `SentryProvider` in your
+`.athennarc.json` file. Sentry will be initialized when your application
+boots, after your `.env` file and configuration files are loaded:
+
+```json title=".athennarc.json"
+{
+  "providers": [
+    "@athenna/sentry/providers/SentryProvider", 👈
+    "@athenna/core/providers/CoreProvider",
+    "@athenna/http/providers/HttpRouteProvider",
+    "@athenna/http/providers/HttpServerProvider"
+  ]
+}
+```
+
+#### Using the `init` file
+
+Like OpenTelemetry, Sentry is able to automatically instrument some
+libraries, but only if it's initialized **before** they are imported.
+If you want that, import `@athenna/sentry/init` at the top of your
+<Path father="bin" child="main.ts" /> file:
+
+```typescript title="Path.bin('main.ts')"
+import '#bin/otel'
+import '@athenna/sentry/init' 👈
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url)
+
+await ignite.httpServer()
+```
+
+:::warning
+
+The `@athenna/sentry/init` file only loads your
+<Path father="config" child="sentry.ts" /> configuration file. It does
+**not** load your `.env` file. If you are using
+[`@athenna/otel`](/docs/observability/getting-started), import it after
+`#bin/otel`, which loads your `.env` file. Otherwise, make sure your
+environment variables are already set when the process starts, or use
+the [provider](#using-the-provider) instead.
+
+:::
+
+## Reporting errors
+
+With Sentry initialized, unhandled exceptions and unhandled promise
+rejections are reported automatically. But most of the errors of an
+Athenna application never become unhandled: they are caught by the
+Athenna exception handlers, which log them and return a nice response
+to your users. To report them to Sentry too, call
+`Sentry.captureException()` in your own exception handler.
+
+### REST API application
+
+Create your own HTTP exception handler by extending `HttpExceptionHandler`:
+
+```typescript title="src/http/exceptions/Handler.ts"
+import { Sentry } from '@athenna/sentry'
+import { type ErrorContext, HttpExceptionHandler } from '@athenna/http'
+
+export class Handler extends HttpExceptionHandler {
+  public async handle(ctx: ErrorContext) {
+    const status = ctx.error.status || 500
+
+    /**
+     * Only report server errors. Validation errors, not found
+     * errors and similar are expected and would only be noise.
+     */
+    if (status >= 500) {
+      Sentry.captureException(ctx.error, {
+        tags: { 'http.route': ctx.request.routeUrl },
+        extra: { method: ctx.request.method }
+      })
+    }
+
+    await super.handle(ctx)
+  }
+}
+```
+
+And register it when bootstrapping your application:
+
+```typescript title="Path.bin('main.ts')"
+await ignite.httpServer({
+  exceptionHandlerPath: '#src/http/exceptions/Handler' 👈
+})
+```
+
+Check the [REST API error handling](/docs/rest-api-application/error-handling)
+documentation for more information about exception handlers.
+
+### CRON application
+
+The same idea works for your schedulers by extending `CronExceptionHandler`:
+
+```typescript title="src/cron/exceptions/Handler.ts"
+import { Sentry } from '@athenna/sentry'
+import { CronExceptionHandler } from '@athenna/cron'
+import type { ExceptionHandlerContext } from '@athenna/common'
+
+export class Handler extends CronExceptionHandler {
+  public async handle(ctx: ExceptionHandlerContext) {
+    Sentry.captureException(ctx.error)
+
+    await super.handle(ctx)
+  }
+}
+```
+
+```typescript title="Path.bin('main.ts')"
+await ignite.cron({
+  exceptionHandlerPath: '#src/cron/exceptions/Handler' 👈
+})
+```
+
+Check the [CRON error handling](/docs/cron-application/error-handling)
+documentation for more information.
+
+### Anywhere else
+
+You can capture errors and messages from anywhere in your application,
+like inside a `try/catch` of a queue worker:
+
+```typescript
+import { Sentry } from '@athenna/sentry'
+
+try {
+  await this.paymentService.charge(order)
+} catch (error) {
+  Sentry.captureException(error, { tags: { 'order.id': order.id } })
+
+  throw error
+}
+
+Sentry.captureMessage('Payment provider answered with an unknown status', 'warning')
+```
+
+## Adding context to errors
+
+An error is much easier to fix when you know who was affected by it.
+Use the Sentry API in a middleware to attach information about the
+current user to every error reported during the request:
+
+```typescript title="Path.middlewares('SentryUserMiddleware.ts')"
+import { Sentry } from '@athenna/sentry'
+import { Middleware, type Context } from '@athenna/http'
+
+@Middleware({ name: 'sentry.user' })
+export class SentryUserMiddleware {
+  public async handle({ data }: Context) {
+    Sentry.setUser({ id: data.user.id, email: data.user.email })
+    Sentry.setTag('tenant.id', data.user.tenantId)
+  }
+}
+```
+
+The `Sentry` object exported by `@athenna/sentry` is the complete
+`@sentry/node` SDK, so everything in the
+[Sentry documentation](https://docs.sentry.io/platforms/javascript/guides/node/)
+works here: `setUser()`, `setTag()`, `setContext()`, `addBreadcrumb()`,
+`withScope()`, etc.
+
+## Using Sentry with OpenTelemetry
+
+Sentry and [`@athenna/otel`](/docs/observability/getting-started)
+complement each other very well: Sentry is great to know **that** an
+error happened and to manage it as an issue, while your traces show
+**everything** that happened in the request, across all your services.
+
+### Linking Sentry issues to traces
+
+Add the trace ID of the request to every error reported to Sentry. This
+way, when you open an issue in Sentry, you can copy the trace ID and see
+the full trace in Grafana Tempo, Jaeger or any other tool:
+
+```typescript title="src/http/exceptions/Handler.ts"
+import { Otel } from '@athenna/otel'
+import { Sentry } from '@athenna/sentry'
+import { type ErrorContext, HttpExceptionHandler } from '@athenna/http'
+
+export class Handler extends HttpExceptionHandler {
+  public async handle(ctx: ErrorContext) {
+    Sentry.captureException(ctx.error, {
+      tags: { trace_id: Otel.getTraceId() } 👈
+    })
+
+    await super.handle(ctx)
+  }
+}
+```
+
+### Avoiding conflicts
+
+The Sentry SDK uses OpenTelemetry internally and, by default, sets up
+its own OpenTelemetry tracer when it's initialized. Since `@athenna/otel`
+already does that, the recommended setup is to let Sentry focus on
+**errors** and `@athenna/otel` on **traces, metrics and logs**. To do so,
+tell Sentry to skip its OpenTelemetry setup and don't set the
+`tracesSampleRate` option:
+
+```typescript title="Path.config('sentry.ts')"
+import { Env } from '@athenna/config'
+
+export default {
+  enabled: Env('SENTRY_ENABLED', false),
+
+  options: {
+    dsn: Env('SENTRY_DSN'),
+    skipOpenTelemetrySetup: true,
+    registerEsmLoaderHooks: false
+  }
+}
+```
+
+:::tip
+
+If you also want to use the tracing features of Sentry together with
+`@athenna/otel`, check the
+[Sentry custom OpenTelemetry setup](https://docs.sentry.io/platforms/javascript/guides/node/opentelemetry/custom-setup/)
+documentation. The span processors it requires can be added in the
+`sdk.spanProcessors` option of your <Path father="config" child="otel.ts" />
+configuration file.
+
+:::
+
+## Disabling Sentry
+
+To disable Sentry, set the `SENTRY_ENABLED` environment variable to
+`false`. Sentry will not be initialized, and calls like
+`Sentry.captureException()` will simply do nothing, so you don't need
+to change your code. This is very useful to keep it disabled in your
+local and test environments:
+
+```bash title=".env.test"
+SENTRY_ENABLED=false
+```

@@ -1,0 +1,255 @@
+---
+title: File Uploads
+sidebar_position: 12.5
+description: See how to receive files sent to your REST API application of Athenna.
+---
+
+import Path from '@site/src/components/path'
+
+# File Uploads
+
+See how to receive files sent to your REST API application of Athenna.
+
+## Introduction
+
+Files are usually sent to an API using `multipart/form-data`
+requests. Athenna uses the [`@fastify/multipart`](https://github.com/fastify/fastify-multipart)
+plugin to parse these requests, and exposes its methods in the
+[`request`](/docs/rest-api-application/request-context#the-request-object)
+object of your routes.
+
+## Installation
+
+First of all you need to install the `@fastify/multipart` package:
+
+```bash
+npm install @fastify/multipart
+```
+
+The `HttpKernel` will automatically register the plugin when 
+booting your server. All the options of the plugin can be set
+inside the `multipart` object of your
+<Path father="config" child="http.ts" /> file:
+
+```typescript title="Path.config('http.ts')"
+export default {
+  multipart: {
+    enabled: true,
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10 MB
+      files: 5
+    }
+  }
+}
+```
+
+:::tip
+
+Always define the `limits` option. Without it, the `fileSize` 
+limit will be the same `bodyLimit` of Fastify (1 MB by default)
+and a client could send as many files as they want. When a 
+limit is reached, a `413` response is sent.
+
+:::
+
+## Receiving a single file
+
+Use the `file()` method to get the first file sent in the 
+request. The method returns `undefined` when the multipart request
+has no file:
+
+```typescript title="Path.routes('http.ts')"
+import { Route, BadRequestException } from '@athenna/http'
+
+Route.post('/avatars', async ({ request, response }) => {
+  const file = await request.file()
+
+  if (!file) {
+    throw new BadRequestException('The avatar file is required.')
+  }
+
+  console.log(file.filename) // avatar.png
+  console.log(file.mimetype) // image/png
+
+  const buffer = await file.toBuffer()
+
+  return response.status(201).send({ size: buffer.length })
+})
+```
+
+The file is a stream, so instead of loading it entirely in 
+memory with `toBuffer()`, you can also pipe the `file.file` 
+stream wherever you want:
+
+```typescript
+import { Path } from '@athenna/common'
+import { pipeline } from 'node:stream/promises'
+import { createWriteStream } from 'node:fs'
+
+Route.post('/avatars', async ({ request }) => {
+  const file = await request.file()
+
+  await pipeline(file.file, createWriteStream(Path.storage(file.filename)))
+})
+```
+
+:::warning
+
+Never trust the `filename` sent by the client. Generate your 
+own names before saving files in your disk or in your
+storage bucket.
+
+:::
+
+## Receiving multiple files
+
+Use the `files()` method to iterate over all the files sent
+in the request. Each file needs to be consumed before going to
+the next one:
+
+```typescript
+Route.post('/photos', async ({ request }) => {
+  for await (const file of request.files()) {
+    const buffer = await file.toBuffer()
+
+    /*....*/
+  }
+})
+```
+
+If your form also has fields that are not files, use the 
+`parts()` method instead. It iterates over files and fields
+in the same order they were sent:
+
+```typescript
+Route.post('/photos', async ({ request }) => {
+  for await (const part of request.parts()) {
+    if (part.type === 'file') {
+      const buffer = await part.toBuffer()
+      continue
+    }
+
+    console.log(part.fieldname, part.value) // title My photo
+  }
+})
+```
+
+## Saving files to a temporary directory
+
+Sometimes you don't want to handle the streams yourself. The 
+`saveRequestFiles()` method saves all the files of the request
+in a temporary directory of your OS and returns where each one
+of them was saved:
+
+```typescript
+Route.post('/photos', async ({ request }) => {
+  const files = await request.saveRequestFiles()
+
+  files.forEach(file => {
+    console.log(file.filename, file.filepath) // photo.png /tmp/...
+  })
+})
+```
+
+The files saved are available in the `savedRequestFiles` getter
+until the end of the request, when they are automatically removed.
+If you want to remove them before that, call the 
+`cleanRequestFiles()` method:
+
+```typescript
+await request.saveRequestFiles()
+
+console.log(request.savedRequestFiles) // [{ filename: 'photo.png', filepath: '/tmp/...' }]
+
+await request.cleanRequestFiles()
+```
+
+## Using the Web `FormData` API
+
+If you prefer to use the Web standard API, the `formData()` 
+method returns a [`FormData`](https://developer.mozilla.org/en-US/docs/Web/API/FormData)
+instance with all the fields and files of the request. To use it,
+you need to set the `attachFieldsToBody` option as `true`:
+
+```typescript title="Path.config('http.ts')"
+export default {
+  multipart: {
+    enabled: true,
+    attachFieldsToBody: true
+  }
+}
+```
+
+```typescript
+Route.post('/photos', async ({ request }) => {
+  const formData = await request.formData()
+
+  const title = formData.get('title')
+  const photo = formData.get('photo') as File
+})
+```
+
+:::warning
+
+With `attachFieldsToBody` enabled, the files are read when the 
+request arrives and attached to `request.body`. This means that
+the `file()`, `files()` and `parts()` methods can't be used 
+anymore, and that all the files are loaded in memory.
+
+:::
+
+## Checking if the request is multipart
+
+Use the `isMultipart()` method to verify if the request was 
+sent using `multipart/form-data`. This is useful for routes 
+that accept both JSON and files:
+
+```typescript
+Route.post('/photos', async ({ request, response }) => {
+  if (!request.isMultipart()) {
+    return response.send(request.body)
+  }
+
+  const file = await request.file()
+
+  /*....*/
+})
+```
+
+## Saving files in your storage
+
+The files received can be saved directly to any of your disks 
+using the [`Storage`](/docs/digging-deeper/storage) facade of
+`@athenna/storage`:
+
+```typescript
+import { randomUUID } from 'node:crypto'
+import { Storage } from '@athenna/storage'
+
+Route.post('/avatars', async ({ request }) => {
+  const file = await request.file()
+
+  await Storage.put(`avatars/${randomUUID()}.png`, await file.toBuffer())
+})
+```
+
+## Disabling file uploads
+
+The `HttpKernel` class will automatically disable the plugin
+registration if the package does not exist, so to disable file
+uploads in Athenna you need to remove the `@fastify/multipart`
+package from your application:
+
+```bash
+npm remove @fastify/multipart
+```
+
+You can also disable by setting `http.multipart.enabled` to `false`:
+
+```typescript title="Path.config('http.ts')"
+export default {
+  multipart: {
+    enabled: false
+  }
+}
+```

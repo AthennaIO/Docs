@@ -123,7 +123,7 @@ with it using the `Database` facade. The `Database` facade provides a
 lot of methods to perform database operations such as **creating, 
 dropping and listing databases/tables, running and reverting** 
 [**migrations**](/docs/database/migrations)**,** 
-[**transactions**](/docs/database/getting-started#database-transactions)**,
+[**transactions**](/docs/database/getting-started#transactions)**,
 queries, connecting to new databases and also closing these 
 connections.**
 
@@ -159,6 +159,17 @@ await Database.createTable('products', table => {
 await Database.dropTable('products')
 ```
 
+Need to change a table that already exists? Use the `alterTable()` 
+method. It receives the same closure of `createTable()`, so you can 
+add, rename or drop columns and indexes:
+
+```typescript
+await Database.alterTable('products', table => {
+  table.string('description').nullable()
+  table.dropColumn('legacyCode')
+})
+```
+
 You can also get all tables names as string and check if some 
 table name exists:
 
@@ -182,7 +193,7 @@ await Database.revertMigrations()
 ### Transactions
 
 If you don't know what is a transaction you can 
-check [`clicking here`](/docs/database/getting-started#database-transactions)
+check [`clicking here`](/docs/database/getting-started#transactions)
 
 ```typescript
 import { Log } from '@athenna/logger'
@@ -204,6 +215,81 @@ try {
     Log.error('Failed to create one of the users. Original error: %s', JSON.stringify(error))
 }
 ```
+
+:::tip
+
+Working with models? You can run any model query inside the same 
+transaction using the `setTransaction()` method. Take a look at the 
+[ORM transactions documentation section](/docs/orm/query-builder#transactions).
+
+:::
+
+### Named locks
+
+Some flows are only safe if one process runs them at a time. A 
+classic example is "check if the slot is free, then book it": if two 
+requests arrive at the same time, both may see the slot as free and 
+both will book it. The `lock()` method solves this by running your 
+closure while holding an exclusive lock for a given key:
+
+```typescript
+import { Database } from '@athenna/database'
+
+await Database.lock(`booking:${professionalId}`, async () => {
+  const isAvailable = await isSlotAvailable(data)
+
+  if (!isAvailable) {
+    throw new SlotTakenException()
+  }
+
+  await createBooking(data)
+})
+```
+
+While the closure is running, any other call to `lock()` with the 
+**same key** will wait until it finishes. Calls with different keys 
+run in parallel as usual. The lock is always released when your 
+closure finishes, even if it throws an error. Whatever your closure 
+returns is returned by `lock()`:
+
+```typescript
+const booking = await Database.lock('booking:1', () => createBooking(data))
+```
+
+By default, `lock()` waits forever for the lock to be released. If you 
+prefer to give up after some time, set the `timeout` option in 
+milliseconds. When the time is over, a `LockTimeoutException` will 
+be thrown:
+
+```typescript
+import { LockTimeoutException } from '@athenna/database'
+
+try {
+  await Database.lock('reports:monthly', () => generateReport(), {
+    timeout: 5000
+  })
+} catch (error) {
+  if (error instanceof LockTimeoutException) {
+    // Someone else is already generating the report.
+  }
+}
+```
+
+:::note
+
+Each driver uses the best tool available to implement the lock:
+
+- `postgres`: transaction-level advisory locks (`pg_advisory_xact_lock`).
+- `mysql`: `GET_LOCK()` and `RELEASE_LOCK()`.
+- `sqlite`: an in-process lock, since SQLite is an embedded database 
+that lives in a single file.
+- `mongo`: not supported yet. Calling `lock()` will throw a 
+`NotImplementedMethodException`.
+
+If you need to lock specific **rows** instead of a key, take a look at 
+the [pessimistic locking documentation section](/docs/database/query-builder#pessimistic-locking).
+
+:::
 
 ## Running queries
 
@@ -341,7 +427,7 @@ class. This means that if you call the `connection()` method again,
 it will use the same connection created that was saved in `DriverFactory`:
 
 ```typescript
-await Datatabase.connection('mysql')
+await Database.connection('mysql')
     .table('users')
     .select('id', 'name')
     .whereNotIn('id', [1, 2])
@@ -354,7 +440,7 @@ instance in [`DriverFactory`](https://github.com/AthennaIO/Database/blob/develop
 passing some properties to it:
 
 ```typescript
-const database = Datatabase.connection('mysql', {
+const database = Database.connection('mysql', {
     // Force the connection to be established
     force: false,
     // Set if connection will be saved in DriverFactory
@@ -396,7 +482,7 @@ driver, you will need to close the connection using **your**
 database instance:
 
 ```typescript
-const database = Datatabase.connection('mysql', {
+const database = Database.connection('mysql', {
     force: false,
     saveOnDriver: false
 })
@@ -417,3 +503,86 @@ await database.close() // WORKS
 
 ```
 
+
+## Handling database errors
+
+When a write breaks one of your database constraints, Athenna 
+translates the original driver error into a friendly exception. 
+This means you don't need to remember that Postgres uses the 
+`23505` code for unique violations while MySQL uses `ER_DUP_ENTRY`. 
+You just need to catch the right exception:
+
+```typescript
+import { UniqueViolationException } from '@athenna/database'
+
+try {
+  await Database.table('users').create({ email: 'lenon@athenna.io' })
+} catch (error) {
+  if (error instanceof UniqueViolationException) {
+    console.log(error.columns) // ['email']
+    console.log(error.constraint) // 'users_email_unique'
+  }
+}
+```
+
+These are the available exceptions:
+
+| Exception                      | Status | Code                      | When it happens                                                  |
+|:-------------------------------|:------:|:--------------------------|:-----------------------------------------------------------------|
+| `UniqueViolationException`     | `409`  | `E_UNIQUE_VIOLATION`      | A unique constraint or index was violated.                       |
+| `ForeignKeyViolationException` | `409`  | `E_FOREIGN_KEY_VIOLATION` | The referenced record doesn't exist or is still being referenced. |
+| `NotNullViolationException`    | `422`  | `E_NOT_NULL_VIOLATION`    | A `null` value was sent to a column that doesn't accept it.      |
+| `CheckViolationException`      | `422`  | `E_CHECK_VIOLATION`       | The value doesn't respect a check constraint.                    |
+
+All of them extend the `ConstraintViolationException` class, so you can 
+catch every constraint error at once if you prefer. They also expose 
+some useful properties when the driver provides them, like `table`, 
+`column`/`columns`, `constraint`, `driver` and `raw` (the original 
+error thrown by the database client):
+
+```typescript
+import { ConstraintViolationException } from '@athenna/database'
+
+try {
+  await Database.table('orders').create(order)
+} catch (error) {
+  if (error instanceof ConstraintViolationException) {
+    Log.warn('Constraint violated on table %s', error.table)
+  }
+
+  throw error
+}
+```
+
+:::tip
+
+Since these exceptions already have a status code, if you don't catch 
+them inside an HTTP route, Athenna will answer the request with a 
+`409` or `422` status automatically.
+
+:::
+
+:::note
+
+The `mongo` driver only translates duplicated key errors, which become 
+a `UniqueViolationException`. Any other error that is not a constraint 
+violation is rethrown exactly as it was received.
+
+:::
+
+## Running queries from the terminal
+
+Sometimes you just want to take a quick look in your data without 
+opening a database client. The `db:query` command runs a raw query 
+against your database and prints the result in the terminal:
+
+```bash
+node artisan db:query "SELECT id, name FROM users LIMIT 5"
+```
+
+You can use the `--connection` option to run the query in a 
+connection that is not your default one:
+
+```bash
+node artisan db:query "SELECT count(*) FROM orders" --connection=mysql
+```
