@@ -34,6 +34,8 @@ some operation, like executing a command in a child process.
 using `json` files to map the routes and their returns (similar to [WireMock](https://wiremock.org/)).
 - [`File`](/docs/the-basics/helpers#file) - Create, copy, move, 
 delete and get information about files.
+- [`Filters`](/docs/the-basics/helpers#filters) - Apply the same `where` 
+filters used by the database query builder in memory.
 - [`Folder`](/docs/the-basics/helpers#folder) - Create, copy, move, 
 delete and get information about folders.
 - [`Globals`](/docs/the-basics/helpers#globals) - Execute global helpers exposed by 
@@ -46,6 +48,8 @@ creating options as objects.
 - [`Is`](/docs/the-basics/helpers#is) - Validate if your data **is** 
 equals to some type or pattern.
 - [`Json`](/docs/the-basics/helpers#json) - Simple helpers to manipulate JSON.
+- [`Macroable`](/docs/the-basics/helpers#macroable) - Extend classes with
+new methods and getters at runtime.
 - [`Module`](/docs/the-basics/helpers#module) - Simple helpers to manipulate
 Node.js modules.
 - [`Number`](/docs/the-basics/helpers#number) - Simple helpers to manipulate
@@ -55,16 +59,26 @@ numbers.
 - [`Options`](/docs/the-basics/helpers#options) - Simple helpers to develop
 API's (functions and methods) with good options and configurations for 
 developers.
+- [`Otp`](/docs/the-basics/helpers#otp) - Create customized OTP tokens
+with prefixes.
 - [`Parser`](/docs/the-basics/helpers#parser) - Parse data from X to Y and Y to X.
 - [`Path`](/docs/the-basics/helpers#path) - Get the full path to some file or 
 folder starting from your application 
 [PWD](https://www.computerhope.com/jargon/p/pwd.htm).
+- [`Retry`](/docs/the-basics/helpers#retry) - Retry operations that fail
+with specific errors.
 - [`Route`](/docs/the-basics/helpers#route) - Simple helpers to manipulate
 route params, query params and more.
+- [`Sleep`](/docs/the-basics/helpers#sleep) - Block the execution of your 
+code for a determined amount of time.
 - [`String`](/docs/the-basics/helpers#string) - Simple helpers to manipulate
 strings.
+- [`Timeout`](/docs/the-basics/helpers#timeout) - Race promises with a 
+timeout and handle fallbacks.
 - [`Ulid`](/docs/the-basics/helpers#ulid) - Create customized ULID and 
 check if they are valid.
+- [`Url`](/docs/the-basics/helpers#url) - Simple helpers to manipulate
+URLs and URL paths.
 - [`Uuid`](/docs/the-basics/helpers#uuid) - Create customized UUID v4 and 
 check if they are valid.
 
@@ -203,6 +217,31 @@ import { Color } from '@athenna/common'
 const noColorString = Color.remove(Color.yellow('Davi Mezencio'))
 ```
 
+#### `Color::removeColors()`
+
+Remove all the colors and special chars (ANSI escape codes)
+of your string:
+
+```typescript
+import { Color } from '@athenna/common'
+
+const noColorString = Color.removeColors(Color.yellow.bold('Davi Mezencio'))
+// Davi Mezencio
+```
+
+#### `Color::statusCode()`
+
+Get a colorized badge for each range of http status code
+(`2xx` green, `3xx` cyan, `4xx` orange and `5xx` red):
+
+```typescript
+import { Color } from '@athenna/common'
+
+console.log(Color.statusCode(200)) // ' 200 ' with green background
+console.log(Color.statusCode(404)) // ' 404 ' with orange background
+console.log(Color.statusCode(500)) // ' 500 ' with red background
+```
+
 #### `Color::httpMethod()`
 
 Get an instance of chalk with a determined color for each type 
@@ -267,6 +306,36 @@ class Status extends Enum {
 const entries = Status.entries() // [['PENDING', 0], ['APPROVED', 1]]
 ```
 
+#### `Enum::randomKey()`
+
+Return a random key of your enum:
+
+```typescript
+import { Enum } from '@athenna/common'
+
+class Status extends Enum {
+  static PENDING = 'pending'
+  static APPROVED = 'approved'
+}
+
+const key = Status.randomKey() // 'APPROVED'
+```
+
+#### `Enum::randomValue()`
+
+Return a random value of your enum:
+
+```typescript
+import { Enum } from '@athenna/common'
+
+class Status extends Enum {
+  static PENDING = 'pending'
+  static APPROVED = 'approved'
+}
+
+const value = Status.randomValue() // 'pending'
+```
+
 ### Exception
 
 In this documentation section we are going to cover only the 
@@ -328,6 +397,14 @@ import { Exec } from '@athenna/common'
 
 await Exec.sleep(3000) // 3 seconds
 ```
+
+:::warning
+
+The `Exec::sleep()` method is deprecated and will be removed 
+in the next major version. Use the 
+[`Sleep`](/docs/the-basics/helpers#sleep) helper instead.
+
+:::
 
 #### `Exec::concurrently()`
 
@@ -426,7 +503,7 @@ Execute some Node.js script in a child process:
 
 import { Exec } from '@athenna/common'
 
-Exec.artisan('./index.ts', {
+Exec.node('./index.ts', {
   nodeOptions: ['--import=@athenna/tsconfig']
 })
 ```
@@ -449,13 +526,24 @@ Exec.artisan('./bootstrap/artisan.js', {
 
 #### `Exec::download()`
 
-Download some file from some URL and get the `File` instance:
+Download the data of some URL:
+
+```typescript
+import { Exec } from '@athenna/common'
+
+const data = await Exec.download('https://athenna.io/file.txt')
+```
+
+If you set the `path` option, the data will be saved in 
+the file system and you will get the `File` instance:
 
 ```typescript
 import { Exec } from '@athenna/common'
 
 // File helper class instance
-const file = await Exec.download(Path.storage('file.txt'), 'https://athenna.io/file.txt')
+const file = await Exec.download('https://athenna.io/file.txt', {
+  path: Path.storage('file.txt') 👈
+})
 ```
 
 #### `Exec::pagination()`
@@ -529,6 +617,18 @@ method to create a new server instance:
 import { FakeApi } from '@athenna/common'
 
 await FakeApi.stop()
+```
+
+#### `FakeApi::recreate()`
+
+Create a new fastify server instance to be used by the 
+fake api. This method is already called when you import 
+the `FakeApi` module and when calling `FakeApi::stop()`:
+
+```typescript
+import { FakeApi } from '@athenna/common'
+
+const app = FakeApi.recreate()
 ```
 
 #### `FakeApi::isRunning()`
@@ -626,8 +726,94 @@ fakeApiBuilder
   .method('GET')
   .statusCode(200)
   .body(users)
-  .header({ 'Content-Type': 'application/json' })
+  .headers({ 'Content-Type': 'application/json' })
   .register(options)
+```
+
+You can also use the `redirectTo()` method to make the route 
+redirect to another path using the defined status code:
+
+```typescript
+import { FakeApi } from '@athenna/common'
+
+FakeApi.build()
+  .path('/old-users')
+  .method('GET')
+  .statusCode(301)
+  .redirectTo('/users') 👈
+  .register()
+```
+
+### Filters
+
+#### `Filters::operators`
+
+All the operators accepted in a `where` filter. Useful to 
+validate user input at runtime:
+
+```typescript
+import { Filters } from '@athenna/common'
+
+console.log(Filters.operators)
+/**
+ * [
+ *   '=', '!=', '>', '>=', '<', '<=',
+ *   'in', 'not_in', 'contains', 'not_contains',
+ *   'between', 'not_between'
+ * ]
+ */
+```
+
+#### `Filters::isOperator()`
+
+Validate if a value is a valid `where` operator:
+
+```typescript
+import { Filters } from '@athenna/common'
+
+Filters.isOperator('in') // true
+Filters.isOperator('like') // false
+```
+
+#### `Filters::matches()`
+
+Verify if an object matches all the given `where` filters. 
+It uses the same filters DSL that the database query 
+builder uses, but in memory:
+
+```typescript
+import { Filters, type Where } from '@athenna/common'
+
+const where: Where[] = [
+  { field: 'status', op: 'in', value: ['active', 'pending'] },
+  { field: 'age', op: '>=', value: 18 }
+]
+
+Filters.matches({ status: 'active', age: 20 }, where) // true
+Filters.matches({ status: 'blocked', age: 20 }, where) // false
+```
+
+:::note
+
+- Fields that are not defined in the object are ignored, 
+so a filter on a missing field never rejects the object.
+- An empty or `undefined` `where` matches everything.
+
+:::
+
+#### `Filters::compare()`
+
+Compare a single value against a target using a `where` 
+operator. Unknown operators always match:
+
+```typescript
+import { Filters } from '@athenna/common'
+
+Filters.compare(20, '>=', 18) // true
+Filters.compare('Athenna', 'contains', 'then') // true (case insensitive)
+Filters.compare(['a', 'b'], 'contains', 'a') // true
+Filters.compare(5, 'between', [1, 10]) // true
+Filters.compare(5, 'not_in', [1, 2, 3]) // true
 ```
 
 ### File
@@ -1121,16 +1307,18 @@ if (await Folder.isFolder('app')) {
 }
 ```
 
-#### `Folder::size()` & `Folder::sizeSync()`
+#### `Folder::folderSize()` & `Folder::folderSizeSync()`
 
-Get the size of the folder in MB:
+Get the size of the files inside the folder in bytes:
 
 ```typescript
-if (Folder.sizeSync('app') === 100) {
+import { Folder } from '@athenna/common'
+
+if (Folder.folderSizeSync('app') === 100) {
   // do something
 }
 
-if (await Folder.size('app')  === 100) {
+if (await Folder.folderSize('app') === 100) {
   // do something
 }
 ```
@@ -1144,6 +1332,55 @@ Return a random value from the array:
 ```typescript
 const numbers = [1, 2, 3, 4, 5]
 const number = numbers.athenna.random() // 4
+```
+
+#### `Array.athenna.sum()`
+
+Sum all the values inside the array and return a single value:
+
+```typescript
+const numbers = [1, 2, 3]
+const total = numbers.athenna.sum() // 6
+
+const letters = ['a', 'b', 'c']
+const word = letters.athenna.sum() // 'abc'
+```
+
+#### `Array.athenna.unique()`
+
+Create a new array only with the unique values:
+
+```typescript
+const numbers = [1, 2, 2, 3]
+const uniqueNumbers = numbers.athenna.unique() // [1, 2, 3]
+```
+
+You can also set a key to remove duplicated objects 
+by the value of the key:
+
+```typescript
+const users = [
+  { id: 1, name: 'lenon' },
+  { id: 1, name: 'lenon' },
+  { id: 2, name: 'txsoura' }
+]
+
+const uniqueUsers = users.athenna.unique('id')
+// [{ id: 1, name: 'lenon' }, { id: 2, name: 'txsoura' }]
+```
+
+#### `Array.athenna.concurrently()`
+
+Execute some callback concurrently for each value of the 
+array:
+
+```typescript
+const numbers = [1, 2, 3]
+
+const results = await numbers.athenna.concurrently(async number => {
+  return number + 1
+})
+// [2, 3, 4]
 ```
 
 #### `Array.athenna.toJSON()`
@@ -1381,6 +1618,52 @@ const response = await HttpClient.get('https://athenna.io')
 
 This helper uses the [`got`](https://www.npmjs.com/package/got) 
 library under the hood to build the requests.
+
+#### `HttpClientBuilder.getOptions()`
+
+Get a copy of the options that the builder will use to
+make the request:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.timeout(2000)
+
+const options = builder.getOptions() // { timeout: 2000, ... }
+```
+
+#### `HttpClientBuilder.mergeOptions()`
+
+Merge new options with the options already set in the 
+builder:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.mergeOptions({
+  timeout: 2000,
+  prefixUrl: 'https://athenna.io'
+})
+```
+
+#### `HttpClientBuilder.setErrorHandler()`
+
+Define a custom error handler for errors that happens 
+inside the request:
+
+```typescript
+import { HttpClientBuilder, type RequestError } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder.setErrorHandler((error: RequestError) => {
+  throw new MyCustomException(error.message)
+})
+```
 
 #### `HttpClientBuilder.setInitHook()`
 
@@ -1713,20 +1996,6 @@ const builder = new HttpClientBuilder()
 builder.input('hello', 'world!')
 ```
 
-#### `HttpClientBuilder.form()`
-
-Set the request body as `form`:
-
-```typescript
-import { HttpClientBuilder } from '@athenna/common'
-
-const builder = new HttpClientBuilder()
-
-builder.form({
-  hello: 'world!'
-})
-```
-
 #### `HttpClientBuilder.when()`
 
 Execute a closure only when first value is truthy:
@@ -1940,6 +2209,20 @@ import { HttpClientBuilder } from '@athenna/common'
 const builder = new HttpClientBuilder()
 
 builder.safeQuery('hello', 'world!')
+```
+
+#### `HttpClientBuilder.removeQuery()`
+
+Remove a query from the request:
+
+```typescript
+import { HttpClientBuilder } from '@athenna/common'
+
+const builder = new HttpClientBuilder()
+
+builder
+  .query('hello', 'world!')
+  .removeQuery('hello')
 ```
 
 #### `HttpClientBuilder.dnsLookup()`
@@ -2636,6 +2919,26 @@ import { Is } from '@athenna/common'
 Is.Windows() // true
 ```
 
+#### `Is::Node()`
+
+Validate if the current runtime is Node.js:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Node() // true
+```
+
+#### `Is::Deno()`
+
+Validate if the current runtime is Deno:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Deno() // false
+```
+
 #### `Is::Module()`
 
 Validate if a path or `File` instance is a module:
@@ -2910,6 +3213,78 @@ import { Is } from '@athenna/common'
 Is.ArrayOfObjects([{}, {}, {}]) // true
 ```
 
+#### `Is::Function()`
+
+Validate if the value is a function:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Function(() => {}) // true
+```
+
+#### `Is::ClassInstance()`
+
+Validate if the value is an instance of a class, meaning an 
+object with a prototype other than `Object.prototype`. Built-ins 
+with their own kind (`Date`, `Map`, `Set`, arrays, etc.) are 
+not considered class instances:
+
+```typescript
+import { Is } from '@athenna/common'
+
+class User {}
+
+Is.ClassInstance(new User()) // true
+Is.ClassInstance({}) // false
+Is.ClassInstance(new Date()) // false
+```
+
+#### `Is::Integer()`
+
+Validate if the value is integer:
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.Integer(10) // true
+Is.Integer(10.5) // false
+```
+
+#### `Is::CssPath()`
+
+Validate if the value is a path to a style file (`css`, `scss`,
+`sass`, etc):
+
+```typescript
+import { Is } from '@athenna/common'
+
+Is.CssPath(Path.resources('css/app.css')) // true
+```
+
+#### `Is::ValidHash()`
+
+Validate if a hash created with 
+[`String::hash()`](/docs/the-basics/helpers#stringhash) 
+matches a given value:
+
+```typescript
+import { Is, String } from '@athenna/common'
+
+const hash = String.hash('12345', { key: 'my-secret' })
+
+Is.ValidHash(hash, '12345', { key: 'my-secret' }) // true
+Is.ValidHash(hash, '54321', { key: 'my-secret' }) // false
+```
+
+:::note
+
+If the `key` option is not set, the `app.key` configuration
+of [`@athenna/config`](/docs/getting-started/configuration) 
+will be used. 
+
+:::
+
 ### Json
 
 #### `Json::builder()`
@@ -2935,6 +3310,82 @@ const copiedObject = Json.copy(object)
 object.name = 'Victor Tesoura'
 
 console.log(object.name === copiedObject.name) // false
+```
+
+You can set a customizer closure as second argument to take 
+over the copy of a value. Returning anything but `undefined` 
+will use the returned value as the copy, returning `undefined` 
+falls back to the default deep copy behavior:
+
+```typescript
+import { Json, File } from '@athenna/common'
+
+const object = { name: 'João Lenon', file: new File('./file.txt') }
+
+const copiedObject = Json.copy(object, value => {
+  if (value instanceof File) {
+    return value 👈 // Keep the same reference
+  }
+})
+```
+
+#### `Json::isEqual()`
+
+Validate if an object or array is deeply equal to another:
+
+```typescript
+import { Json } from '@athenna/common'
+
+Json.isEqual({ hello: 'world' }, { hello: 'world' }) // true
+Json.isEqual([{ hello: 'world' }], [{ hello: 'world' }]) // true
+Json.isEqual({ hello: 'world' }, { hello: 'lenon' }) // false
+```
+
+#### `Json::diff()`
+
+Create a new object with only the changes between two objects:
+
+```typescript
+import { Json } from '@athenna/common'
+
+Json.diff({ a: 'a' }, { a: 'a' }) // {}
+Json.diff({ a: 'a' }, { a: 'b' }) // { a: 'b' }
+Json.diff({ a: 'a' }, { a: 'b', b: 'b' }) // { a: 'b', b: 'b' }
+Json.diff({ a: { b: 'b', c: 'c' } }, { a: { b: 'b', c: 'd' } }) // { a: { c: 'd' } }
+```
+
+#### `Json::sort()`
+
+Recursively sort an object or an array of objects by its 
+keys names:
+
+```typescript
+import { Json } from '@athenna/common'
+
+const sorted = Json.sort({ name: 'Lenon', age: 23, address: { zip: '1', city: 'SP' } })
+// { address: { city: 'SP', zip: '1' }, age: 23, name: 'Lenon' }
+```
+
+#### `Json::toCamelCase()`
+
+Recursively convert the keys of an object to camel case:
+
+```typescript
+import { Json } from '@athenna/common'
+
+const object = Json.toCamelCase({ first_name: 'João', user_address: { zip_code: '1' } })
+// { firstName: 'João', userAddress: { zipCode: '1' } }
+```
+
+#### `Json::toSnakeCase()`
+
+Recursively convert the keys of an object to snake case:
+
+```typescript
+import { Json } from '@athenna/common'
+
+const object = Json.toSnakeCase({ firstName: 'João', userAddress: { zipCode: '1' } })
+// { first_name: 'João', user_address: { zip_code: '1' } }
 ```
 
 #### `Json::getJson()`
@@ -3019,6 +3470,27 @@ Json.get(object, 'name') // João Lenon
 Json.get(object, 'configs.theme') // dark
 ```
 
+#### `Json::set()`
+
+Set the object properties using dot notation:
+
+```typescript
+import { Json } from '@athenna/common'
+
+const object = {
+  name: 'João Lenon',
+  configs: {
+    theme: 'dark'
+  }
+}
+
+Json.set(object, 'name', 'Lenon')
+Json.set(object, 'configs.language', 'en')
+
+console.log(object)
+// { name: 'Lenon', configs: { theme: 'dark', language: 'en' } }
+```
+
 #### `Json::omit()`
 
 Get all keys from an object omitting selected ones:
@@ -3037,6 +3509,96 @@ Pick only selected keys from an object:
 const picked = Json.pick({ name: 'Lenon', age: 23 }, ['name'])
 
 console.log(picked) // { name: 'Lenon' }
+```
+
+### Macroable
+
+Almost all the helpers of Athenna extends the `Macroable` 
+class, meaning that you can extend them with your own 
+methods and getters at runtime. You can also extend the 
+`Macroable` class in your own classes:
+
+```typescript
+import { Macroable } from '@athenna/common'
+
+export class MyHelper extends Macroable {}
+```
+
+#### `Macroable::macro()`
+
+Add a new property or method to the class prototype:
+
+```typescript
+import { Macroable } from '@athenna/common'
+
+class User extends Macroable {
+  public name = 'Lenon'
+}
+
+User.macro('greet', function () {
+  return `Hello, ${this.name}!`
+})
+
+new User().greet() // Hello, Lenon!
+```
+
+#### `Macroable::getter()`
+
+Add a new getter to the class prototype:
+
+```typescript
+import { Macroable } from '@athenna/common'
+
+class User extends Macroable {
+  public name = 'Lenon'
+}
+
+User.getter('upperName', function () {
+  return this.name.toUpperCase()
+})
+
+new User().upperName // LENON
+```
+
+If you set the third argument as `true`, the getter will be 
+a singleton, meaning that the closure will be executed only 
+once per instance and the returned value will be cached:
+
+```typescript
+User.getter('createdAt', () => new Date(), true)
+```
+
+#### `Macroable::staticMacro()`
+
+Add a new static property or method to the class itself:
+
+```typescript
+import { String } from '@athenna/common'
+
+String.staticMacro('shout', (value: string) => {
+  return `${value.toUpperCase()}!`
+})
+
+String.shout('hello') // HELLO!
+```
+
+#### `Macroable::staticGetter()`
+
+Add a new static getter to the class itself:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.staticGetter('cwd', () => process.cwd())
+
+console.log(Path.cwd) // /home/user/athenna-project
+```
+
+Same as `getter()`, you can set the third argument as `true` 
+to create a singleton static getter:
+
+```typescript
+Path.staticGetter('startedAt', () => new Date(), true)
 ```
 
 ### Module
@@ -3355,7 +3917,7 @@ import { Number } from '@athenna/common'
 const random = Number.randomIntFromInterval(1, 10) // 5
 ```
 
-### ObjectBuilder
+### ObjectBuilder {#object-builder}
 
 #### `new ObjectBuilder()`
 
@@ -3581,6 +4143,34 @@ builder.existsAll(['name', 'age']) // true
 builder.notExistsAll('name', 'age') // false
 ```
 
+#### `ObjectBuilder.omit()`
+
+Get all the keys of the object omitting the selected ones:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon', age: 22 })
+
+builder.omit(['name']) // { age: 22 }
+```
+
+#### `ObjectBuilder.pick()`
+
+Pick only the selected keys of the object:
+
+```typescript
+import { ObjectBuilder } from '@athenna/common'
+
+const builder = new ObjectBuilder()
+
+builder.set({ name: 'Lenon', age: 22 })
+
+builder.pick(['name']) // { name: 'Lenon' }
+```
+
 ### Options
 
 #### `Options::create()`
@@ -3636,6 +4226,90 @@ import { Is, Options } from '@athenna/common'
 Options.whenDefined('Helloo', (statement) => {
   console.log(statement) // Helloo
 })
+```
+
+### Otp
+
+#### `Otp::generate()`
+
+Generate an OTP token with 6 characters (digits and upper
+case letters):
+
+```typescript
+import { Otp } from '@athenna/common'
+
+const otp = Otp.generate()
+// 4F7K2Q
+```
+
+You can also generate an OTP token with a prefixed string:
+
+```typescript
+const prefixedOtp = Otp.generate('adm')
+// adm::4F7K2Q
+```
+
+#### `Otp::getToken()`
+
+Get the OTP token without the prefix:
+
+```typescript
+import { Otp } from '@athenna/common'
+
+const prefixedOtp = 'adm::4F7K2Q'
+const otp = Otp.getToken(prefixedOtp)
+// 4F7K2Q
+```
+
+#### `Otp::getPrefix()`
+
+Get the prefix without the OTP token:
+
+```typescript
+import { Otp } from '@athenna/common'
+
+const prefixedOtp = 'adm::4F7K2Q'
+const prefix = Otp.getPrefix(prefixedOtp) // adm
+```
+
+#### `Otp::injectPrefix()`
+
+Inject a prefix in the OTP token:
+
+```typescript
+import { Otp } from '@athenna/common'
+
+const otp = '4F7K2Q'
+const prefixedOtp = Otp.injectPrefix('adm', otp)
+// adm::4F7K2Q
+```
+
+#### `Otp::changePrefix()`
+
+Change the prefix of an OTP token:
+
+```typescript
+import { Otp } from '@athenna/common'
+
+const otp = 'adm::4F7K2Q'
+const prefixedOtp = Otp.changePrefix('mng', otp)
+// mng::4F7K2Q
+```
+
+#### `Otp::changeOrGenerate()`
+
+Change the prefix of an OTP token, or generate the token
+if the OTP token is `undefined`:
+
+```typescript
+import { Otp } from '@athenna/common'
+
+const otp = undefined
+const prefixedOtp = Otp.changeOrGenerate('adm', otp)
+// adm::4F7K2Q
+
+const changedPrefixOtp = Otp.changeOrGenerate('mng', prefixedOtp)
+// mng::4F7K2Q
 ```
 
 ### Parser
@@ -3816,6 +4490,35 @@ const ms = Parser.msToTime(1000)
 // 1s
 ```
 
+#### `Parser::timeToSeconds()`
+
+Parse a time to seconds:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const seconds = Parser.timeToSeconds('1m')
+// 60
+```
+
+#### `Parser::secondsToTime()`
+
+Parse seconds to time:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const time = Parser.secondsToTime(60)
+// 1m
+```
+
+To get the time in a long format set the second argument as `true`:
+
+```typescript
+const time = Parser.secondsToTime(60, true)
+// 1 minute
+```
+
 #### `Parser::statusCodeToReason()`
 
 Parse a status code to a reason string:
@@ -3923,6 +4626,113 @@ const yaml = 'version: 1'
 const object = Parser.yamlStringToObject(yaml) // { version: 1 }
 ```
 
+#### `Parser::pathToMime()`
+
+Parse a file path to its mime type by the extension:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+Parser.pathToMime('avatars/user.png') // image/png
+Parser.pathToMime('no-extension') // null
+```
+
+When the extension is unknown, `null` will be returned. 
+To change this behavior, set a fallback as second argument:
+
+```typescript
+Parser.pathToMime('no-extension', 'application/octet-stream')
+// application/octet-stream
+```
+
+#### `Parser::jsonToHTML()`
+
+Parse an object to an HTML element string:
+
+```typescript
+import { Parser, type HTMLJson } from '@athenna/common'
+
+const element: HTMLJson = {
+  tag: 'script',
+  attributes: {
+    type: 'module',
+    src: 'app.js',
+    defer: true
+  },
+  children: []
+}
+
+const html = Parser.jsonToHTML(element)
+// <script type="module" src="app.js" defer></script>
+```
+
+:::note
+
+- Attributes with `true` value are rendered only by its name, 
+and falsy values are ignored.
+- The `link` tag will always be rendered as a self-closing tag.
+
+:::
+
+#### `Parser::objectToBase64()`
+
+Parse an object to a base64 string:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const base64 = Parser.objectToBase64({ name: 'Lenon' })
+// eyJuYW1lIjoiTGVub24ifQ==
+```
+
+The `objectToBase64()` method supports two options, 
+`removeEmpty` to recursively remove empty values from 
+the object before parsing it and `nullOnEmpty` to return 
+`null` if the object is empty:
+
+```typescript
+const base64 = Parser.objectToBase64({ name: null }, {
+  removeEmpty: true,
+  nullOnEmpty: true
+})
+// null
+```
+
+#### `Parser::base64ToObject()`
+
+Parse a base64 string to an object:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const object = Parser.base64ToObject('eyJuYW1lIjoiTGVub24ifQ==')
+// { name: 'Lenon' }
+```
+
+#### `Parser::objectToBase64Url()`
+
+Same as [`objectToBase64()`](/docs/the-basics/helpers#parserobjecttobase64),
+but parse the object to a base64url string, which is safe 
+to be used in URLs:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const base64Url = Parser.objectToBase64Url({ name: 'Lenon' })
+// eyJuYW1lIjoiTGVub24ifQ
+```
+
+#### `Parser::base64UrlToObject()`
+
+Parse a base64url string to an object:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const object = Parser.base64UrlToObject('eyJuYW1lIjoiTGVub24ifQ')
+// { name: 'Lenon' }
+```
+
 ### Path
 
 #### `Path::dirs`
@@ -4004,6 +4814,27 @@ Parse a path to a URL href string:
 import { Path } from '@athenna/common'
 
 const href = Path.toHref('https://athenna.io')
+```
+
+#### `Path::removeExt()`
+
+Remove the extension of a path:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.removeExt('src/services/MyService.ts')) // src/services/MyService
+```
+
+#### `Path::toPath()`
+
+Parse a file URL or a file URL href to a path:
+
+```typescript
+import { Path } from '@athenna/common'
+
+const path = Path.toPath('file:///home/user/athenna-project/package.json')
+// /home/user/athenna-project/package.json
 ```
 
 #### `Path::pwd()`
@@ -4176,6 +5007,46 @@ import { Path } from '@athenna/common'
 Path.setLang('lang/app')
 ```
 
+#### `Path::events()`
+
+Merge the project root path with `Path.dirs.events`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.events()) // /home/user/athenna-project/src/events
+```
+
+#### `Path::setEvents()`
+
+Set the `Path.dirs.events` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setEvents('src/app/events')
+```
+
+#### `Path::listeners()`
+
+Merge the project root path with `Path.dirs.listeners`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.listeners()) // /home/user/athenna-project/src/events/listeners
+```
+
+#### `Path::setListeners()`
+
+Set the `Path.dirs.listeners` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setListeners('src/app/events/listeners')
+```
+
 #### `Path::nodeModules()`
 
 Merge the project root path with `Path.dirs.nodeModules`:
@@ -4276,26 +5147,6 @@ import { Path } from '@athenna/common'
 Path.setResources('resources/app')
 ```
 
-#### `Path::resources()`
-
-Merge the project root path with `Path.dirs.resources`:
-
-```typescript
-import { Path } from '@athenna/common'
-
-console.log(Path.resources()) // /home/user/athenna-project/resources
-```
-
-#### `Path::setResources()`
-
-Set the `Path.dirs.resources` value:
-
-```typescript
-import { Path } from '@athenna/common'
-
-Path.setResources('resources/app')
-```
-
 #### `Path::apiResources()`
 
 Merge the project root path with `Path.dirs.apiResources`:
@@ -4314,6 +5165,26 @@ Set the `Path.dirs.apiResources` value:
 import { Path } from '@athenna/common'
 
 Path.setApiResources('resources/app')
+```
+
+#### `Path::routes()`
+
+Merge the project root path with `Path.dirs.routes`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.routes()) // /home/user/athenna-project/src/routes
+```
+
+#### `Path::setRoutes()`
+
+Set the `Path.dirs.routes` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setRoutes('src/app/routes')
 ```
 
 #### `Path::storage()`
@@ -4494,6 +5365,46 @@ Set the `Path.dirs.fixtures` value:
 import { Path } from '@athenna/common'
 
 Path.setFixtures('fixtures/app')
+```
+
+#### `Path::mcp()`
+
+Merge the project root path with `Path.dirs.mcp`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.mcp()) // /home/user/athenna-project/src/mcp
+```
+
+#### `Path::setMcp()`
+
+Set the `Path.dirs.mcp` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setMcp('src/app/mcp')
+```
+
+#### `Path::tools()`
+
+Merge the project root path with `Path.dirs.tools`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.tools()) // /home/user/athenna-project/src/mcp/tools
+```
+
+#### `Path::setTools()`
+
+Set the `Path.dirs.tools` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setTools('src/app/mcp/tools')
 ```
 
 #### `Path::http()`
@@ -4796,6 +5707,26 @@ import { Path } from '@athenna/common'
 Path.setTerminators('terminators/app')
 ```
 
+#### `Path::validators()`
+
+Merge the project root path with `Path.dirs.validators`:
+
+```typescript
+import { Path } from '@athenna/common'
+
+console.log(Path.validators()) // /home/user/athenna-project/src/validators
+```
+
+#### `Path::setValidators()`
+
+Set the `Path.dirs.validators` value:
+
+```typescript
+import { Path } from '@athenna/common'
+
+Path.setValidators('src/app/validators')
+```
+
 #### `Path::migrations()`
 
 Merge the project root path with `Path.dirs.migrations`:
@@ -4894,6 +5825,86 @@ import { logPath } from '#src/logPath'
 logPath() // /home/user/athenna-project/src
 ```
 
+### Retry
+
+This helper uses the [`@humanwhocodes/retry`](https://www.npmjs.com/package/@humanwhocodes/retry)
+library under the hood to retry the operations.
+
+#### `Retry::build()`
+
+Create a new retry builder instance. First define which 
+errors should be retried using `whenError()` and then 
+define the function to retry using `retry()`:
+
+```typescript
+import { readFile } from 'node:fs/promises'
+import { Retry } from '@athenna/common'
+
+const text = await Retry.build()
+  .whenError(error => error.code === 'ENFILE')
+  .retry(() => readFile('README.md', 'utf8'))
+```
+
+:::note
+
+The `whenError()` method returns a `Retrier` instance from
+[`@humanwhocodes/retry`](https://www.npmjs.com/package/@humanwhocodes/retry),
+meaning that it should be the last method of the builder
+before calling `retry()`. The `retry()` method also accepts
+an `AbortSignal` to cancel the operation:
+
+```typescript
+const controller = new AbortController()
+
+const text = await Retry.build()
+  .whenError(error => error.code === 'ENFILE')
+  .retry(() => readFile('README.md', 'utf8'), { signal: controller.signal })
+```
+
+:::
+
+#### `RetryBuilder.setTimeout()`
+
+Set the maximum amount of time in milliseconds that the 
+operation will keep retrying (default is `60000`):
+
+```typescript
+import { Retry } from '@athenna/common'
+
+const text = await Retry.build()
+  .setTimeout(10000)
+  .whenError(error => error.code === 'ENFILE')
+  .retry(() => readFile('README.md', 'utf8'))
+```
+
+#### `RetryBuilder.setMaxDelay()`
+
+Set the maximum delay in milliseconds between each retry 
+(default is `100`):
+
+```typescript
+import { Retry } from '@athenna/common'
+
+const text = await Retry.build()
+  .setMaxDelay(500)
+  .whenError(error => error.code === 'ENFILE')
+  .retry(() => readFile('README.md', 'utf8'))
+```
+
+#### `RetryBuilder.setConcurrency()`
+
+Set the maximum number of operations that could be 
+executed concurrently (default is `1000`):
+
+```typescript
+import { Retry } from '@athenna/common'
+
+const text = await Retry.build()
+  .setConcurrency(10)
+  .whenError(error => error.code === 'ENFILE')
+  .retry(() => readFile('README.md', 'utf8'))
+```
+
 ### Route
 
 #### `Route::getQueryString()`
@@ -4986,6 +5997,75 @@ if (regexp.test(urlValues)) {
 }
 ```
 
+### Sleep
+
+#### `Sleep::for()`
+
+Block the execution of your code until the time defined 
+has passed:
+
+```typescript
+import { Sleep } from '@athenna/common'
+
+await Sleep.for(100).milliseconds().wait()
+await Sleep.for(5).seconds().wait()
+await Sleep.for(1).minutes().wait()
+
+// This will not run until all the time above has passed.
+console.log('hello')
+```
+
+You can use the `and()` method to chain more time to wait:
+
+```typescript
+await Sleep.for(1).minutes().and(30).seconds().wait()
+```
+
+You can also use the `while()` method to keep sleeping 
+the defined time while the closure returns `true`:
+
+```typescript
+let done = false
+
+await Sleep.for(1).seconds().while(() => !done)
+```
+
+#### `Sleep::forSync()`
+
+Same as `for()` method, but the time is waited 
+synchronously, blocking the event loop:
+
+```typescript
+import { Sleep } from '@athenna/common'
+
+Sleep.forSync(1).minutes().and(30).seconds().wait()
+
+// This will not run until 1 minute and 30 seconds has passed.
+console.log('hello')
+```
+
+#### `Sleep::sleep()`
+
+Simpler implementation of the sleep helper that only 
+works with milliseconds:
+
+```typescript
+import { Sleep } from '@athenna/common'
+
+await Sleep.sleep(100)
+```
+
+#### `Sleep::sleepSync()`
+
+Same as `sleep()` method, but the time is waited 
+synchronously, blocking the event loop:
+
+```typescript
+import { Sleep } from '@athenna/common'
+
+Sleep.sleepSync(100)
+```
+
 ### String
 
 #### `String::generateRandom()`
@@ -4996,6 +6076,71 @@ Generate a random string with a determined length:
 import { String } from '@athenna/common'
 
 const string = String.generateRandom(10)
+```
+
+#### `String::random()`
+
+Generate a random string with a determined length 
+using the letters `a-z`, `A-Z` and numbers `0-9`:
+
+```typescript
+import { String } from '@athenna/common'
+
+const string = String.random(10)
+// 1bibr3zxdA
+```
+
+Set the `suffixCRC` option as `true` to add a 
+[CRC32](https://en.wikipedia.org/wiki/Cyclic_redundancy_check) 
+checksum in the end of the string, useful to create tokens 
+that could be validated without querying a database:
+
+```typescript
+const string = String.random(20, { suffixCRC: true })
+// 9xEdWM9OV53a7b61e015
+```
+
+#### `String::hash()`
+
+Generate a HMAC SHA256 hash for a given value:
+
+```typescript
+import { String } from '@athenna/common'
+
+const hash = String.hash('12345')
+```
+
+By default, the `app.key` configuration of 
+[`@athenna/config`](/docs/getting-started/configuration) 
+will be used as the secret key of the hash, if the 
+configuration is not available an exception will be 
+thrown. You can set your own key and also a prefix 
+to the hash:
+
+```typescript
+const hash = String.hash('12345', { key: 'my-secret', prefix: 'token_' })
+// token_5b8a1...
+```
+
+:::tip
+
+Use the [`Is::ValidHash()`](/docs/the-basics/helpers#isvalidhash) 
+method to validate if a hash matches a given value.
+
+:::
+
+#### `String::toRedactedToken()`
+
+Redact a token showing only part of it and the 
+number of hidden characters:
+
+```typescript
+import { String } from '@athenna/common'
+
+const token = '1234567890'
+
+String.toRedactedToken(token) // 12345...+5
+String.toRedactedToken(token, 3) // 123...+7
 ```
 
 #### `String::toCamelCase()`
@@ -5139,6 +6284,58 @@ const base64 = String.normalizeBase64('+++///===')
 // '---___'
 ```
 
+### Timeout
+
+#### `Timeout::when()`
+
+Race a promise with a timeout. If the promise does not 
+resolve before the timeout, the `onTimeout()` closure 
+will be executed and its return value will be used as 
+the result:
+
+```typescript
+import { Timeout } from '@athenna/common'
+
+const result = await Timeout.when(fetchUsers())
+  .ms(1000)
+  .onTimeout(() => [])
+  .race()
+```
+
+:::note
+
+The `ms()` and `onTimeout()` methods are required, if 
+they are not defined the `race()` method will throw.
+
+:::
+
+#### `TimeoutBuilder.onError()`
+
+Define a closure to be executed when the promise 
+rejects with an error. The return value will be used 
+as the result:
+
+```typescript
+import { Timeout } from '@athenna/common'
+
+const result = await Timeout.when(fetchUsers())
+  .ms(1000)
+  .onTimeout(() => [])
+  .onError(error => {
+    Log.error(error)
+
+    return []
+  })
+  .race()
+```
+
+:::tip
+
+If the `onError()` closure is not defined, the error 
+will be thrown by the `race()` method.
+
+:::
+
 ### Ulid 
 
 #### `Ulid::generate()`
@@ -5228,8 +6425,8 @@ valid, this method will throw:
 ```typescript
 import { Ulid } from '@athenna/common'
 
-const uuid = '01JG9J4KEDQ9KJCZNYAZCG5ECK'
-const prefixedUlid = Ulid.injectPrefix(uuid, 'adm')
+const ulid = '01JG9J4KEDQ9KJCZNYAZCG5ECK'
+const prefixedUlid = Ulid.injectPrefix('adm', ulid)
 // adm::01JG9J4KEDQ9KJCZNYAZCG5ECK
 ```
 
@@ -5242,7 +6439,7 @@ valid, this function will throw:
 import { Ulid } from '@athenna/common'
 
 const ulid = 'adm::01JG9J4KEDQ9KJCZNYAZCG5ECK'
-const prefixedUlid = Ulid.changePrefix(ulid, 'mng')
+const prefixedUlid = Ulid.changePrefix('mng', ulid)
 // mng::01JG9J4KEDQ9KJCZNYAZCG5ECK
 ```
 
@@ -5260,6 +6457,90 @@ const prefixedUlid = Ulid.changeOrGenerate('adm', ulid)
 
 const changedPrefixUlid = Ulid.changeOrGenerate('mng', prefixedUlid)
 // mng::01JG9J4KEDQ9KJCZNYAZCG5ECK
+```
+
+### Url
+
+#### `Url::canParse()`
+
+Validate if the value can be parsed as an absolute URL:
+
+```typescript
+import { Url } from '@athenna/common'
+
+Url.canParse('https://athenna.io/docs') // true
+Url.canParse('docs/storage') // false
+```
+
+#### `Url::normalizePath()`
+
+Remove the leading slashes of a path:
+
+```typescript
+import { Url } from '@athenna/common'
+
+Url.normalizePath('/avatars/user.png') // avatars/user.png
+```
+
+#### `Url::encodePath()`
+
+Encode a path segment by segment, preserving the `/` 
+separators:
+
+```typescript
+import { Url } from '@athenna/common'
+
+Url.encodePath('avatars/user 1.png') // avatars/user%201.png
+```
+
+#### `Url::decodePath()`
+
+Decode a path. If the path is not a valid percent-encoded 
+string, it will be returned as is:
+
+```typescript
+import { Url } from '@athenna/common'
+
+Url.decodePath('avatars/user%201.png') // avatars/user 1.png
+Url.decodePath('avatars/100%.png') // avatars/100%.png
+```
+
+#### `Url::join()`
+
+Join a base URL with a path, normalizing the slashes in 
+between and encoding the path segment by segment:
+
+```typescript
+import { Url } from '@athenna/common'
+
+Url.join('https://cdn.athenna.io/', '/avatars/user 1.png')
+// https://cdn.athenna.io/avatars/user%201.png
+```
+
+#### `Url::pathFromBase()`
+
+Get the decoded path of an URL relative to a base URL. 
+The query string and the hash of the URL are ignored:
+
+```typescript
+import { Url } from '@athenna/common'
+
+Url.pathFromBase(
+  'https://cdn.athenna.io/files/a%20b.png?w=1', 
+  'https://cdn.athenna.io/files'
+)
+// a b.png
+```
+
+If the URL does not live under the base URL (different 
+origin or path prefix), `null` will be returned:
+
+```typescript
+Url.pathFromBase(
+  'https://other.io/files/a.png', 
+  'https://cdn.athenna.io/files'
+)
+// null
 ```
 
 ### Uuid
@@ -5352,7 +6633,7 @@ valid, this method will throw:
 import { Uuid } from '@athenna/common'
 
 const uuid = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-const prefixedUuid = Uuid.injectPrefix(uuid, 'adm')
+const prefixedUuid = Uuid.injectPrefix('adm', uuid)
 // adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
 ```
 
@@ -5365,7 +6646,7 @@ valid, this function will throw:
 import { Uuid } from '@athenna/common'
 
 const uuid = 'adm::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'
-const prefixedUuid = Uuid.changePrefix(uuid, 'mng')
+const prefixedUuid = Uuid.changePrefix('mng', uuid)
 // mng::a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11
 ```
 

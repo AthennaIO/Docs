@@ -1,0 +1,638 @@
+---
+title: Rate Limiter
+sidebar_position: 8
+description: See how to respect the rate limits and quotas of the external APIs you consume.
+---
+
+import Path from '@site/src/components/path'
+
+# Rate Limiter
+
+See how to respect the rate limits and quotas of the external APIs you consume.
+
+## Introduction
+
+Almost every third party API you integrate with has rules about
+how much you can use it: "60 requests per minute", "10.000 units
+per day", "200.000 requests per month". Break one of those rules
+and you start receiving `429 Too Many Requests` responses, your API
+key gets blocked for a while or, even worse, you get a bill you were
+not expecting.
+
+The `RateLimiter` helper of `@athenna/ratelimiter` exists to solve
+exactly this problem. You describe the rules of the API you are
+calling and then schedule your requests through it. The helper
+will queue them, wait when needed and only let a request go out
+when it is safe to do so. It can also rotate between multiple APIs
+or API keys, retry failed requests and keep its internal counters
+in sync with the rate limit headers returned by the API.
+
+:::warning
+
+This helper has **nothing to do** with protecting your own application
+from its clients. It controls the requests that **your application
+makes to other services**. If you want to limit how many times users
+can call your REST API, take a look at the
+[REST API rate limiting documentation](/docs/rest-api-application/rate-limiting)
+instead.
+
+:::
+
+## Installation
+
+First of all you need to install the `@athenna/ratelimiter` package:
+
+```bash
+npm install @athenna/ratelimiter
+```
+
+The rate limiter saves its counters using the
+[`@athenna/cache`](/docs/digging-deeper/cache) package, so make sure
+you have it installed and configured in your project:
+
+```bash
+node artisan install @athenna/cache
+```
+
+## Configuration
+
+The rate limiter doesn't have a configuration file of its own. Instead,
+it uses one of the stores defined in your <Path father="config" child="cache.ts" />
+file. We recommend creating a store dedicated to the rate limiter, with its
+own prefix:
+
+```typescript title="Path.config('cache.ts')"
+import { Env } from '@athenna/config'
+
+export default {
+  stores: {
+    // ...
+
+    ratelimiter: {
+      driver: 'redis',
+      prefix: 'my_app:ratelimiter',
+      url: Env('REDIS_URL', 'redis://localhost:6379?database=0')
+    }
+  }
+}
+```
+
+Here is how to pick the right driver:
+
+- `memory`: counters live inside the Node.js process. Perfect for tests,
+local development and applications that run a single process.
+- `redis`: counters are shared between all your processes, containers and
+servers. Use this one in production when you have more than one instance
+of your application calling the same API, otherwise each instance would
+think it has the whole quota for itself.
+
+:::tip
+
+Keep the rate limiter in its own store. The `truncate()` method of the
+limiter clears the **entire** cache store, so sharing a store with your
+application cache means clearing both at the same time.
+
+:::
+
+## Basic usage
+
+Let's imagine an API that allows only 10 requests per second.
+To respect this rule, create a limiter with the `RateLimiter.build()`
+method and run your request inside the `schedule()` method:
+
+```typescript
+import { HttpClient } from '@athenna/common'
+import { RateLimiter } from '@athenna/ratelimiter'
+
+const response = await RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'second', limit: 10 })
+  .schedule(() => HttpClient.get('https://api.example.com/users/1'))
+```
+
+That's it! If you call this code 50 times at once, the first 10
+requests will run right away and the others will wait in a queue
+until the next second window opens. The `schedule()` method returns
+a promise that resolves with whatever your closure returns, so you
+don't need to change how you handle your responses.
+
+Every limiter needs three things before scheduling a task:
+
+- `key()`: a name that identifies the API you are calling. All the
+counters are saved in the cache using this key.
+- `store()`: the name of the cache store from <Path father="config" child="cache.ts" />.
+- `addRule()`: at least one rule describing the API limits.
+
+If any of them is missing, `schedule()` will throw `MissingKeyException`,
+`MissingStoreException` or `MissingRuleException`.
+
+:::note
+
+Since the counters live in the cache and not inside the limiter instance,
+it's totally fine to build a new limiter every time you need to call
+the API. Two limiters with the same `key()` and `store()` will always
+share the same counters.
+
+:::
+
+## Defining rules
+
+A rule has a `type`, which is the size of the time window, and a `limit`,
+which is how many requests are allowed inside that window. The available
+types are:
+
+| Type     | Window size |
+|:---------|:------------|
+| `second` | 1 second    |
+| `minute` | 1 minute    |
+| `hour`   | 1 hour      |
+| `day`    | 1 day       |
+| `month`  | 30 days     |
+
+Most APIs have more than one rule at the same time, like a burst limit
+and a monthly quota. You can add as many rules as you want, and a request
+will only run when **all of them** allow it:
+
+```typescript
+const limiter = RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'minute', limit: 600 })
+  .addRule({ type: 'month', limit: 200_000 })
+```
+
+You can also set them all at once with the `setRules()` method:
+
+```typescript
+const limiter = RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .setRules([
+    { type: 'minute', limit: 600 },
+    { type: 'month', limit: 200_000 }
+  ])
+```
+
+:::tip
+
+Windows are sliding, not fixed to the calendar. A `month` rule means
+"the last 30 days" and not "from the 1st to the end of the month". If
+the API you are using resets on a specific date, see the
+[syncing with API headers](#syncing-with-api-headers) section.
+
+:::
+
+## Targets
+
+Sometimes one API key is not enough. Maybe you have multiple API keys
+for the same service, or multiple services that return the same data.
+A **target** is each one of those options. When you define targets, the
+rate limiter keeps separate counters for each of them and picks one that
+still has quota available for every request.
+
+Use the `metadata` property to store whatever your request needs to run,
+like the base URL and the API key. The selected target is available in the
+closure of the `schedule()` method:
+
+```typescript
+import { HttpClient } from '@athenna/common'
+import { RateLimiter } from '@athenna/ratelimiter'
+
+const response = await RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'day', limit: 10_000 })
+  .addTarget({ metadata: { apiKey: 'first-key' } })
+  .addTarget({ metadata: { apiKey: 'second-key' } })
+  .schedule(({ target }) => {
+    return HttpClient.builder()
+      .header('x-api-key', target.metadata.apiKey)
+      .get('https://api.example.com/users/1')
+  })
+```
+
+With the example above you have 20.000 requests per day instead of 10.000.
+When the first key reaches its limit, the rate limiter moves to the second
+one automatically.
+
+To define a list of targets at once, use the `setTargets()` method. This
+is very handy when your API keys come from a configuration file:
+
+```typescript
+import { Config } from '@athenna/config'
+import { String } from '@athenna/common'
+
+const targets = Config.get('services.example.apiKeys').map(apiKey => ({
+  id: `example_api:${String.hash(apiKey)}`,
+  metadata: { apiKey }
+}))
+
+const limiter = RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'day', limit: 10_000 })
+  .setTargets(targets)
+```
+
+### Target ids
+
+Each target has an `id` that is used to build its cache key
+(`${key}:${id}`). When you don't set one, the rate limiter creates a hash
+from the `metadata` object. This works, but it means that changing anything
+inside `metadata` creates new counters from zero. If your metadata holds
+anything that may change (or objects like class instances), always set a
+stable `id` yourself. Hashing the API key, like in the example above, is a
+good way to do it without saving the key itself in your cache.
+
+### Rules by target
+
+Different targets may have different limits, like a free and a paid plan.
+Set `rules` in the target to override the default rules of the limiter:
+
+```typescript
+const limiter = RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'day', limit: 1_000 })
+  .addTarget({ id: 'free', metadata: { apiKey: 'free-key' } })
+  .addTarget({
+    id: 'paid',
+    metadata: { apiKey: 'paid-key' },
+    rules: [{ type: 'day', limit: 100_000 }]
+  })
+```
+
+If every target defines its own rules, you can skip the default rules of
+the limiter.
+
+### Rotating between different services
+
+Targets are not limited to API keys. Since `metadata` can hold anything,
+you can rotate between completely different providers that return the same
+data. Just put an instance of the service in the metadata and call it
+inside the closure:
+
+```typescript
+const profile = await RateLimiter.build()
+  .key('profiles')
+  .store('ratelimiter')
+  .setTargets([
+    {
+      id: 'provider_a',
+      rules: [{ type: 'minute', limit: 60 }],
+      metadata: { service: new ProviderAService() }
+    },
+    {
+      id: 'provider_b',
+      rules: [{ type: 'month', limit: 50_000 }],
+      metadata: { service: new ProviderBService() }
+    }
+  ])
+  .schedule(({ target }) => target.metadata.service.getProfile(username))
+```
+
+### Selection strategy
+
+By default, the rate limiter uses the `first_available` strategy: it always
+tries the targets in the order you defined them and only moves to the next
+one when the current one is out of quota. This is great when you want to
+use your cheapest API first.
+
+If you prefer to spread the requests evenly between all targets, use the
+`round_robin` strategy:
+
+```typescript
+const limiter = RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'day', limit: 10_000 })
+  .setTargets(targets)
+  .targetSelectionStrategy('round_robin')
+```
+
+## Retrying failed requests
+
+By default, if the closure of `schedule()` throws an error, the promise is
+rejected right away. To retry, define a retry strategy. It receives the
+context of the failure and must return a decision:
+
+```typescript
+import type { RateLimitRetryDecision } from '@athenna/ratelimiter'
+
+const limiter = RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'second', limit: 10 })
+  .setTargets(targets)
+  .retryStrategy(({ error, attempt, targets }) => {
+    const decision: RateLimitRetryDecision = { type: 'retry_other' }
+
+    if (attempt >= targets.length) {
+      decision.type = 'fail'
+    }
+
+    return decision
+  })
+```
+
+The available decisions are:
+
+- `fail`: stop retrying and reject the promise with the error.
+- `retry_same`: try again using the same target.
+- `retry_other`: try again using any other target. When you have only one
+target or no targets at all, it behaves exactly like `retry_same`.
+
+The context received by the retry strategy has the following properties:
+
+| Property  | Description                                                    |
+|:----------|:---------------------------------------------------------------|
+| `error`   | The error thrown by your closure.                              |
+| `attempt` | The number of the attempt that has just failed, starting at 1. |
+| `key`     | The cache key of the target that failed.                       |
+| `target`  | The target that failed. Only available when using targets.     |
+| `targets` | All the targets of the limiter. Only available when using targets. |
+| `signal`  | The abort signal, if any. Only available when using targets.   |
+
+:::warning
+
+Every retry goes through the rate limiter again, so **every attempt counts
+against your quota**. Always define when to stop, or a broken API may eat
+your whole monthly quota with retries.
+
+:::
+
+### Cooldowns
+
+When an API answers with `429 Too Many Requests` it is usually a good idea
+to stop using that target for a while. Return `currentTargetCooldownMs` in
+your decision to block the failed target for some milliseconds. The cooldown
+is saved in the store, so all your processes will respect it:
+
+```typescript
+import { Parser } from '@athenna/common'
+
+const limiter = RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'second', limit: 10 })
+  .setTargets(targets)
+  .retryStrategy(({ error, attempt, targets }) => {
+    if (attempt >= targets.length) {
+      return { type: 'fail' }
+    }
+
+    if (error.response?.statusCode === 429) {
+      return {
+        type: 'retry_other',
+        currentTargetCooldownMs: Parser.timeToMs('1m')
+      }
+    }
+
+    return { type: 'retry_other' }
+  })
+```
+
+### Errors that should not be retried
+
+Some errors will fail no matter how many times you try, like a `404 Not Found`
+or invalid input. Return `fail` right away for them, so you don't waste quota:
+
+```typescript
+.retryStrategy(({ error, attempt, targets }) => {
+  if (error.response?.statusCode === 404) {
+    return { type: 'fail' }
+  }
+
+  return { type: attempt >= targets.length ? 'fail' : 'retry_other' }
+})
+```
+
+## Knowing when requests are waiting
+
+Use the `onPending()` method to be notified every time a request needs to
+wait. This is very useful for logging and for understanding why some of your
+requests are taking longer than expected:
+
+```typescript
+import { Log } from '@athenna/logger'
+
+const limiter = RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'second', limit: 10 })
+  .onPending(ctx => {
+    if (ctx.reason !== 'rate_limit') {
+      return
+    }
+
+    Log.warn(`request to ${ctx.key} waiting ${ctx.delay}ms to respect the rate limit`)
+  })
+```
+
+The `reason` property tells you why the request is waiting:
+
+- `rate_limit`: one of the rules has no quota left.
+- `cooldown`: a target was put in cooldown by your retry strategy.
+- `concurrency`: the `maxConcurrent` limit was reached.
+
+Besides `reason`, the context also has the `delay` in milliseconds, the
+`key`, the `targetId` and `attempt` (on cooldowns), the number of `queued`
+and `active` tasks and the `nextWakeUpAt` timestamp.
+
+## Concurrency, jitter and cancellation
+
+By default, the rate limiter runs **one task at a time**. Requests are
+fast to schedule but are executed in sequence. If the API allows parallel
+requests, increase it with the `maxConcurrent()` method:
+
+```typescript
+const limiter = RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'second', limit: 10 })
+  .maxConcurrent(5)
+```
+
+When many processes are waiting for the same window to open, they will all
+fire at the same millisecond. Add a random delay with the `jitterMs()` method
+to spread them a little:
+
+```typescript
+const limiter = RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'second', limit: 10 })
+  .jitterMs(250)
+```
+
+You can also cancel a task that is still waiting in the queue by passing an
+`AbortSignal` to the `schedule()` method. Tasks that have already started
+are not interrupted by the rate limiter, but the signal is forwarded to your
+closure so you can pass it to your HTTP client:
+
+```typescript
+const controller = new AbortController()
+
+const promise = limiter.schedule(
+  ({ signal }) => fetch('https://api.example.com/users/1', { signal }),
+  { signal: controller.signal }
+)
+
+controller.abort() // promise rejects with an AbortError
+```
+
+:::note
+
+The queue and the `maxConcurrent` limit belong to the limiter **instance**.
+Only the counters and cooldowns are shared through the store. If you need
+`maxConcurrent` to be respected by many different parts of your code, share
+the same limiter instance between them.
+
+:::
+
+## Syncing with API headers
+
+The rate limiter counts the requests that go through it, but it can't see
+everything: maybe another application uses the same API key, or the API
+resets your quota on the first day of the month. Most APIs return their real
+state in response headers, like `x-ratelimit-remaining` and
+`x-ratelimit-reset`. You can use them to keep the rate limiter counters
+honest.
+
+Every target exposes methods to read and update its state:
+
+```typescript
+const remaining = await target.getRemaining('month')
+const resetAt = await target.getResetAt('month') // Unix timestamp in ms
+
+await target.syncState('month', {
+  remaining: 1500,
+  secondsUntilReset: 86400
+})
+```
+
+A good place to do this is right after the response arrives, inside the
+`schedule()` closure:
+
+```typescript
+const user = await RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'month', limit: 200_000 })
+  .addTarget({ id: 'main', metadata: { apiKey: 'my-key' } })
+  .schedule(async ({ target }) => {
+    const response = await HttpClient.builder()
+      .header('x-api-key', target.metadata.apiKey)
+      .get('https://api.example.com/users/1')
+
+    const remaining = Number(response.headers['x-ratelimit-remaining'])
+    const resetIn = Number(response.headers['x-ratelimit-reset'])
+
+    if (!isNaN(remaining) && !isNaN(resetIn)) {
+      await target.syncState('month', {
+        remaining,
+        secondsUntilReset: resetIn
+      })
+    }
+
+    return response.body
+  })
+```
+
+:::tip
+
+Syncing writes to the store, so you don't need to do it on every single
+response. A common approach is to compare `getRemaining()` with the header
+value and only call `syncState()` when the difference is relevant.
+
+:::
+
+If you only need to update one of the values, use `updateRemaining()` or
+`updateResetAt()`:
+
+```typescript
+await target.updateRemaining(1500, 'month')
+await target.updateResetAt(86400, 'month')
+```
+
+### Reading the state outside of a request
+
+To check the quota of a target without scheduling anything, like in a
+dashboard or a metrics job, use the `getTarget()` method. It creates the
+target with the same key used by the limiter without adding it to the
+limiter:
+
+```typescript
+const limiter = RateLimiter.build()
+  .key('example_api')
+  .store('ratelimiter')
+  .addRule({ type: 'month', limit: 200_000 })
+
+const target = limiter.getTarget({ id: 'main' })
+
+console.log(await target.getRemaining('month'))
+```
+
+The limiter itself also exposes some information about its queue:
+
+```typescript
+limiter.getActiveCount() // tasks running right now
+limiter.getQueuedCount() // tasks waiting in the queue
+limiter.getAvailableInMs() // estimated ms until the next task can run
+```
+
+## Testing
+
+Use the `memory` driver for the rate limiter store in your tests. If you
+need to test the behavior of your rules without waiting a whole minute or
+day, override the size of the windows with the second argument of `store()`:
+
+```typescript
+const limiter = RateLimiter.build()
+  .key('example_api')
+  .store('memory', { windowMs: { minute: 100 } })
+  .addRule({ type: 'minute', limit: 1 })
+```
+
+Now the `minute` rule resets every 100 milliseconds. To start every test
+with clean counters, call `truncate()`. It drops the tasks in the queue and
+clears the store:
+
+```typescript
+import { Test, AfterEach, type Context } from '@athenna/test'
+
+export default class ExampleApiServiceTest {
+  @AfterEach()
+  public async afterEach() {
+    await RateLimiter.build().key('example_api').store('memory').truncate()
+  }
+
+  @Test()
+  public async shouldRespectTheRateLimit({ assert }: Context) {
+    // ...
+  }
+}
+```
+
+## Available methods
+
+| Method                            | Description                                                         |
+|:----------------------------------|:--------------------------------------------------------------------|
+| `key(name)`                       | Name used to save the counters in the store. Required.              |
+| `store(name, options?)`           | Cache store that saves the counters. Required.                      |
+| `addRule(rule)`                   | Add a `{ type, limit }` rule.                                       |
+| `setRules(rules)`                 | Add many rules at once.                                             |
+| `addTarget(target)`               | Add a `{ id?, metadata?, rules? }` target.                          |
+| `setTargets(targets)`             | Add many targets at once.                                           |
+| `targetSelectionStrategy(type)`   | `first_available` (default) or `round_robin`.                       |
+| `retryStrategy(closure)`          | Decide if failed tasks should `fail`, `retry_same` or `retry_other`. |
+| `onPending(closure)`              | Called every time a task needs to wait.                             |
+| `maxConcurrent(number)`           | Max tasks running at the same time. Default `1`.                    |
+| `jitterMs(number)`                | Random delay added when waiting. Default `0`.                       |
+| `schedule(closure, { signal }?)`  | Run the closure respecting all the rules.                           |
+| `getTarget(target)`               | Create a target instance without adding it to the limiter.          |
+| `getActiveCount()`                | Number of tasks running.                                            |
+| `getQueuedCount()`                | Number of tasks waiting.                                            |
+| `getAvailableInMs()`              | Estimated time until the next task can run.                         |
+| `truncate()`                      | Drop the queue and clear the whole store.                           |

@@ -12,4 +12,82 @@ Understand the purpose of the CRON context object.
 
 ## Introduction
 
-Coming Soon...
+Athenna provides an object inside all CRON handlers called
+`ctx`. This property is implemented by the `Context`
+interface imported from `@athenna/cron` package. It
+contains information about the scheduler that is being
+executed at the moment.
+
+## The context object
+
+The `ctx` object is the first argument of the `handler`
+method of your scheduler classes:
+
+```typescript
+import { Scheduler, type Context } from '@athenna/cron'
+
+@Scheduler({ pattern: '0 0 * * *' })
+export class DeleteRecentUsers {
+  public async handler(ctx: Context) {
+    console.log(ctx.name) // DeleteRecentUsers
+    console.log(ctx.pattern) // 0 0 * * *
+  }
+}
+```
+
+It's also the first argument of the closures defined in
+your <Path father="routes" child="cron.ts" /> file:
+
+```typescript title="Path.routes('cron.ts')"
+import { Cron } from '@athenna/cron'
+
+Cron.schedule()
+  .name('delete_recent_users')
+  .pattern('0 0 * * *')
+  .handler(({ name, pattern }) => {
+    console.log(name) // delete_recent_users
+    console.log(pattern) // 0 0 * * *
+  })
+```
+
+A new context object is created for each execution of
+your scheduler. These are all the properties available
+inside it:
+
+| Property                  | Type      | Description                                                              |
+|:--------------------------|:----------|:-------------------------------------------------------------------------|
+| `name`                    | `string`  | The name of the scheduler.                                               |
+| `traceId`                 | `string`  | The trace ID of the current execution. `null` when tracing is disabled.  |
+| `pattern`                 | `string`  | The CRON pattern of the scheduler.                                       |
+| `timezone`                | `string`  | The timezone the CRON pattern respects.                                  |
+| `runOnInit`               | `boolean` | If the scheduler runs when the application boots.                        |
+| `recoverMissedExecutions` | `boolean` | If the scheduler recovers the executions missed.                         |
+
+### The `traceId` property
+
+The `traceId` property identifies a single execution of your
+scheduler. It will only be set when the OpenTelemetry context
+is enabled for your CRON application, otherwise its value will
+be `null`. Check the [tracing executions documentation](/docs/cron-application/observability#tracing-executions)
+to see how to enable it.
+
+```typescript
+import { Log } from '@athenna/logger'
+import { Scheduler, type Context } from '@athenna/cron'
+
+@Scheduler({ pattern: '0 0 * * *' })
+export class DeleteRecentUsers {
+  public async handler({ traceId }: Context) {
+    Log.info(`Deleting recent users in execution ${traceId}`)
+  }
+}
+```
+
+:::tip
+
+The context object is the same object logged by the CRON
+execution logger when `cron.logger.enabled` is `true`. Check
+the [tracing executions documentation](/docs/cron-application/tracing-executions#logging-executions)
+for more details.
+
+:::

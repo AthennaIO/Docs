@@ -1,0 +1,370 @@
+---
+title: Context
+sidebar_position: 5
+description: See how to share values across an entire request, CRON execution or queue job.
+---
+
+import Path from '@site/src/components/path'
+
+# Context
+
+See how to share values across an entire request, CRON execution or queue job.
+
+## Introduction
+
+Let's say that your middleware discovers which tenant is making the
+request, and you want this information to be available in your
+services, in your repositories and in every log, without having to
+pass a `tenantId` argument through every single method of your
+application.
+
+OpenTelemetry solves this problem with the **context**: an object that
+is automatically carried through all the async code of an operation.
+It's the same mechanism that OpenTelemetry uses to know which span is
+the active one. `@athenna/otel` builds on top of it and gives you a
+simple API to read and write your own values in it.
+
+## Enabling the context
+
+Athenna can create a new context automatically for each one of your
+HTTP requests, CRON executions, queue jobs and event listeners. Enable
+it by setting `otel.contextEnabled` to `true` in the configuration file
+of each kind of application you are running:
+
+```typescript title="Path.config('http.ts')"
+export default {
+  otel: {
+    contextEnabled: true,
+    contextBindings: []
+  }
+}
+```
+
+| Configuration file                         | Creates a context for each... |
+|:-------------------------------------------|:------------------------------|
+| <Path father="config" child="http.ts" />   | HTTP request                  |
+| <Path father="config" child="cron.ts" />   | CRON execution                |
+| <Path father="config" child="worker.ts" /> | Queue job                     |
+| <Path father="config" child="event.ts" />  | Event listener                |
+
+The context is created **once** per operation and shared by every
+step of it. In an HTTP request, for example, the same context is used
+by your middlewares, interceptors, route handler, terminators and
+error handler.
+
+## Reading and writing values
+
+Use the `Otel.setCurrentContextValue()` method to write a value in the
+context of the current operation, and `Otel.getCurrentContextValue()`
+to read it back from anywhere:
+
+```typescript title="Path.middlewares('TenantMiddleware.ts')"
+import { Otel } from '@athenna/otel'
+import { Middleware, type Context } from '@athenna/http'
+
+@Middleware({ name: 'tenant' })
+export class TenantMiddleware {
+  public async handle({ request }: Context) {
+    if (!Otel.isEnabled()) {
+      return
+    }
+
+    Otel.setCurrentContextValue('tenantId', request.header('x-tenant-id'))
+  }
+}
+```
+
+```typescript title="Path.services('OrderService.ts')"
+import { Otel } from '@athenna/otel'
+import { Service } from '@athenna/ioc'
+
+@Service()
+export class OrderService {
+  public async findAll() {
+    const tenantId = Otel.getCurrentContextValue('tenantId')
+
+    return Order.findMany({ tenantId })
+  }
+}
+```
+
+Values are isolated per operation: two requests running at the same
+time will never see the values of each other.
+
+The following methods are available:
+
+| Method                                       | Description                                                  |
+|:---------------------------------------------|:-------------------------------------------------------------|
+| `Otel.getCurrentContextValue(key)`           | Get a value from the current context.                        |
+| `Otel.setCurrentContextValue(key, value)`    | Set a value in the current context.                          |
+| `Otel.setCurrentContextValues(values)`       | Set multiple values at once using an object.                 |
+| `Otel.deleteCurrentContextValue(key)`        | Delete a value from the current context.                     |
+
+The `traceId` and `spanId` keys are special: they always return the
+IDs of the active span, so you can read them in the same way you read
+your own values:
+
+```typescript
+import { Otel } from '@athenna/otel'
+
+Otel.getCurrentContextValue('traceId') // 4bf92f3577b34da6a3ce929d0e0e4736
+```
+
+## Context bindings
+
+Writing values with a middleware works, but most of the time the value
+you need can be resolved directly from the request, the scheduler or
+the job. For these cases you can declare **context bindings** in your
+configuration file, and Athenna will resolve them for you as soon as
+the context is created.
+
+Each binding has a `key` and a `resolve()` function. The `resolve()`
+function receives the context of the operation: the HTTP `Context`
+for requests, the CRON `Context` for schedulers, the queue `Context`
+for jobs and the event `Context` for listeners:
+
+```typescript title="Path.config('http.ts')"
+export default {
+  otel: {
+    contextEnabled: true,
+    contextBindings: [
+      {
+        key: 'tenantId',
+        resolve: ctx => ctx.request.header('x-tenant-id')
+      },
+      {
+        key: 'userAgent',
+        resolve: ctx => ctx.request.header('user-agent')
+      }
+    ]
+  }
+}
+```
+
+```typescript title="Path.config('cron.ts')"
+export default {
+  otel: {
+    contextEnabled: true,
+    contextBindings: [
+      {
+        key: 'schedulerName',
+        resolve: ctx => ctx.name
+      }
+    ]
+  }
+}
+```
+
+The resolved values can be read with `Otel.getCurrentContextValue()`
+exactly like the ones you set yourself.
+
+By default, a binding is ignored when its `resolve()` function returns
+`undefined`. Set the `includeIfUndefined` option to `true` to always
+register it:
+
+```typescript title="Path.config('http.ts')"
+export default {
+  otel: {
+    contextEnabled: true,
+    contextBindings: [
+      {
+        key: 'tenantId',
+        includeIfUndefined: true,
+        resolve: ctx => ctx.request.header('x-tenant-id')
+      }
+    ]
+  }
+}
+```
+
+### Bindings + logs = ❤️
+
+Context bindings shine when you combine them with the
+[log context bindings](/docs/observability/logs#adding-context-to-logs).
+With the configuration below, every log written during a request will
+have the `tenantId` field, no matter where the log was written:
+
+```typescript title="Path.config('http.ts')"
+export default {
+  otel: {
+    contextEnabled: true,
+    contextBindings: [
+      { key: 'tenantId', resolve: ctx => ctx.request.header('x-tenant-id') }
+    ]
+  }
+}
+```
+
+```typescript title="Path.config('logging.ts')"
+import { Otel } from '@athenna/otel'
+
+export default {
+  channels: {
+    simple: {
+      driver: 'console',
+      formatter: 'json',
+      formatterConfig: {
+        contextBindings: [
+          {
+            field: 'tenantId',
+            resolve: ctx => Otel.getContextValue('tenantId', ctx)
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+:::info
+
+Notice that the shape of the bindings is different. Log bindings use
+`field` and receive the OpenTelemetry context, while HTTP, CRON, queue
+and event bindings use `key` and receive the context of the operation.
+
+:::
+
+## Creating a context manually
+
+If you are running some code outside of an HTTP request, CRON
+execution, queue job or event listener, like inside a CLI command, you
+can create a context yourself using the `Otel.withContext()` method:
+
+```typescript title="Path.commands('ImportOrdersCommand.ts')"
+import { Otel } from '@athenna/otel'
+import { BaseCommand } from '@athenna/artisan'
+
+export class ImportOrdersCommand extends BaseCommand {
+  public static signature() {
+    return 'import:orders'
+  }
+
+  public async handle() {
+    await Otel.withContext(async () => {
+      Otel.setCurrentContextValue('tenantId', 'tenant-1')
+
+      await this.importOrders()
+    })
+  }
+}
+```
+
+`Otel.withContext()` also accepts bindings, just like the configuration
+files:
+
+```typescript
+import { Otel } from '@athenna/otel'
+
+await Otel.withContext(() => this.importOrders(), {
+  bindings: [{ key: 'tenantId', resolve: () => 'tenant-1' }]
+})
+```
+
+If you only need to create the context without running a callback, use
+the `Otel.createContext()` method. It accepts the same options and
+returns the new context.
+
+## Low level context values
+
+The methods we have seen so far store your values in a mutable store
+that lives inside the context. OpenTelemetry also has its own way of
+storing values, where the context is **immutable**: every time you set
+a value, you get a new context back, and the value is only visible to
+the code running inside that new context.
+
+You will rarely need it, but `@athenna/otel` exposes this API as well:
+
+```typescript
+import { Otel } from '@athenna/otel'
+
+const tenantKey = Otel.createContextKey('tenant.id')
+
+await Otel.withContextValue(tenantKey, 'tenant-1', async () => {
+  Otel.getContextValue(tenantKey) // tenant-1
+})
+
+Otel.getContextValue(tenantKey) // undefined
+```
+
+| Method                                         | Description                                                             |
+|:-----------------------------------------------|:------------------------------------------------------------------------|
+| `Otel.createContextKey(name)`                  | Create a unique key to be used in the context.                          |
+| `Otel.getContextValue(key, ctx?)`              | Get a value from the given context or from the active one.              |
+| `Otel.setContextValue(key, value, ctx?)`       | Return a **new** context with the value set.                            |
+| `Otel.withContextValue(key, value, callback)`  | Run the callback inside a new context with the value set.               |
+
+Values resolved by context bindings are stored in both places, which is
+why you can read them with `Otel.getContextValue()` inside your log
+bindings. Values written with `Otel.setCurrentContextValue()`, on the
+other hand, only live in the mutable store.
+
+## Carrying values across async boundaries
+
+The context only lives inside your process. If you send work to
+somewhere else, like a message broker, you need to carry the context
+with it. Athenna does this automatically for queue jobs, but you can
+do it yourself for anything else using the following methods:
+
+```typescript
+import { Otel } from '@athenna/otel'
+
+/**
+ * Producer side: capture the trace context and the context values.
+ */
+const message = {
+  payload,
+  headers: Otel.injectContext({}),
+  values: Otel.captureCurrentContextValues()
+}
+
+/**
+ * Consumer side: restore them and continue the same trace.
+ */
+await Otel.withExtractedContext(message.headers, async () => {
+  await handle(message.payload)
+}, {
+  ctx: Otel.restoreCurrentContextValues(message.values)
+})
+```
+
+Check the [distributed tracing](/docs/observability/distributed-tracing)
+documentation to understand more about `injectContext()` and
+`extractContext()`.
+
+## Common errors
+
+### Values set outside of a context are lost
+
+If you call `Otel.setCurrentContextValue()` outside of an operation that
+has a context (for example, when `otel.contextEnabled` is `false` in your
+<Path father="config" child="http.ts" /> file), the value will be written
+in a temporary store and lost right after. To be warned when this
+happens, enable the `contextNotInitializedWarning` option:
+
+```typescript title="Path.config('otel.ts')"
+export default {
+  contextNotInitializedWarning: true
+}
+```
+
+A warning with the `E_CONTEXT_NOT_INITIALIZED` code will be written
+to your terminal every time a value is read or written outside of a
+context.
+
+### OpenTelemetry is disabled
+
+When `enabled` is set to `false` in your
+<Path father="config" child="otel.ts" /> file, the methods
+`Otel.getCurrentContextValue()`, `Otel.setCurrentContextValue()`,
+`Otel.setCurrentContextValues()` and `Otel.deleteCurrentContextValue()`
+will throw an exception with the `E_DISABLED_OTEL` code (except when
+reading the `traceId` and `spanId` keys). If your code
+may run with OpenTelemetry disabled, check it first:
+
+```typescript
+import { Otel } from '@athenna/otel'
+
+if (Otel.isEnabled()) {
+  Otel.setCurrentContextValue('tenantId', tenantId)
+}
+```

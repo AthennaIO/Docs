@@ -1,6 +1,6 @@
 ---
 title: Error Handling
-sidebar_position: 2
+sidebar_position: 3
 description: Understand how you can handle the errors of the CRON Application.
 ---
 
@@ -12,4 +12,202 @@ Understand how you can handle the errors of the CRON Application.
 
 ## Introduction
 
-Coming Soon...
+When you start a new Athenna project, error and exception
+handling is already configured for you. But you can configure
+your own extending the Athenna error handler. We'll dive deeper 
+into how to do that throughout this documentation.
+
+This documentation will cover about error handling in the **CRON**
+application, which means that only errors that happens inside 
+schedulers handlers and bellow that will be handled:
+
+```typescript title="Path.routes('cron.ts')"
+import { Cron } from '@athenna/cron'
+
+Cron.schedule()
+  .name('delete_recent_users')
+  .pattern('0 0 * * *')
+  .handler(() => {
+    throw new Error('CronExceptionHandler will handle this.') 👈
+  })
+
+throw new Error('This error will be handled by @athenna/core.') 👈
+```
+
+The same applies to your scheduler classes:
+
+```typescript
+import { Scheduler, type Context } from '@athenna/cron'
+
+@Scheduler({ pattern: '0 0 * * *' })
+export class DeleteRecentUsers {
+  public async handler(ctx: Context) {
+    throw new Error('CronExceptionHandler will handle this.') 👈
+  }
+}
+```
+
+:::info
+
+Errors handled by `@athenna/core` usually means that a 
+bootstrap failure has been found in your application.
+
+:::
+
+An error thrown inside a scheduler will never stop your CRON
+application. The exception handler will handle it and your
+scheduler will keep running in its next executions.
+
+## Configuration
+
+The `debug` option in your <Path father="config" child="app.ts" /> configuration
+file determines how much information about an error is
+actually displayed. By default, this option is
+set to respect the value of the `APP_DEBUG` environment
+variable, which is stored in your `.env` file.
+
+During local development, you should set the `APP_DEBUG`
+environment variable to `true`. In your production
+environment, this value should always be `false`. If the
+value is set to `true` in production, you risk exposing
+sensitive configuration values in your logs.
+
+Every error will be logged by default using the `console`
+driver from `@athenna/logger`. By default, Athenna uses the
+`exception` channel of your <Path father="config" child="logging.ts" /> file to log
+all exceptions that happens in your application.
+
+:::tip
+
+You can change the driver and formatter of `exception`
+channel inside <Path father="config" child="logging.ts" /> file. This way you can
+send all your error logs to another provider and with
+a different formatter.
+
+:::
+
+### Prettifying exceptions
+
+By default the exceptions are logged as they are. If you want
+to log a prettier version of your exceptions, with colors and
+the help message of the exception, set the `logger.prettifyException`
+option of your <Path father="config" child="cron.ts" /> configuration 
+file to `true`:
+
+```typescript title="Path.config('cron.ts')"
+export default {
+  logger: {
+    prettifyException: true
+  }
+}
+```
+
+### Ignore exceptions by status and code
+
+You can ignore an exception from being logged if its status
+code or the code does not match your requirements. To do so
+you can add the following configurations to the `logger`
+property in your <Path father="config" child="cron.ts" /> configuration file:
+
+```typescript title="Path.config('cron.ts')"
+export default {
+  logger: {
+    ignoreStatuses: [404],
+    ignoreCodes: ['E_NOT_FOUND_ERROR']
+  }
+}
+```
+
+From now on, all the exceptions thrown in your CRON
+application will not be logged if its status is equal
+to `404` or the code is `E_NOT_FOUND_ERROR`.
+
+:::note
+
+Before checking the `ignoreCodes` option, the exception handler
+converts the code of your exception to upper snake case. This
+means that an error with the code `notFoundError` will be
+compared as `NOT_FOUND_ERROR`.
+
+:::
+
+## Custom exceptions
+
+You can create custom exception by executing the following
+Artisan command:
+
+```bash
+node artisan make:exception NotFoundResourceException
+```
+
+Next, import and raise the exception as follows.
+
+```typescript
+import { NotFoundResourceException } from '#src/exceptions/NotFoundResourceException'
+
+throw new NotFoundResourceException('Your resource has not been found.')
+```
+
+:::tip
+
+Always try to use a custom exception to throw your errors
+inside Athenna. If you use `Error`, `TypeError` and other
+classes, it will not be treated by the handlers and will
+always be considered as a not treated exception.
+
+:::
+
+## Implementing your own exception handler
+
+Let's suppose you want to write a custom logic for handling
+your exceptions. You can do so by creating your own
+exception handler extending `CronExceptionHandler`:
+
+```typescript title="src/cron/exceptions/Handler.ts"
+import { CronExceptionHandler } from '@athenna/cron'
+import type { ExceptionHandlerContext } from '@athenna/common'
+
+export class Handler extends CronExceptionHandler {
+  public async handle(ctx: ExceptionHandlerContext) {
+    // Implement your own logic
+
+    await super.handle(ctx)
+  }
+}
+```
+
+Now you need to register your exception handler when 
+bootstrapping your application:
+
+```typescript title="Path.bin('main.ts')"
+await ignite.cron({
+  exceptionHandlerPath: '#src/cron/exceptions/Handler' 👈
+})
+```
+
+### Setting the exception handler in runtime
+
+You can also set the exception handler of all your schedulers
+in runtime using the `Cron.setErrorHandler()` method. The value
+must be an object with a `handle()` method that receives an 
+object with the `error` property:
+
+```typescript
+import { Cron } from '@athenna/cron'
+
+Cron.setErrorHandler({
+  handle: async ({ error }) => {
+    console.error(error)
+  }
+})
+```
+
+:::warning
+
+Schedulers registered while no exception handler was set will
+not have their errors handled, even if you set one later. When
+using the CRON application this is never a problem, because the
+`CronKernel` registers the exception handler before registering
+your schedulers.
+
+:::

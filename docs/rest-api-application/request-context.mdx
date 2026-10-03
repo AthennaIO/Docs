@@ -17,8 +17,8 @@ interface imported from `@athenna/http` package.
 ## The context object
 
 In Athenna as you can see in the previous documentation page
-of [`Middlewares`](/docs/the-basics/http/middlewares) and
-[`Controllers`](/docs/the-basics/http/controllers) we are
+of [`Middlewares`](/docs/rest-api-application/middlewares) and
+[`Controllers`](/docs/rest-api-application/controllers) we are
 always destructuring the `ctx` property and using like this:
 
 ```typescript
@@ -85,42 +85,72 @@ Route.get('/welcome', ({ request }) => {
 })
 ```
 
-#### The `hostUrl` getter
+#### The `hostname`, `port`, `protocol` and `version` getters
 
-Get the host url of the request concatenating the host:port 
-of your application and the [`originalUrl`](/docs/the-basics/http/context#the-originalUrl-getter)
-of the request:
+Get the hostname used in the request, the port where your server
+is listening, the protocol (`http` or `https`) and the HTTP 
+version of the request:
 
 ```typescript
 Route.get('/welcome', ({ request }) => {
-    console.log(request.hostUrl) // http://localhost:1335/welcome
+    console.log(request.hostname) // localhost
+    console.log(request.port) // 1335
+    console.log(request.protocol) // http
+    console.log(request.version) // 1.1
 
     /*....*/
 })
 ```
 
-#### The `baseUrl` getter
+#### The `baseUrl`, `originalUrl` and `routeUrl` getters
 
-Get the url of the route without the query params:
+Athenna gives you three different ways to get the url of the 
+request. Let's imagine a request to `/users/1?include=profile`
+being handled by the `/users/:id` route:
 
 ```typescript
-Route.get('/welcome', ({ request }) => {
-    console.log(request.baseUrl) // /welcome
+Route.get('/users/:id', ({ request }) => {
+    console.log(request.baseUrl) // /users/1
+    console.log(request.originalUrl) // /users/1?include=profile
+    console.log(request.routeUrl) // /users/:id
 
     /*....*/
 })
 ```
 
-#### The `originalUrl` getter
+- `baseUrl` is the url of the request without the query params.
+- `originalUrl` is the url exactly as it was requested, with the query params.
+- `routeUrl` is the url of the route that is handling the request, with 
+the params placeholders. It's very useful for metrics and logs, where you
+want to group all the requests of the same route.
 
-Get the original url with the query params:
+#### The `baseHostUrl`, `originalHostUrl` and `routeHostUrl` getters {#the-basehosturl-originalhosturl-and-routehosturl-getters}
+
+The same as the getters above, but concatenating the protocol,
+host and port of your application:
 
 ```typescript
-Route.get('/welcome', ({ request }) => {
-    console.log(request.originalUrl) // /welcome?hello=world
+Route.get('/users/:id', ({ request }) => {
+    console.log(request.baseHostUrl) // http://localhost:1335/users/1
+    console.log(request.originalHostUrl) // http://localhost:1335/users/1?include=profile
+    console.log(request.routeHostUrl) // http://localhost:1335/users/:id
 
     /*....*/
 })
+```
+
+#### The `routeName` getter
+
+Get the name of the route that is handling the request. The
+name is defined using the [`name()`](/docs/rest-api-application/routing#named-routes)
+method of your route:
+
+```typescript
+Route.get('/users/:id', ({ request }) => {
+    console.log(request.routeName) // users.show
+
+    /*....*/
+}).name('users.show')
 ```
 
 #### The `body`, `params`, `queries` and `headers` getters
@@ -215,6 +245,158 @@ Route.post('/welcome/:id', ({ request }) => {
     /*....*/
 })
 ```
+
+#### The `filters()` method
+
+It's very common for list routes to receive pagination, search,
+filters and ordering in the query string. Instead of parsing all
+of these values by hand, you can use the `filters()` method:
+
+```typescript
+// GET /users?page=1&limit=20&search=lenon&where=status:=:active&orderby=-createdAt
+Route.get('/users', ({ request }) => {
+    const filters = request.filters()
+
+    console.log(filters)
+    /*
+    {
+      page: 1,
+      limit: 20,
+      search: 'lenon',
+      select: [],
+      includes: [],
+      where: [{ field: 'status', op: '=', value: 'active' }],
+      orderBy: [{ field: 'createdAt', direction: 'DESC' }]
+    }
+    */
+})
+```
+
+The object returned is ready to be used with the `filter()`, 
+`search()` and `paginate()` methods of the
+[ORM query builder](/docs/orm/query-builder):
+
+```typescript
+Route.get('/users', async ({ request, response }) => {
+    const filters = request.filters()
+
+    const users = await User.query()
+      .search(['name', 'email'], filters.search)
+      .filter(filters)
+      .paginate({ page: filters.page, limit: filters.limit })
+
+    return response.send(users)
+})
+```
+
+These are the query string parameters that are parsed:
+
+| Parameter  | Example                                   | Description                                                  |
+|:-----------|:------------------------------------------|:-------------------------------------------------------------|
+| `page`     | `page=1`                                  | The page to get. Defaults to `0`.                            |
+| `limit`    | `limit=20`                                | The amount of items per page. Defaults to `10`.              |
+| `search`   | `search=lenon`                            | A term to search for.                                        |
+| `select`   | `select=id,name`                          | Comma separated list of columns to select.                   |
+| `includes` | `includes=profile,posts`                  | Comma separated list of relations to load.                   |
+| `where`    | `where=status:=:active,age:>=:18`         | Comma separated list of `field:op:value` filters.            |
+| `orderby`  | `orderby=-createdAt,name`                 | Comma separated list of fields. Use `-` to order with `DESC`. |
+
+The `op` of a `where` filter can be `=`, `!=`, `>`, `>=`, `<`,
+`<=`, `in`, `not_in`, `contains`, `not_contains`, `between` and
+`not_between`. The value is automatically converted to `null`, 
+number or boolean when possible. You can also send arrays using
+JSON or `__` as separator, and quote a value to keep commas
+inside it:
+
+```bash
+# Arrays
+/users?where=id:in:[1,2,3]
+/users?where=age:between:18__30
+
+# Quoted values
+/users?where=name:=:"Lenon, João"
+
+# Relationship columns and JSON keys
+/users?where=profile.bio:contains:node,metadata->mode:=:dark
+```
+
+##### Restricting what the client can send
+
+By default, `filters()` accepts any field, relation and column
+sent by the client. **This is not safe for most applications**, 
+since your users could filter or select columns like `password`.
+To avoid that, define what is allowed in your route:
+
+```typescript
+Route.get('/users', ({ request }) => {
+    const filters = request.filters({
+      select: ['id', 'name', 'email'],
+      includes: ['profile'],
+      where: ['status', 'createdAt', 'profile.bio'],
+      orderBy: ['createdAt', 'name'],
+      maxLimit: 50
+    })
+
+    /*....*/
+})
+```
+
+When the client sends something that is not allowed, an
+`InvalidFilterException` is thrown and a `422` response is sent:
+
+```json
+{
+  "statusCode": 422,
+  "code": "E_INVALID_FILTER",
+  "name": "InvalidFilterException",
+  "message": "The value \"password\" is not allowed in the \"where\" query parameter.",
+  "help": "Remove \"password\" from the \"where\" query parameter or ask for it to be allowed in this route."
+}
+```
+
+If you prefer to silently ignore the values that are not allowed,
+set the `onDenied` option to `ignore`:
+
+```typescript
+const filters = request.filters({
+  where: ['status'],
+  onDenied: 'ignore'
+})
+```
+
+These are all the options available:
+
+| Option     | Default                  | Description                                                                 |
+|:-----------|:-------------------------|:----------------------------------------------------------------------------|
+| `select`   | `undefined`              | The columns allowed in `select`. Any column is allowed when not set.        |
+| `includes` | `undefined`              | The relations allowed in `includes`. Any relation is allowed when not set.  |
+| `where`    | `undefined`              | The fields allowed in `where`, exactly as sent (`profile.bio`, `metadata->mode`). Any field is allowed when not set. |
+| `orderBy`  | `undefined`              | The fields allowed in `orderby`. Any field is allowed when not set.         |
+| `search`   | `true`                   | Set as `false` to always return an empty `search` term.                     |
+| `maxLimit` | `undefined`              | The maximum value of `limit`. Bigger values are reduced to it.              |
+| `defaults` | `{ page: 0, limit: 10 }` | The values used when the client doesn't send a parameter.                   |
+| `onDenied` | `'throw'`                | `throw` an `InvalidFilterException` or `ignore` the value not allowed.      |
+
+The `defaults` option is useful to define a default ordering
+for your list:
+
+```typescript
+const filters = request.filters({
+  orderBy: ['createdAt', 'name'],
+  defaults: {
+    limit: 20,
+    orderBy: [{ field: 'createdAt', direction: 'DESC' }]
+  }
+})
+```
+
+#### The `file()`, `files()`, `parts()` and `formData()` methods {#the-file-files-parts-and-formdata-methods}
+
+Retrieve the files sent in `multipart/form-data` requests. These
+methods and also the `isMultipart()`, `saveRequestFiles()` and 
+`cleanRequestFiles()` methods are documented in the
+[file uploads](/docs/rest-api-application/file-uploads) 
+documentation page.
 
 #### The `getFastifyRequest()` method
 
@@ -315,18 +497,22 @@ is enabled in your application:
 response.status(200).download('img.png', 'custom-img.png')
 ```
 
-#### The `header()`, `safeHeader()` and `removeHeader()` methods
+#### The `header()`, `safeHeader()`, `hasHeader()` and `removeHeader()` methods {#the-header-safeheader-hasheader-and-removeheader-methods}
 
 Set custom header for your response, the `header()` method will 
 overwrite the already set headers, the `safeHeader()` will only 
-register the header if the header is not yet registered and 
+register the header if the header is not yet registered, the
+`hasHeader()` will verify if the header is already registered and 
 the `removeHeader()` will remove a header from the response:
 
 ```typescript
 Route.get('/welcome', async ({ response }) => {
     response.header('content-type', 'application/json')
     response.safeHeader('content-type', 'application/json')
-    response.removeHeader('content-type')
+
+    if (response.hasHeader('content-type')) {
+      response.removeHeader('content-type')
+    }
 })
 ```
 
@@ -447,6 +633,14 @@ Route.get('/products', ({ response, data }) => {
     return response.send({ paginationObj: data.pagination })
 }).middleware('PaginationMiddleware')
 ```
+
+:::tip
+
+You can also define static values for the `data` object of a 
+specific route using the [`data()`](/docs/rest-api-application/routing#route-data)
+method of your route.
+
+:::
 
 ## The context object in middlewares
 

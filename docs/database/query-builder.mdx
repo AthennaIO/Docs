@@ -73,6 +73,31 @@ const user = await Database.table('users')
   .find()
 ```
 
+### Retrieve values of a single column
+
+If you only need the value of one column, you don't need to retrieve 
+the whole row and then pick the value. The `pluck()` method returns 
+the value of the given column directly from the first row found:
+
+```typescript
+const email = await Database.table('users')
+  .where({ id: 1 })
+  .pluck('email')
+
+console.log(email) // 'lenon@athenna.io'
+```
+
+When you need the values of many rows, use the `pluckMany()` method. 
+It returns an array with the values of the given column:
+
+```typescript
+const emails = await Database.table('users')
+  .whereNull('deletedAt')
+  .pluckMany('email')
+
+console.log(emails) // ['lenon@athenna.io', 'txsoura@athenna.io']
+```
+
 ### Validate if exists
 
 If you just need to validate if exists any row with determined
@@ -338,6 +363,11 @@ const users = await Database.table('users')
   .where('votes', '<>', 100)
   .findMany()
 
+// `!=` works exactly like `<>`, use the one you prefer
+const users = await Database.table('users')
+  .where('votes', '!=', 100)
+  .findMany()
+
 const users = await Database.table('users')
   .where('name', 'like', 'J%')
   .findMany()
@@ -380,6 +410,53 @@ const products = await Database.table('products')
 ```
 
 ### Additional where clauses 
+
+#### `whereLike() / orWhereLike()`
+
+The `whereLike()` or `orWhereLike()` methods verifies that a column's 
+value matches a given pattern. Use `%` as a wildcard:
+
+```typescript
+const users = await Database.table('users')
+  .whereLike('email', '%@athenna.io')
+  .findMany()
+```
+
+#### `whereILike() / orWhereILike()`
+
+The `whereILike()` or `orWhereILike()` methods work like `whereLike()`, 
+but they ignore the letter case, so `joão` and `JOÃO` are the same:
+
+```typescript
+const users = await Database.table('users')
+  .whereILike('name', '%joão%')
+  .findMany()
+```
+
+If you also want to ignore **accents**, so `joao` finds `João` and 
+vice versa, set the `unaccent` option to `true`:
+
+```typescript
+const users = await Database.table('users')
+  .whereILike('name', '%joao%', { unaccent: true })
+  .findMany()
+```
+
+:::note
+
+The `unaccent` option only works with the `postgres` driver and it 
+requires the `unaccent` extension to be installed in your database. 
+You can install it with a migration:
+
+```typescript
+public async up(db: DatabaseImpl) {
+  await db.raw('CREATE EXTENSION IF NOT EXISTS unaccent')
+}
+```
+
+The `mysql`, `sqlite` and `mongo` drivers simply ignore this option.
+
+:::
 
 #### `whereBetween() / orWhereBetween()`
 
@@ -512,6 +589,193 @@ where exists (
 )
 ```
 
+## JSON where clauses
+
+Many applications store flexible data inside JSON columns, like a 
+`metadata` or `settings` column. Athenna lets you filter by the values 
+inside these columns using the `->` operator to walk through the JSON 
+keys:
+
+```typescript
+const users = await Database.table('users')
+  .where('settings->theme', 'dark')
+  .findMany()
+```
+
+You can go as deep as you need and use any of the operators you 
+already know:
+
+```typescript
+const products = await Database.table('products')
+  .where('metadata->dimensions->weight', '>', 10)
+  .findMany()
+```
+
+The `->` operator also works with `orWhere()`, `whereILike()`, 
+`orWhereILike()` and `orderBy()`. If you prefer to make 
+it explicit that you are filtering a JSON column, you can use the 
+`whereJson()` and `orWhereJson()` methods. They have the same 
+signature of `where()`:
+
+```typescript
+const products = await Database.table('products')
+  .whereJson('metadata->color', 'blue')
+  .orWhereJson('metadata->stock', '<', 5)
+  .findMany()
+```
+
+### Filtering missing JSON keys
+
+To find rows where a JSON key is `null` or doesn't even exist, use 
+the `whereJsonNull()` method. The `whereJsonNotNull()` method does 
+the opposite, matching only rows where the key exists and is not 
+`null`:
+
+```typescript
+const avatarsWithoutTrial = await Database.table('avatars')
+  .whereJsonNull('metadata->trialEndsAt')
+  .findMany()
+
+const avatarsWithTrial = await Database.table('avatars')
+  .whereJsonNotNull('metadata->trialEndsAt')
+  .findMany()
+```
+
+You can also use `orWhereJsonNull()` and `orWhereJsonNotNull()` to 
+join these clauses using the `or` operator.
+
+## Searching
+
+Building a search box is something almost every application needs. 
+Usually, you want to find a term in more than one column, like the 
+name **or** the email of a user. The `search()` method does exactly 
+that for you:
+
+```typescript
+const users = await Database.table('users')
+  .search(['name', 'email'], 'lenon')
+  .findMany()
+```
+
+The query above will produce the following SQL:
+
+```sql
+select * from users where (name ilike '%lenon%' or email ilike '%lenon%')
+```
+
+Notice that all the columns are grouped inside parentheses, so you can 
+safely combine `search()` with any other `where()` clause. JSON 
+columns are also supported:
+
+```typescript
+const users = await Database.table('users')
+  .where('status', 'active')
+  .search(['name', 'metadata->nickname'], 'lenon')
+  .findMany()
+```
+
+If the term is empty (`''`, `null` or `undefined`), the `search()` 
+method does nothing. This means you can pass the value received in 
+your request directly, without any `if`:
+
+```typescript
+const users = await Database.table('users')
+  .search(['name', 'email'], request.query('search'))
+  .paginate()
+```
+
+Just like `whereILike()`, you can also ignore accents by setting the 
+`unaccent` option (`postgres` only):
+
+```typescript
+const users = await Database.table('users')
+  .search(['name'], 'joao', { unaccent: true })
+  .findMany()
+```
+
+:::tip
+
+Using models? The model `search()` method can also search inside the 
+columns of your relations. Check the
+[ORM searching documentation section](/docs/orm/query-builder#searching).
+
+:::
+
+## Full text search
+
+The `search()` method is great for small tables, but `ILIKE '%term%'` 
+needs to look into every row of your table. When you have a lot of 
+data, or you want smarter matching (words in any order, ignoring 
+stop words, etc), use the full text search engine of your database 
+with the `whereFullText()` method:
+
+```typescript
+const posts = await Database.table('posts')
+  .whereFullText(['title', 'body'], 'athenna framework')
+  .findMany()
+```
+
+By default, every word of the term must be present in the columns. If 
+you want your users to be able to use operators like quoted phrases 
+(`"exact phrase"`), `-word` to exclude a word or `OR`, set the `mode` 
+option to `boolean`:
+
+```typescript
+const posts = await Database.table('posts')
+  .whereFullText(['title', 'body'], '"query builder" -mongo', {
+    mode: 'boolean'
+  })
+  .findMany()
+```
+
+You can also set the `language` that should be used to understand the 
+words of your term (default is `simple`):
+
+```typescript
+const posts = await Database.table('posts')
+  .whereFullText('body', 'desenvolvedores', { language: 'portuguese' })
+  .findMany()
+```
+
+You can use `orWhereFullText()` to join the clause using the `or` 
+operator.
+
+:::warning
+
+Full text search works differently in each database, so be sure to 
+read the notes of the driver you are using:
+
+- `postgres`: works without an index, but it will be slow on big 
+tables. To make it fast, create a GIN index using **exactly** the same 
+expression and language used by Athenna:
+
+```typescript
+await db.raw(`
+  CREATE INDEX posts_fulltext ON posts
+  USING GIN (to_tsvector('simple', coalesce("title", '') || ' ' || coalesce("body", '')))
+`)
+```
+
+- `mysql`: requires a `FULLTEXT` index covering **exactly** the same 
+columns you pass to `whereFullText()`. The `language` option is ignored:
+
+```typescript
+await db.alterTable('posts', table => {
+  table.index(['title', 'body'], 'posts_fulltext', 'FULLTEXT')
+})
+```
+
+- `sqlite`: real full text search requires a special FTS5 table, so 
+Athenna falls back to a `LIKE '%term%'` search across your columns. 
+This keeps your code working when using SQLite in your tests and 
+Postgres or MySQL in production. All options are ignored.
+- `mongo`: requires a text index in your collection. Since Mongo only 
+allows one text index per collection, the columns you pass are 
+ignored and the index decides which fields are searched. The 
+`language` option is forwarded as `$language`.
+
+:::
+
 ## Ordering, grouping, limit & skip
 
 ### Ordering 
@@ -537,6 +801,32 @@ as many times as necessary:
 const users = await Database.table('users')
   .orderBy('name', 'desc')
   .orderBy('email', 'asc')
+  .findMany()
+```
+
+When the column may have `null` values, you can choose if they should 
+come first or last in your results using the `nulls` option:
+
+```typescript
+const tasks = await Database.table('tasks')
+  .orderBy('dueDate', 'asc', { nulls: 'last' })
+  .findMany()
+```
+
+:::note
+
+Postgres and SQLite use `NULLS FIRST/LAST` and MySQL emulates the 
+same behavior for you. The `mongo` driver ignores this option and 
+always sorts `null` values first in `ASC` and last in `DESC`.
+
+:::
+
+You can also order by a value inside a JSON column using the `->` 
+operator:
+
+```typescript
+const products = await Database.table('products')
+  .orderBy('metadata->priority', 'desc')
   .findMany()
 ```
 
@@ -597,7 +887,7 @@ const users = await Database.table('users')
 ```
 
 To build more advanced `having()` statements, see the 
-[`havingRaw()`](/docs/database/query-builder#having-raw) method.
+[`havingRaw()`](/docs/database/query-builder#havingraw--orhavingraw) method.
 
 ### Limit & Offset
 
@@ -669,6 +959,14 @@ links:
 const { data, meta, links } = await Database.table('users')
   .whereNull('deletedAt')
   .paginate(0, 10, '/users')
+```
+
+If you prefer, you can also pass these values as an object:
+
+```typescript
+const { data, meta, links } = await Database.table('users')
+  .whereNull('deletedAt')
+  .paginate({ page: 0, limit: 10, resourceUrl: '/users' })
 ```
 
 The `data` param is where all the data retrieved from database will stay:
@@ -758,6 +1056,59 @@ const user = await Database.table('users')
   }, 'email') // <- The uniquely identifier
 ```
 
+### Create or ignore
+
+Sometimes you only want to create a record if it doesn't exist yet, 
+and do nothing otherwise. The `createOrIgnore()` method uses your 
+`where()` clauses to look for an existing record. If one is found, 
+nothing is created and `null` is returned. Otherwise, the new record 
+is created and returned:
+
+```typescript
+const user = await Database.table('users')
+  .where('email', 'txsoura@athenna.io')
+  .createOrIgnore({ name: 'Victor Tesoura', email: 'txsoura@athenna.io' })
+
+if (!user) {
+  // The user already existed, nothing was created.
+}
+```
+
+### Create or first
+
+The `createOrFirst()` method is similar, but it **always** returns a 
+record: the one that already existed, or the one that has just been 
+created:
+
+```typescript
+const user = await Database.table('users')
+  .where('email', 'txsoura@athenna.io')
+  .createOrFirst({ name: 'Victor Tesoura', email: 'txsoura@athenna.io' })
+```
+
+:::tip
+
+What makes these two methods special is that they are **safe against 
+race conditions**. Imagine two requests trying to create the same user 
+at the exact same time: both may check that the user doesn't exist 
+and both may try to insert it. Instead of failing with a unique 
+violation error, these methods let the database solve the conflict 
+(`ON CONFLICT DO NOTHING` / `INSERT IGNORE`). For this protection to 
+work, remember to create a unique constraint or index for the columns 
+used in your `where()` clauses.
+
+:::
+
+:::note
+
+The `mongo` driver doesn't have an `ON CONFLICT` equivalent. If two 
+requests create the same document at the same time, one of them will 
+throw a [`UniqueViolationException`](/docs/database/getting-started#handling-database-errors). 
+You still need a unique index in your collection to prevent the 
+duplicated document.
+
+:::
+
 ## Update statements 
 
 In addition to inserting records into the database, the query builder 
@@ -774,6 +1125,15 @@ const user = await Database.table('users')
   .update({ deletedAt: null })
 ```
 
+Need to compute the new value in the database itself? You can pass a 
+`Database.raw()` expression as the value of any column:
+
+```typescript
+await Database.table('users')
+  .where('id', 1)
+  .update({ lastLoginAt: Database.raw('CURRENT_TIMESTAMP') })
+```
+
 ### Incrementing & decrementing
 
 The query builder also provides convenient methods for incrementing 
@@ -787,6 +1147,82 @@ await Database.table('users').where('id', 1).increment('votes')
 await Database.table('users').decrement('votes')
 await Database.table('users').where('id', 1).decrement('votes')
 ```
+
+### Updating JSON columns
+
+Updating a single key of a JSON column usually means: read the row, 
+change the object in your code and save it back. Besides being 
+verbose, if two requests do this at the same time, one of them will 
+lose its changes. Athenna provides helpers that do these updates 
+directly in the database, in a single statement.
+
+#### Merging objects
+
+The `mergeJson()` method merges an object into a JSON column. The keys 
+you pass replace the existing ones and everything else in the column 
+is kept untouched:
+
+```typescript
+// metadata before: { crawlStarted: true, pages: 10 }
+await Database.table('integrations')
+  .where('id', id)
+  .mergeJson('metadata', { crawlFinished: true })
+// metadata after: { crawlStarted: true, pages: 10, crawlFinished: true }
+```
+
+:::note
+
+The merge is shallow, which means only the first level keys are 
+merged. If the column is `null`, it will be treated as an empty 
+object (`{}`).
+
+:::
+
+#### Incrementing & decrementing numbers
+
+The `incrementJson()` and `decrementJson()` methods work like 
+`increment()` and `decrement()`, but for a number inside a JSON 
+column. Use the `->` operator to point to the key you want to change 
+and, optionally, the amount as the second argument:
+
+```typescript
+await Database.table('integrations')
+  .where('id', id)
+  .incrementJson('metadata->stats->indexedPages')
+
+await Database.table('integrations')
+  .where('id', id)
+  .decrementJson('metadata->credits', 5)
+```
+
+If the key doesn't exist or the column is `null`, the value starts 
+from `0`. Missing parent keys are created for you.
+
+#### Combining with other columns
+
+The methods above update only the JSON column. If you need to update 
+other columns in the same statement, use the `Database.jsonMerge()` 
+and `Database.jsonIncrement()` helpers inside a regular `update()`:
+
+```typescript
+await Database.table('integrations')
+  .where('id', id)
+  .update({
+    status: 'done',
+    metadata: Database.jsonMerge({ crawlFinished: true })
+  })
+
+await Database.table('integrations')
+  .where('id', id)
+  .update({
+    status: 'indexing',
+    metadata: Database.jsonIncrement('stats->indexedPages', 10)
+  })
+```
+
+Notice that the path given to `jsonIncrement()` is relative to the 
+column, so we use `stats->indexedPages` instead of 
+`metadata->stats->indexedPages`.
 
 ## Delete statements
 
@@ -808,6 +1244,86 @@ const tableName = 'users'
 
 await Database.truncate(tableName)
 ```
+
+## Pessimistic locking
+
+Pessimistic locking lets you lock the rows selected by your query, so 
+no other transaction can change them until yours is finished. This is 
+useful when you need to read a value and update it based on what you 
+have read, like a wallet balance.
+
+The `forUpdate()` method locks the rows for update. Any other 
+transaction trying to lock or change the same rows will wait until 
+your transaction is committed or rolled back:
+
+```typescript
+const trx = await Database.startTransaction()
+
+try {
+  const wallet = await trx.table('wallets')
+    .where('userId', userId)
+    .forUpdate()
+    .find()
+
+  await trx.table('wallets')
+    .where('userId', userId)
+    .update({ balance: wallet.balance - amount })
+
+  await trx.commitTransaction()
+} catch (error) {
+  await trx.rollbackTransaction()
+
+  throw error
+}
+```
+
+The `forShare()` method creates a shared lock instead. Other 
+transactions can still read the rows, but they can't change them 
+until your transaction finishes:
+
+```typescript
+const product = await trx.table('products')
+  .where('id', productId)
+  .forShare()
+  .find()
+```
+
+### Not waiting for locked rows
+
+By default, your query waits if the rows are already locked by another 
+transaction. You can change this behavior by combining `forUpdate()` 
+or `forShare()` with one of the following methods:
+
+- `skipLocked()`: ignore the rows that are already locked and return 
+only the free ones. Very useful to build job queues where many workers 
+pick tasks from the same table.
+- `noWait()`: fail immediately if any of the rows is already locked.
+
+```typescript
+const jobs = await trx.table('jobs')
+  .where('status', 'pending')
+  .limit(10)
+  .forUpdate()
+  .skipLocked()
+  .findMany()
+```
+
+:::warning
+
+Locks only make sense **inside a transaction**, since they are released 
+as soon as the transaction ends. These methods are not available for 
+the `mongo` driver, and the `sqlite` driver simply ignores them since 
+SQLite doesn't support row locks.
+
+:::
+
+:::tip
+
+Need to make sure only one process runs a piece of code at a time, 
+even when there are no rows to lock yet? Use the 
+[`Database.lock()` method](/docs/database/getting-started#named-locks).
+
+:::
 
 ## Debugging
 

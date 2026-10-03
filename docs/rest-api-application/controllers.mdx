@@ -89,6 +89,14 @@ these actions. Remember, you can always get a quick
 overview of your application's routes by running the
 `route:list` command.
 
+| Method   | URL           | Action    | Route name               |
+|:---------|:--------------|:----------|:-------------------------|
+| `GET`    | `/photos`     | `index`   | `PhotoController.index`  |
+| `POST`   | `/photos`     | `store`   | `PhotoController.store`  |
+| `GET`    | `/photos/:id` | `show`    | `PhotoController.show`   |
+| `PUT`    | `/photos/:id` | `update`  | `PhotoController.update` |
+| `DELETE` | `/photos/:id` | `delete`  | `PhotoController.delete` |
+
 ### Partial resource routes
 
 When declaring a resource route, you may specify a subset
@@ -98,8 +106,53 @@ full set of default actions:
 ```typescript
 Route.resource('photos', 'PhotoController').only(['index', 'show'])
 
-Route.resource('photos', 'PhotoController').except(['store', 'update', 'destroy'])
+Route.resource('photos', 'PhotoController').except(['store', 'update', 'delete'])
 ```
+
+### Resource middlewares
+
+The `middleware()`, `interceptor()` and `terminator()` methods
+of a resource will register the middleware in all the routes of
+the resource:
+
+```typescript
+Route.resource('photos', 'PhotoController').middleware('auth')
+```
+
+But it's very common to have actions that are public, like 
+listing the photos, and actions that need authentication, like 
+creating or deleting one. For these cases, you can use the 
+`only` and `except` options to choose in which actions the 
+middleware will be registered:
+
+```typescript
+// Only the store, update and delete routes will use auth
+Route.resource('photos', 'PhotoController')
+  .middleware('auth', { only: ['store', 'update', 'delete'] })
+
+// All routes except index and show will use auth
+Route.resource('photos', 'PhotoController')
+  .middleware('auth', { except: ['index', 'show'] })
+```
+
+The same options are available for interceptors and terminators.
+You can also use the `prepend` option to register the middleware
+before the ones that are already registered in the routes:
+
+```typescript
+Route.resource('photos', 'PhotoController')
+  .interceptor('responseFormatter', { only: ['index'] })
+  .terminator('auditLog', { except: ['index', 'show'], prepend: true })
+```
+
+:::warning
+
+In old versions of Athenna the second argument of these methods
+was a `prepend` boolean. If you were using 
+`.middleware('auth', true)`, change it to 
+`.middleware('auth', { prepend: true })`.
+
+:::
 
 ### Nested resources
 
@@ -117,12 +170,13 @@ This route will register a nested resource that may be
 accessed with URLs like the following:
 
 ```bash
-/photos/:photoId/comments/:commentId
+/photos/:photo_id/comments
+/photos/:photo_id/comments/:id
 ```
 
 ## Dependency injection and controllers
 
-The Athenna [`service container`](/docs/architecture-concepts/container)
+The Athenna [`service container`](/docs/architecture-concepts/service-container)
 is used to resolve all Athenna controllers. As a result,
 you are able to use any dependencies your controller may
 need using `@Inject()` annotation or in its constructor.

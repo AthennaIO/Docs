@@ -1,0 +1,234 @@
+---
+title: Hooks
+sidebar_position: 4
+description: See how to run your own code during the lifecycle of your models in Athenna Framework.
+---
+
+# ORM: Hooks
+
+See how to run your own code during the lifecycle of your models in Athenna Framework.
+
+## Introduction
+
+Hooks let you run your own code at specific moments of your model's 
+lifecycle, like right before a model is created or right after it is 
+retrieved from the database. They are perfect to keep small, repeated 
+rules close to your model, for example:
+
+- Hashing a password before saving a user.
+- Generating a slug before creating a post.
+- Adding a default constraint to every query of a model.
+- Sending a notification after an order is created.
+
+## Defining hooks
+
+To define a hook, create a **static** method in your model and 
+annotate it with one of the hook annotations. Let's hash the user 
+password every time a user is created or updated:
+
+```typescript
+import bcrypt from 'bcrypt'
+import { Column, BaseModel, BeforeSave } from '@athenna/database'
+
+export class User extends BaseModel {
+  @Column()
+  public id: number
+
+  @Column()
+  public email: string
+
+  @Column({ isHidden: true })
+  public password: string
+
+  @BeforeSave()
+  public static async hashPassword(user: Partial<User>) {
+    if (user.password) {
+      user.password = await bcrypt.hash(user.password, 10)
+    }
+  }
+}
+```
+
+That's it! Now every time a user is saved, the `hashPassword()` method 
+will be called first:
+
+```typescript
+const user = await User.create({ 
+  email: 'lenon@athenna.io', 
+  password: '12345' 
+})
+
+console.log(user.password) // $2b$10$...
+```
+
+Hooks can be `async`, and Athenna will always wait for them to finish 
+before moving on. Inside a hook, `this` is your model class, so you 
+can call any other static method of your model.
+
+## Available hooks
+
+These are all the hooks available and the moment they are fired:
+
+| Annotation        | When it's fired                                              |
+|:------------------|:-------------------------------------------------------------|
+| `@BeforeCreate()` | Before creating a model.                                     |
+| `@AfterCreate()`  | After creating a model.                                      |
+| `@BeforeUpdate()` | Before updating a model.                                     |
+| `@AfterUpdate()`  | After updating a model.                                      |
+| `@BeforeSave()`   | Before creating **or** updating a model.                     |
+| `@AfterSave()`    | After creating **or** updating a model.                      |
+| `@BeforeDelete()` | Before deleting a model instance with `model.delete()`.      |
+| `@AfterDelete()`  | After deleting a model instance with `model.delete()`.       |
+| `@BeforeFind()`   | Before running `find()`, `findMany()` and `paginate()`.      |
+| `@AfterFind()`    | After retrieving models with `find()`, `findMany()` and `paginate()`. |
+
+### Execution order
+
+When a model is created or updated, the hooks are always fired in the 
+following order:
+
+```
+@BeforeSave() → @BeforeCreate() / @BeforeUpdate()
+    → (the query runs)
+@AfterCreate() / @AfterUpdate() → @AfterSave()
+```
+
+If you define more than one method for the same hook, they will be 
+called in the same order they were declared in your model.
+
+## What each hook receives
+
+Hooks always receive a single argument, but what it is depends on the 
+hook and on how the operation was started:
+
+| Hook                                         | Argument received                                                                                 |
+|:---------------------------------------------|:--------------------------------------------------------------------------------------------------|
+| `@BeforeCreate()`, `@BeforeUpdate()`, `@BeforeSave()` | The data object when using `Model.create()`, `Model.query().update()` and friends. The model instance when using `model.save()`. |
+| `@AfterCreate()`, `@AfterUpdate()`, `@AfterSave()`    | The created or updated model instance.                                                   |
+| `@BeforeDelete()`, `@AfterDelete()`          | The model instance being deleted.                                                                 |
+| `@BeforeFind()`                              | The model query builder that is about to run.                                                     |
+| `@AfterFind()`                               | Each model instance retrieved.                                                                    |
+
+### Changing data before persisting
+
+Since the "before" hooks receive the data (or the model instance) 
+before it's persisted, any change you do inside them will be saved in 
+the database. This is how the `hashPassword()` example above works:
+
+```typescript
+import { String } from '@athenna/common'
+
+@BeforeCreate()
+public static generateSlug(post: Partial<Post>) {
+  post.slug = String.toDashCase(post.title)
+}
+```
+
+### Adding default constraints to queries
+
+The `@BeforeFind()` hook receives the query builder, so you can add 
+constraints that will be applied to every `find()`, `findMany()` and 
+`paginate()` query of your model:
+
+```typescript
+import { 
+  Column, 
+  BaseModel, 
+  BeforeFind, 
+  type ModelQueryBuilder 
+} from '@athenna/database'
+
+export class Product extends BaseModel {
+  @Column()
+  public id: number
+
+  @Column()
+  public isPublished: boolean
+
+  @BeforeFind()
+  public static onlyPublished(query: ModelQueryBuilder<Product>) {
+    query.where('isPublished', true)
+  }
+}
+```
+
+```typescript
+// Only published products will be returned
+const products = await Product.findMany()
+```
+
+:::warning
+
+Methods like `count()`, `exists()`, `pluck()` and the other aggregates 
+**don't** fire the `@BeforeFind()` hook, so the constraint above will 
+not be applied to them.
+
+:::
+
+## Things to keep in mind
+
+### Bulk deletes don't fire delete hooks
+
+The `@BeforeDelete()` and `@AfterDelete()` hooks are only fired when 
+you delete a model **instance**, because Athenna needs the model to 
+give it to your hook. Deleting using a query doesn't fire any hook:
+
+```typescript
+const user = await User.find({ id: 1 })
+
+await user.delete() // ✅ Fires @BeforeDelete() and @AfterDelete()
+
+await User.query().where('id', 1).delete() // ❌ Fires no hooks
+await User.delete({ id: 1 }) // ❌ Fires no hooks
+```
+
+This is also true for soft deletes: soft deleting a model is not 
+considered an update, so no update hooks are fired either.
+
+### Saving a model without changes
+
+If you call `save()` in a model that has no changes, no query is 
+executed, so the "after" hooks are not fired. The "before" hooks are 
+still called, which means you can still change the model inside them 
+and these changes will be saved.
+
+### `createOrFirst()` always fires the create hooks
+
+When using [`createOrFirst()`](/docs/orm/query-builder#create-or-first), 
+Athenna can't know if the model returned has just been created or if 
+it already existed. Because of that, the `@AfterCreate()` and 
+`@AfterSave()` hooks are always fired with the returned model.
+
+### Inheritance
+
+Hooks are inherited by child models. When a child model also defines 
+its own hooks, the parent hooks are fired first:
+
+```typescript
+export class BaseAppModel extends BaseModel {
+  @BeforeSave()
+  public static logSave() {
+    console.log(`Saving a ${this.name}`) // Fired first
+  }
+}
+
+export class User extends BaseAppModel {
+  @BeforeSave()
+  public static hashPassword(user: Partial<User>) {
+    // Fired second
+  }
+}
+```
+
+## Running queries without hooks
+
+Sometimes you need to skip the hooks, for example in a script that 
+fixes some data in your database. For that, use the `withoutHooks()` 
+method in your query:
+
+```typescript
+await User.query()
+  .withoutHooks()
+  .where('id', 1)
+  .update({ password: alreadyHashedPassword })
+```

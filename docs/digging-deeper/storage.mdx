@@ -36,6 +36,14 @@ project:
 - Add the storage provider in your `.athennarc.json` file.
 - Add storage environment variables to `.env`, `.env.test` and `.env.example`.
 
+:::tip
+
+The configurer sets `STORAGE_DISK=fs` in all the `.env` files. Remember to
+change it to `fake` in your `.env.test` file, as explained in the
+[testing section](#testing).
+
+:::
+
 ## Configuration
 
 Disks are configured in your application's
@@ -122,13 +130,25 @@ await Storage.disk('s3').put('reports/report.json', JSON.stringify(report), {
 ```
 
 The content type defaults to the mime type of the key extension and
-falls back to `application/octet-stream`. The `fs` driver ignores
-headers and metadata.
+falls back to `application/octet-stream`. The following options are
+available:
+
+| Option               | Description                                                              |
+|:---------------------|:-------------------------------------------------------------------------|
+| `contentType`        | The `Content-Type` of the file.                                          |
+| `contentDisposition` | The `Content-Disposition` of the file.                                   |
+| `contentEncoding`    | The `Content-Encoding` of the file.                                      |
+| `cacheControl`       | The `Cache-Control` of the file.                                         |
+| `metadata`           | User defined metadata as a `Record<string, string>`.                     |
+| `acl`                | The S3 canned ACL (`private`, `public-read`, `bucket-owner-full-control`, ...). |
+
+The `fs` driver ignores headers and metadata.
 
 ### Streams
 
-Big files should be written as streams. The `s3` driver uses a
-multipart upload and reports progress:
+Big files should be written as streams. `putStream()` accepts the same
+options of `put()`. The `s3` driver uses a multipart upload and reports
+progress:
 
 ```typescript
 await Storage.disk('s3').putStream('videos/movie.mp4', readable, {
@@ -189,7 +209,8 @@ if (await Storage.exists('avatars/user.png')) {
 ## Listing files
 
 `list()` returns one page of files matching a prefix and a cursor to
-fetch the next page:
+fetch the next page. Each page has up to `1000` files by default, use the
+`limit` option to change it:
 
 ```typescript
 let cursor: string | null = null
@@ -214,11 +235,20 @@ await Storage.delete('avatars/user-backup.png')
 await Storage.deleteAll('tmp/')
 ```
 
+:::warning
+
+Calling `deleteAll()` without a prefix removes every file of the disk.
+In the `fs` driver, the whole `root` folder is removed and created
+again empty.
+
+:::
+
 ### Between disks
 
 Pass `toDisk` to copy or move a file to another disk. Copies between
 two `s3` disks happen server side (`CopyObject`), every other
-combination streams the file and forwards its content type:
+combination streams the file and forwards its content type and
+metadata:
 
 ```typescript
 await Storage.disk('s3_private').copy('videos/1.mp4', 'videos/1.mp4', {
@@ -251,7 +281,8 @@ the bucket matches. Values that are not URLs are treated as relative
 keys, so `parseUrl('/avatars/user.png')` returns `avatars/user.png`.
 
 The `fs` driver only builds URLs when its `url` option is configured
-and throws `NotImplementedDriverMethodException` otherwise.
+and throws `NotImplementedDriverMethodException` otherwise. The `fake`
+driver builds URLs using its `url` option or `https://fake.storage`.
 
 ### Signed URLs
 
@@ -264,6 +295,86 @@ const { url, expiresAt } = await Storage.disk('s3').getSignedUrl('uploads/user.p
   contentType: 'image/png'
 })
 ```
+
+The result has the signed `url`, the `method`, the `key` and the
+`expiresAt` date as an ISO string. The following options are available:
+
+| Option                | Default | Description                                                       |
+|:----------------------|:--------|:------------------------------------------------------------------|
+| `method`              | `get`   | `get` to read the file or `put` to upload it.                     |
+| `expiresIn`           | `300`   | The number of seconds until the URL expires.                      |
+| `contentType`         | -       | The `Content-Type` the client must send when uploading (`put`).   |
+| `responseContentType` | -       | Override the `Content-Type` of the response when reading (`get`). |
+| `contentDisposition`  | -       | Override the `Content-Disposition` of the response (`get`).       |
+
+The `fs` driver doesn't support signed URLs and throws
+`NotImplementedDriverMethodException`. The `fake` driver returns a
+deterministic URL like `https://fake.storage/put/uploads/user.png?expires=300`.
+
+## Exceptions
+
+The following exceptions are exported by `@athenna/storage`:
+
+| Exception                             | When                                                         |
+|:--------------------------------------|:-------------------------------------------------------------|
+| `FileNotFoundException`               | Reading or stating a file that doesn't exist.                |
+| `NotImplementedConfigException`       | Using a disk that is not configured in `storage.disks`.      |
+| `NotFoundDriverException`             | Using a disk with a driver that is not registered.           |
+| `NotImplementedDriverMethodException` | Calling a method that the driver doesn't support.            |
+
+## Custom drivers
+
+You can create your own driver by extending the `Driver` class and
+implementing its abstract methods. The constructor receives the disk
+configuration merged with the runtime options:
+
+```typescript
+import type { Readable } from 'node:stream'
+import { Driver } from '@athenna/storage'
+
+export class GcsDriver extends Driver {
+  public constructor(private options: any) {
+    super()
+  }
+
+  public async put(key: string, content: string | Buffer) {
+    // ...
+
+    return this
+  }
+
+  public async putStream(key: string, content: Readable) {
+    // ...
+
+    return this
+  }
+
+  // exists(), stat(), get(), getBuffer(), getStream(), copy(), move(),
+  // delete(), deleteAll(), list(), url(), parseUrl(), getSignedUrl()
+}
+```
+
+Then register it with the `DriverFactory` and use it in your disks:
+
+```typescript
+import { DriverFactory } from '@athenna/storage'
+
+DriverFactory.createDriver('gcs', GcsDriver)
+```
+
+```typescript
+disks: {
+  gcs: {
+    driver: 'gcs',
+    bucket: 'my-bucket'
+  }
+}
+```
+
+`putFromUrl()` is already implemented by the `Driver` class on top of
+your `putStream()`. Driver instances are cached by disk name and
+options, use `DriverFactory.clearCache()` if you need to create them
+again.
 
 ## Testing
 

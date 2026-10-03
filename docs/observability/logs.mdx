@@ -1,0 +1,224 @@
+---
+title: Logs
+sidebar_position: 4
+description: See how to send your logs to OpenTelemetry and correlate them with traces.
+---
+
+import Path from '@site/src/components/path'
+
+# Logs
+
+See how to send your logs to OpenTelemetry and correlate them with traces.
+
+## Introduction
+
+Logs are probably the first thing you look at when something goes
+wrong. The problem is that, in production, thousands of log lines are
+written per minute by many requests at the same time, and finding the
+ones that belong to the request you are investigating is like finding
+a needle in a haystack.
+
+When `@athenna/otel` is installed, Athenna solves this problem for you
+by doing two things:
+
+1. Adding the `traceId` and `spanId` of the active span to your logs.
+2. Allowing you to send your logs to your OpenTelemetry backend using
+   the `otel` log driver.
+
+With both together, you can open a trace in Grafana Tempo and jump
+directly to all the logs written during it in Grafana Loki, and vice
+versa. ✨
+
+## Trace ID and span ID in logs
+
+The `json` and `request` [log formatters](/docs/the-basics/logging#available-channel-formatters)
+automatically add the `traceId` and `spanId` fields to every log
+written inside a span. You don't need to configure anything:
+
+```typescript
+import { Log } from '@athenna/logger'
+
+Log.info('order created')
+```
+
+```json
+{
+  "level": "info",
+  "msg": "order created",
+  "date": "2026-10-03T12:00:00.000Z",
+  "timestamp": 1791028800000,
+  "pid": 12345,
+  "hostname": "orders-7d9f8c",
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "spanId": "00f067aa0ba902b7"
+}
+```
+
+When there is no active span, both fields will be `null`.
+
+## The `otel` log driver
+
+The `otel` driver transports your logs to the OpenTelemetry Logs SDK,
+which will send them to the destinations you configured in the
+`sdk.logRecordProcessors` option of your
+<Path father="config" child="otel.ts" /> file:
+
+```typescript title="Path.config('otel.ts')"
+import { HttpOTLPLogExporter, BatchLogRecordProcessor } from '@athenna/otel'
+
+export default {
+  enabled: true,
+  sdk: {
+    serviceName: 'orders',
+    logRecordProcessors: [
+      new BatchLogRecordProcessor(
+        new HttpOTLPLogExporter({ url: 'http://localhost:4318/v1/logs' })
+      )
+    ]
+  }
+}
+```
+
+Now create an `otel` channel in your
+<Path father="config" child="logging.ts" /> file. The most common setup
+is to keep writing your logs to the console **and** to send them to
+OpenTelemetry at the same time, using a `stack` channel:
+
+```typescript title="Path.config('logging.ts')"
+import { Env } from '@athenna/config'
+
+export default {
+  default: Env('LOG_CHANNEL', 'stack'),
+
+  channels: {
+    stack: {
+      driver: 'stack',
+      channels: ['simple', 'otel']
+    },
+
+    simple: {
+      driver: 'console',
+      level: 'trace',
+      formatter: 'json'
+    },
+
+    otel: {
+      driver: 'otel',
+      level: 'trace',
+      formatter: 'json'
+    },
+
+    request: {
+      driver: 'stack',
+      channels: ['simple', 'otel'],
+
+      simple: {
+        formatter: 'request',
+        formatterConfig: { asJson: true }
+      },
+
+      otel: {
+        formatter: 'request',
+        formatterConfig: { asJson: true }
+      }
+    },
+
+    cronjob: {
+      driver: 'stack',
+      channels: ['simple', 'otel']
+    },
+
+    worker: {
+      driver: 'stack',
+      channels: ['simple', 'otel']
+    },
+
+    exception: {
+      driver: 'stack',
+      channels: ['simple', 'otel']
+    }
+  }
+}
+```
+
+Every log record sent by the `otel` driver has:
+
+- The **severity** mapped from the Athenna log level (`trace`, `debug`,
+  `info`, `success`, `warn`, `error` and `fatal`).
+- The **body** with the formatted message. When the formatter returns
+  JSON, the body will be a structured object, so you can filter by its
+  fields in your backend.
+- The `athenna.log.level` and `athenna.log.stream` attributes.
+- The active OpenTelemetry **context**, which is how your backend knows
+  to which trace and span the log belongs.
+
+:::tip
+
+Use the `json` formatter (or `request` with `asJson: true`) in your
+`otel` channels. This way your logs arrive as structured data instead
+of plain strings.
+
+:::
+
+## Adding context to logs
+
+Imagine that you want every log of your application to have the ID
+of the tenant that made the request, without having to pass it to
+every `Log.info()` call. This is what context bindings are for.
+
+Context bindings are configured in the `formatterConfig` of your
+channel. Each binding has a `field`, which is the name of the field
+that will be added to the log, and a `resolve()` function that
+receives the active OpenTelemetry context and returns its value:
+
+```typescript title="Path.config('logging.ts')"
+import { Otel } from '@athenna/otel'
+
+export default {
+  channels: {
+    simple: {
+      driver: 'console',
+      formatter: 'json',
+      formatterConfig: {
+        contextBindings: [
+          {
+            field: 'tenantId',
+            resolve: ctx => Otel.getContextValue('tenantId', ctx)
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+```json
+{
+  "level": "info",
+  "msg": "order created",
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "spanId": "00f067aa0ba902b7",
+  "tenantId": "tenant-1"
+}
+```
+
+Bindings that return `undefined` are ignored, and fields that you pass
+explicitly to the log message always win over the ones resolved by the
+bindings.
+
+:::info
+
+`Otel.getContextValue()` reads the values resolved by the
+[context bindings](/docs/observability/context#context-bindings) of your
+HTTP, CRON, worker and event configuration files. If the value was
+written with `Otel.setCurrentContextValue()` instead, read it with
+`Otel.getCurrentContextValue('tenantId', ctx)`, remembering that this
+method throws when OpenTelemetry is
+[disabled](/docs/observability/context#opentelemetry-is-disabled).
+
+:::
+
+But how did the `tenantId` value end up inside the OpenTelemetry context
+in the first place? Athenna can do it for you for every HTTP request,
+CRON execution or queue job. Check the [context](/docs/observability/context)
+documentation to understand how.

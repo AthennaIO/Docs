@@ -73,15 +73,22 @@ to create "defaults" configurations for all routes.
 
 ### Usage in route resources
 
-Same behavior as route groups, but for resources:
+You can also use the `rateLimit()` method in route resources. 
+This will set the same configuration for all routes of the 
+resource:
 
 ```typescript title="Path.route('http.ts')"
-// Set the same configurations for all routes of resource
 Route.resource('/tests', 'WelcomeController').rateLimit({...})
+```
 
-// Set configuration only for that specific action of resource
-Route.resource('/tests', 'WelcomeController').rateLimit('index', {...})
-Route.resource('/tests', 'WelcomeController').rateLimit('store', {...})
+If only some actions of your resource need a different 
+configuration, register the resource without them using
+`except()` and declare these routes separately:
+
+```typescript title="Path.route('http.ts')"
+Route.resource('/tests', 'WelcomeController').except(['store'])
+
+Route.post('/tests', 'WelcomeController.store').rateLimit({...})
 ```
 
 ## Rate limit headers

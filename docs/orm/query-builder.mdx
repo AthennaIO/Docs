@@ -128,7 +128,7 @@ const availableFlights = flights.reject(flight => flight.cancelled)
 ## Pagination
 
 The Athenna models also has a `paginate()` method that works exact like 
-the [`paginate method from the query builder:`](/docs/database/query-builder#id-pagination)
+the [`paginate method from the query builder:`](/docs/database/query-builder#pagination)
 
 ```typescript
 const page = 0
@@ -155,6 +155,132 @@ const { data, meta, links } = await Flight.query()
   .where({ active: 1 })
   .paginate(page, limit, resourceUrl)
 ```
+
+## Searching
+
+The model `search()` method works like the
+[query builder `search()`](/docs/database/query-builder#searching), 
+looking for a term in many columns at once. The difference is that, 
+with models, you can also search inside the columns of your 
+[relationships](/docs/orm/relationships) using the `relation.column` 
+notation:
+
+```typescript
+const users = await User.query()
+  .search(['name', 'email', 'profile.bio', 'metadata->nickname'], 'lenon')
+  .paginate()
+```
+
+The query above will find all the users where the name, the email, 
+the nickname inside the `metadata` JSON column **or** the bio of the 
+user's profile contains `lenon`. Nested relationships are supported 
+too, like `orders.product.name`.
+
+Remember that an empty term doesn't change your query, so you can 
+pass the value received in your request directly. Also, to ignore 
+accents, use the `unaccent` option (`postgres` only):
+
+```typescript
+const users = await User.query()
+  .search(['name', 'profile.bio'], request.query('search'), {
+    unaccent: true
+  })
+  .findMany()
+```
+
+### Full text search
+
+If your tables are big, prefer the `fullTextSearch()` method. It has 
+the same signature of `search()`, but it uses the full text search 
+engine of your database:
+
+```typescript
+const posts = await Post.query()
+  .fullTextSearch(['title', 'body', 'author.name'], 'athenna')
+  .findMany()
+```
+
+:::warning
+
+Full text search requires some indexes to be created in your database, 
+and each driver has its own rules. Be sure to read the
+[full text search documentation section](/docs/database/query-builder#full-text-search)
+before using it.
+
+:::
+
+## Filtering
+
+When building APIs, it's very common to let the client decide how the 
+data should be filtered, ordered and which relationships should be 
+loaded. The `filter()` method receives all these instructions in a 
+single object and applies them in your query:
+
+```typescript
+const users = await User.query()
+  .filter({
+    select: ['id', 'name', 'status'],
+    includes: ['profile'],
+    where: [
+      { field: 'status', op: '=', value: 'active' },
+      { field: 'createdAt', op: '>=', value: '2026-01-01' },
+      { field: 'profile.bio', op: 'contains', value: 'developer' }
+    ],
+    orderBy: [{ field: 'createdAt', direction: 'DESC' }]
+  })
+  .findMany()
+```
+
+These are the operators available in the `where` filters:
+
+| Operator                    | What it does                                               |
+|:----------------------------|:-----------------------------------------------------------|
+| `=` / `!=`                  | Equal / not equal. With `null`, checks if the value is (not) null. |
+| `>` / `>=` / `<` / `<=`     | Compare values.                                            |
+| `in` / `not_in`             | The value is (not) inside the given array.                 |
+| `between` / `not_between`   | The value is (not) between the two values of the array.    |
+| `contains` / `not_contains` | The value (does not) contain the given text, ignoring the case. |
+
+Just like `search()`, the `field` can be a column (`status`), a column 
+of a relationship (`profile.bio`, at any depth) or a key inside a JSON 
+column (`metadata->mode`). Filters for the same field are combined 
+using `and`.
+
+When using the HTTP server, you don't need to build this object 
+yourself. The `request.filters()` method parses and validates the 
+filters sent in the query string, so you can give them directly to 
+your query:
+
+```typescript
+// GET /users?search=lenon&where=status:=:active&orderby=-createdAt&page=1&limit=20
+const filters = request.filters({
+  where: ['status', 'createdAt', 'profile.bio'],
+  orderBy: ['createdAt', 'name'],
+  includes: ['profile']
+})
+
+const users = await User.query()
+  .search(['name', 'email'], filters.search)
+  .filter(filters)
+  .paginate({ page: filters.page, limit: filters.limit })
+```
+
+:::caution
+
+The `filter()` method doesn't validate anything, it trusts the object 
+it receives. Never pass filters that came from your users without 
+validating which fields they are allowed to use, like 
+`request.filters()` does.
+
+:::
+
+:::note
+
+The `page`, `limit` and `search` properties are ignored by `filter()`. 
+Use `paginate()` and `search()` for them, as shown in the example 
+above.
+
+:::
 
 ## Retrieve single models & Aggregates 
 
@@ -184,6 +310,44 @@ const flight = await Flight.query()
   .findOr(async () => {
     // ...
   })
+```
+
+### Find or create
+
+The `findOrCreate()` method looks for a model using the given 
+constraints. If the model exists, it's returned. If not, a new one is 
+created with the data you have passed and returned:
+
+```typescript
+const flight = await Flight.findOrCreate(
+  { number: 'FR 900' },
+  { number: 'FR 900', destination: 'Paris' }
+)
+
+const flight = await Flight.query()
+  .where('number', 'FR 900')
+  .findOrCreate({ number: 'FR 900', destination: 'Paris' })
+```
+
+:::tip
+
+If two requests may call `findOrCreate()` at the same time with the 
+same values, prefer using [`createOrFirst()`](#create-or-first), which 
+is safe against race conditions.
+
+:::
+
+### Retrieving a single column
+
+If you just need the value of a single column, use the `pluck()` 
+method. To get the values of all the models found, use `pluckMany()`:
+
+```typescript
+const name = await Flight.pluck('name', { id: 1 })
+const names = await Flight.pluckMany('name', { active: true })
+
+const name = await Flight.query().where('id', 1).pluck('name')
+const names = await Flight.query().where('active', true).pluckMany('name')
 ```
 
 ### Validate model existence
@@ -287,7 +451,7 @@ However, we highly recommend that before using the `create()` method,
 you specify the `persist` field as `false` in fields you dont want to 
 be persisted. This property will help your models to get protected against mass assignment 
 vulnerabilities. To learn more about mass assignment, please consult 
-the [`mass assignment documentation.`](/docs/orm/getting-started#mass-assignment)
+the [`mass assignment documentation.`](/docs/orm/query-builder#mass-assignment)
 
 ### Updates
 
@@ -473,6 +637,70 @@ await Flight.query()
   })
 ```
 
+### Create or ignore
+
+The `createOrIgnore()` method only creates the model if no model 
+matches your constraints. If one already exists, nothing happens and 
+`null` is returned:
+
+```typescript
+const where = { email: 'lenon@athenna.io' }
+const data = { name: 'João Lenon', email: 'lenon@athenna.io' }
+
+const user = await User.createOrIgnore(where, data)
+
+const user = await User.query()
+  .where('email', 'lenon@athenna.io')
+  .createOrIgnore(data)
+
+if (!user) {
+  // The user was already registered.
+}
+```
+
+### Create or first
+
+The `createOrFirst()` method always returns a model: the one that 
+already existed or the one that has just been created:
+
+```typescript
+const user = await User.createOrFirst(where, data)
+
+const user = await User.query()
+  .where('email', 'lenon@athenna.io')
+  .createOrFirst(data)
+```
+
+With SQL drivers, both methods are safe against race conditions: if 
+two requests try to create the same model at the same time, none of 
+them will fail with a unique violation error (with `mongo`, one of 
+them throws a `UniqueViolationException` instead). For this to work, make sure your table has a 
+unique constraint or index for the columns used in your constraints. 
+To learn more, check the
+[query builder documentation](/docs/database/query-builder#create-or-ignore).
+
+### Updating JSON columns
+
+All the JSON helpers of the
+[database query builder](/docs/database/query-builder#updating-json-columns)
+are also available for your models. They update only what you need, 
+directly in the database, and return the updated models just like 
+`update()`:
+
+```typescript
+await Integration.query()
+  .where('id', id)
+  .mergeJson('metadata', { crawlFinished: true })
+
+await Integration.query()
+  .where('id', id)
+  .incrementJson('metadata->stats->indexedPages')
+
+await Integration.query()
+  .where('id', id)
+  .decrementJson('metadata->credits', 5)
+```
+
 ## Refreshing models
 
 If you already have an instance of an model that was retrieved from the 
@@ -585,13 +813,28 @@ to `null`:
 await flight.restore()
 ```
 
+The `restore()` method works like `save()`: any change you have done 
+in the model will also be persisted while restoring it:
+
+```typescript
+flight.name = 'Brazil to Ukraine (rescheduled)'
+
+await flight.restore() // Restores and updates the name in one go
+```
+
 You may also use the `restore()` method in a query to restore multiple 
-models:
+models. You can optionally pass the data that should be updated while 
+restoring them:
 
 ```typescript
 const flights = await Flight.query()
   .where('airlineId', 1)
   .restore()
+
+const flights = await Flight.restore(
+  { airlineId: 1 },
+  { status: 'scheduled' }
+)
 ```
 
 ### Permanently deleting a model
@@ -627,4 +870,59 @@ const flights = await Flight.query()
   .onlyTrashed()
   .where('airlineId', 1)
   .findMany()
+```
+
+## Transactions
+
+To run model queries inside a
+[database transaction](/docs/database/getting-started#transactions), 
+use the `setTransaction()` method of the model query builder. All the 
+queries using the same transaction will be committed or rolled back 
+together:
+
+```typescript
+import { Database } from '@athenna/database'
+
+const trx = await Database.startTransaction()
+
+try {
+  const user = await User.query()
+    .setTransaction(trx)
+    .create({ name: 'João Lenon' })
+
+  await Wallet.query()
+    .setTransaction(trx)
+    .create({ userId: user.id, balance: 0 })
+
+  await trx.commitTransaction()
+} catch (error) {
+  // Neither the user nor the wallet will be created.
+  await trx.rollbackTransaction()
+
+  throw error
+}
+```
+
+Combined with the
+[pessimistic locking methods](/docs/database/query-builder#pessimistic-locking), 
+you can safely read and update a model while blocking other 
+transactions from changing it at the same time:
+
+```typescript
+const trx = await Database.startTransaction()
+
+const wallet = await Wallet.query()
+  .setTransaction(trx)
+  .where('userId', userId)
+  .forUpdate()
+  .find()
+
+wallet.balance -= amount
+
+await Wallet.query()
+  .setTransaction(trx)
+  .where('id', wallet.id)
+  .update({ balance: wallet.balance })
+
+await trx.commitTransaction()
 ```

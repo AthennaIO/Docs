@@ -1,0 +1,203 @@
+---
+title: Traces
+sidebar_position: 2
+description: See how to create and enrich spans in your Athenna application.
+---
+
+import Path from '@site/src/components/path'
+
+# Traces
+
+See how to create and enrich spans in your Athenna application.
+
+## Introduction
+
+A trace is the story of one operation of your application, like an
+HTTP request. This story is told by **spans**: each span represents
+a step of the operation, has a start and an end, and can have child
+spans. When you open a trace in a tool like Grafana Tempo, you see
+something like this:
+
+```
+GET /orders/:id                                   [=============================] 182ms
+├── OrderService.findOne                           [========================]      150ms
+│   ├── pg.query SELECT orders                      [======]                        40ms
+│   └── GET https://payments.internal/payments/1          [===============]        102ms
+└── OrderPresenter.toJSON                                                   [==]    12ms
+```
+
+With the [auto instrumentations](/docs/observability/getting-started#auto-instrumentations)
+enabled, Athenna and OpenTelemetry already create spans for your
+HTTP requests, CRON executions, queue jobs, outgoing HTTP calls and
+for many libraries. But the most valuable spans are usually the
+ones about **your** business logic, and this is what this page is
+about.
+
+## Creating spans with `@Span()`
+
+The easiest way to create a span is using the `@Span()` annotation.
+Put it in any method and every call of that method will be wrapped
+in a span:
+
+```typescript title="Path.services('OrderService.ts')"
+import { Span } from '@athenna/otel'
+import { Service } from '@athenna/ioc'
+
+@Service()
+export class OrderService {
+  @Span()
+  public async findOne(id: string) {
+    // ...
+  }
+}
+```
+
+By default the span will be named after the class and method, in this
+case `OrderService.findOne`. The span ends as soon as the method
+returns, or as soon as the returned promise is settled. If the method
+throws, the exception is recorded in the span and its status is set
+to `ERROR`, so it's highlighted in red in your tracing tool.
+
+You can also customize the name of the span and add some static
+attributes to it:
+
+```typescript title="Path.services('OrderService.ts')"
+import { Span } from '@athenna/otel'
+import { Service } from '@athenna/ioc'
+
+@Service()
+export class OrderService {
+  @Span({
+    name: 'orders.find_one',
+    attributes: { 'orders.source': 'database' }
+  })
+  public async findOne(id: string) {
+    // ...
+  }
+}
+```
+
+| Option       | Default                 | Description                                  |
+|:-------------|:------------------------|:---------------------------------------------|
+| `name`       | `${ClassName}.${method}` | The name of the span.                       |
+| `attributes` | -                       | Static attributes that will be added to the span. |
+
+## Creating spans with `Otel.record()`
+
+When you need more control, or you want to trace just a piece of a
+method, use the `Otel.record()` method. It creates a span, runs your
+closure inside of it and ends the span when the closure finishes. The
+span is also received as argument, so you can add dynamic attributes
+to it:
+
+```typescript
+import { Otel } from '@athenna/otel'
+
+const order = await Otel.record('orders.calculate_total', async span => {
+  span.setAttribute('orders.items', items.length)
+
+  const total = await this.calculateTotal(items)
+
+  span.setAttribute('orders.total', total)
+
+  return total
+})
+```
+
+Just like `@Span()`, the value returned by the closure is returned
+by `Otel.record()`, and any exception thrown inside of it will be
+recorded in the span and re-thrown. It works with both sync and
+async closures.
+
+Spans created inside the closure automatically become children of
+the span created by `Otel.record()`, so you can nest them as much
+as you want:
+
+```typescript
+import { Otel } from '@athenna/otel'
+
+await Otel.record('checkout', async () => {
+  await Otel.record('checkout.reserve_stock', () => this.reserveStock())
+  await Otel.record('checkout.charge', () => this.charge())
+})
+```
+
+## Enriching the current span
+
+Sometimes you don't want to create a new span, but to add more
+information to the one that is already active. For example, adding
+the ID of the authenticated user to the span of the HTTP request.
+To do so, use the `Otel.getCurrentSpan()` method:
+
+```typescript title="Path.middlewares('AuthMiddleware.ts')"
+import { Otel } from '@athenna/otel'
+import { Middleware, type Context } from '@athenna/http'
+
+@Middleware({ name: 'auth' })
+export class AuthMiddleware {
+  public async handle({ request }: Context) {
+    const user = await this.authenticate(request)
+
+    Otel.getCurrentSpan()?.setAttributes({
+      'user.id': user.id,
+      'user.plan': user.plan
+    })
+  }
+}
+```
+
+Now you can search in your tracing tool for all the requests of a
+specific user, or for all the requests made by users of a
+specific plan. 🤯
+
+:::tip
+
+`Otel.getCurrentSpan()` returns `undefined` when there is no active
+span, so always use the optional chaining operator (`?.`) when
+calling it.
+
+:::
+
+### Getting the trace and span IDs
+
+You can get the ID of the current trace and span using the
+`Otel.getTraceId()` and `Otel.getSpanId()` methods. This is very
+useful to return the trace ID to your users in error responses, so
+they can send it to your support team:
+
+```typescript
+import { Otel } from '@athenna/otel'
+
+const traceId = Otel.getTraceId() // 4bf92f3577b34da6a3ce929d0e0e4736
+const spanId = Otel.getSpanId() // 00f067aa0ba902b7
+```
+
+## Exceptions are recorded automatically
+
+When `@athenna/otel` is installed, every exception that reaches the
+Athenna `ExceptionHandler` is recorded in the active span and the span
+status is set to `ERROR`. This means that you don't need to do anything
+to see the stack trace of an error directly inside the trace where it
+happened.
+
+## Using the OpenTelemetry API directly
+
+The `Otel` facade also exposes the raw OpenTelemetry APIs, in case you
+need something more advanced that is not covered by the helpers above:
+
+```typescript
+import { Otel } from '@athenna/otel'
+
+const tracer = Otel.trace.getTracer('my-tracer')
+const activeContext = Otel.context.active()
+const meter = Otel.metrics.getMeter('my-meter')
+
+Otel.propagation.inject(activeContext, {})
+```
+
+| Property            | OpenTelemetry API                                    |
+|:--------------------|:-----------------------------------------------------|
+| `Otel.trace`        | `trace` from `@opentelemetry/api`                    |
+| `Otel.context`      | `context` from `@opentelemetry/api`                  |
+| `Otel.metrics`      | `metrics` from `@opentelemetry/api`                  |
+| `Otel.propagation`  | `propagation` from `@opentelemetry/api`              |

@@ -51,6 +51,16 @@ its contents:
 | `slack`     |                    Transports the log message to a Slack channel |
 | `discord`   |                  Transports the log message to a Discord channel |
 | `telegram`  |                    Transports the log message to a Telegram chat |
+| `otel`      |  Transports the log to OpenTelemetry using `@athenna/otel` |
+
+:::tip
+
+The `otel` driver requires the `@athenna/otel` package to be installed
+and configured. Check the [observability logs](/docs/observability/logs)
+documentation to see how to send your logs to tools like Grafana Loki
+and connect them to your traces.
+
+:::
 
 ### Channel prerequisites
 

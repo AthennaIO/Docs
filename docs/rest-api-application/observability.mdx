@@ -1,0 +1,254 @@
+---
+title: Observability
+sidebar_position: 14
+description: See how to add traces, metrics and logs to your REST API application using OpenTelemetry.
+---
+
+import Path from '@site/src/components/path'
+
+# Observability
+
+See how to add traces, metrics and logs to your REST API application using OpenTelemetry.
+
+## Introduction
+
+Your REST API is probably the entrypoint of most of the things that
+happen in your system, which makes it the most important place to
+observe. In this page you will see how to make every request of your
+REST API create a trace, carry its own context and connect its logs
+to it.
+
+:::info
+
+This page assumes that you have already installed and configured the
+`@athenna/otel` package. If you haven't yet, check the
+[observability getting started](/docs/observability/getting-started)
+documentation first.
+
+:::
+
+## Tracing requests
+
+With `@athenna/otel` started and the [auto instrumentations](/docs/observability/getting-started#auto-instrumentations)
+enabled, every request received by your application already creates
+a span. But, by default, OpenTelemetry only knows the raw URL of the
+request, like `GET /users/1`, `GET /users/2`, etc. This makes it hard
+to group requests of the same route together.
+
+To fix that, `@athenna/otel` provides a global middleware and a global
+terminator. Register them as the **first** items of the `middlewares`
+array of your `.athennarc.json` file:
+
+```json title=".athennarc.json"
+{
+  "middlewares": [
+    "@athenna/otel/http/OtelMiddleware",
+    "@athenna/otel/http/OtelTerminator",
+    "#src/http/middlewares/AuthMiddleware"
+  ]
+}
+```
+
+That's all! Now your request spans will have:
+
+| Data                                 | Added by          | Example                                      |
+|:-------------------------------------|:------------------|:---------------------------------------------|
+| The span name with the route pattern | `OtelMiddleware`  | `GET /users/:id`                             |
+| `http.route` attribute               | `OtelMiddleware`  | `/users/:id`                                 |
+| `http.request.method` attribute      | `OtelMiddleware`  | `GET`                                        |
+| `http.response.status_code` attribute| `OtelTerminator`  | `200`                                        |
+| `traceparent` **response** header    | `OtelTerminator`  | `00-4bf92f3577b34da6a3ce929d0e0e4736-...-01` |
+
+The `traceparent` response header is very useful to find a request in
+your tracing tool. Your frontend can log it, your API gateway can store
+it, and your customers can send it to your support team when something
+goes wrong:
+
+```bash
+curl -i http://localhost:3000/users/1
+
+# HTTP/1.1 200 OK
+# traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+```
+
+:::tip
+
+If you already set the `traceparent` header in your response, the
+`OtelTerminator` will not override it.
+
+:::
+
+### Errors are recorded automatically
+
+Every exception that reaches the Athenna exception handler is recorded
+in the span of the request, and the span status is set to `ERROR`. You
+will see the exception message and its stack trace directly inside the
+trace, without needing to look for them in the logs.
+
+### Creating your own spans
+
+You can create spans for any part of your request using the `@Span()`
+annotation or the `Otel.record()` method. They will automatically
+become children of the request span:
+
+```typescript title="Path.controllers('UserController.ts')"
+import { Span } from '@athenna/otel'
+import { Controller, type Context } from '@athenna/http'
+
+@Controller()
+export class UserController {
+  @Span({ name: 'users.show' })
+  public async show({ request, response }: Context) {
+    const user = await User.findOrFail({ id: request.param('id') })
+
+    return response.send(user)
+  }
+}
+```
+
+Check the [traces](/docs/observability/traces) documentation to see all
+the ways you can create and enrich spans.
+
+## Request context
+
+Athenna can create an OpenTelemetry [context](/docs/observability/context)
+for each request, so you can share values across your middlewares,
+route handlers, services and terminators without passing them around.
+To enable it, set `otel.contextEnabled` to `true` in your
+<Path father="config" child="http.ts" /> configuration file:
+
+```typescript title="Path.config('http.ts')"
+export default {
+  otel: {
+    contextEnabled: true,
+    contextBindings: []
+  }
+}
+```
+
+The same context is reused by every step of the request: middlewares,
+interceptors, the route handler, terminators and the error handler.
+This means that a value set in a middleware can be read in the route
+handler, and a value set in the route handler can be read in a
+terminator:
+
+```typescript title="Path.middlewares('TenantMiddleware.ts')"
+import { Otel } from '@athenna/otel'
+import { Middleware, type Context } from '@athenna/http'
+
+@Middleware({ isGlobal: true })
+export class TenantMiddleware {
+  public async handle({ request }: Context) {
+    if (!Otel.isEnabled()) {
+      return
+    }
+
+    Otel.setCurrentContextValue('tenantId', request.header('x-tenant-id'))
+  }
+}
+```
+
+:::warning
+
+The methods that read and write context values throw when OpenTelemetry
+is disabled (`OTEL_ENABLED=false`). That's why the middleware above checks
+`Otel.isEnabled()` first. Check the
+[OpenTelemetry is disabled](/docs/observability/context#opentelemetry-is-disabled)
+section for more details.
+
+:::
+
+```typescript title="Path.services('UserService.ts')"
+import { Otel } from '@athenna/otel'
+import { Service } from '@athenna/ioc'
+
+@Service()
+export class UserService {
+  public async findAll() {
+    return User.findMany({ tenantId: Otel.getCurrentContextValue('tenantId') })
+  }
+}
+```
+
+### Context bindings
+
+When the value comes straight from the request, you don't even need a
+middleware. Declare a context binding and Athenna will resolve it as
+soon as the request starts. The `resolve()` function receives the same
+`Context` that your route handlers receive:
+
+```typescript title="Path.config('http.ts')"
+export default {
+  otel: {
+    contextEnabled: true,
+    contextBindings: [
+      {
+        key: 'tenantId',
+        resolve: ctx => ctx.request.header('x-tenant-id')
+      },
+      {
+        key: 'clientIp',
+        resolve: ctx => ctx.request.ip
+      }
+    ]
+  }
+}
+```
+
+By default, a binding is ignored when its `resolve()` function returns
+`undefined`. Set the `includeIfUndefined` option of the binding to
+`true` to always register it.
+
+## Connecting logs to requests
+
+The `json` and `request` formatters automatically add the `traceId` and
+`spanId` fields to your logs, including the logs of the request logger
+enabled by `http.logger`. To also send these logs to OpenTelemetry, use
+the `otel` driver in your `request` channel:
+
+```typescript title="Path.config('logging.ts')"
+export default {
+  channels: {
+    request: {
+      driver: 'stack',
+      channels: ['simple', 'otel'],
+
+      simple: {
+        formatter: 'request',
+        formatterConfig: { asJson: true }
+      },
+
+      otel: {
+        formatter: 'request',
+        formatterConfig: { asJson: true }
+      }
+    }
+  }
+}
+```
+
+You can also add your context values to every log of the request.
+Check the [adding context to logs](/docs/observability/logs#adding-context-to-logs)
+documentation to see how.
+
+## Calling other services
+
+When your REST API calls another service using `HttpClient` or `fetch`,
+the trace context is automatically sent in the `traceparent` header. If
+the other service also uses Athenna and `@athenna/otel`, both requests
+will be part of the same trace. Check the
+[distributed tracing](/docs/observability/distributed-tracing)
+documentation to see it in action.
+
+## Request ID vs Trace ID
+
+Athenna also has a request ID generated by Fastify, documented in
+the [tracing requests](/docs/rest-api-application/tracing-requests) page.
+They can live together, but they solve different problems:
+
+- The **request ID** identifies a request inside **one** application.
+- The **trace ID** identifies the whole journey of a request across
+  **all** your applications, and connects it to spans, logs and metrics
+  in your observability backend.
+
+If you are using `@athenna/otel`, prefer the trace ID.

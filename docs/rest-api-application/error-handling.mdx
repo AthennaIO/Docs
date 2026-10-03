@@ -93,6 +93,14 @@ status code and the meaning of it:
 | 502         |          BadGatewayException |
 | 503         |  ServiceUnavailableException |
 
+Some features of Athenna also throw their own http exceptions,
+that are sent with the `422` status code:
+
+| Exception Class          | Code                 | Thrown by                                                                           |
+|:-------------------------|:---------------------|:------------------------------------------------------------------------------------|
+| `ZodValidationException` | `E_VALIDATION_ERROR` | [Zod schemas](/docs/rest-api-application/swagger-documentation#request-validation) of your routes. |
+| `InvalidFilterException` | `E_INVALID_FILTER`   | The [`request.filters()`](/docs/rest-api-application/request-context#the-filters-method) method. |
+
 ### The `HttpException` class
 
 All of the above exceptions where created from

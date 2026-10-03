@@ -140,10 +140,94 @@ You may define as many route parameters as required by
 your route:
 
 ```typescript
-Route.get('/posts/:postId/comments/:commentId', ({ response, params }) => {
-    return response.send({ params })
+Route.get('/posts/:postId/comments/:commentId', ({ request, response }) => {
+    return response.send({ params: request.params })
 })
 ```
+
+## Named routes
+
+Named routes allow you to give a name to a specific route.
+You may specify a name for a route by chaining the `name()`
+method onto the route definition:
+
+```typescript
+Route.get('/users/:id', 'UserController.show').name('users.show')
+```
+
+The route name is displayed by the `route:list` command and 
+it's available in the [`request.routeName`](/docs/rest-api-application/request-context#the-routename-getter)
+getter, which is very useful for logs and metrics:
+
+```typescript
+Route.get('/users/:id', ({ request }) => {
+    console.log(request.routeName) // users.show
+}).name('users.show')
+```
+
+:::note
+
+Routes created by [resource controllers](/docs/rest-api-application/controllers#resource-controllers)
+are automatically named using the controller name and the 
+action, like `UserController.index`.
+
+:::
+
+## Route data
+
+Sometimes you want to attach some static values to a route
+that will be used by your middlewares, like the permission 
+needed to access it. You can do so using the `data()` method:
+
+```typescript
+Route.post('/posts', 'PostController.store')
+  .data({ permission: 'post:create' })
+  .middleware('authorize')
+```
+
+These values will be available in the
+[`data` object](/docs/rest-api-application/request-context#the-data-object)
+of the request context. This means that a single middleware
+can be reused by all your routes, each one with its own
+permission:
+
+```typescript title="Path.middlewares('AuthorizeMiddleware.ts')"
+import { Middleware, type Context, ForbiddenException } from '@athenna/http'
+
+@Middleware({ name: 'authorize' })
+export class AuthorizeMiddleware {
+  public async handle({ data }: Context) {
+    if (!data.user.permissions.includes(data.permission)) {
+      throw new ForbiddenException('You are not allowed to do this.')
+    }
+  }
+}
+```
+
+You can also set one value per call by giving a key and a value:
+
+```typescript
+Route.post('/posts', 'PostController.store')
+  .data('permission', 'post:create')
+  .data('audit', true)
+```
+
+:::warning
+
+Calling `data()` with an object will replace all the values 
+that were already set in the route.
+
+:::
+
+:::tip
+
+Each request receives its own copy of the route data, so you
+can safely change the `data` object inside your middlewares
+without affecting other requests. When a global middleware 
+sets a value with the same key of your route data, the value
+of the global middleware is used.
+
+:::
 
 ## Route groups
 
@@ -153,7 +237,7 @@ needing to define those attributes on each route.
 
 ### Middleware
 
-To assign [`middlewares`](/docs/the-basics/http/middlewares)
+To assign [`middlewares`](/docs/rest-api-application/middlewares)
 to all routes within a group, you may use the `middleware`
 method before defining the group. Middleware is executed
 in the order they are listed in the array:

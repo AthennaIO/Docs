@@ -1,0 +1,369 @@
+---
+title: Getting Started
+sidebar_position: 1
+description: See how to add logs, traces and metrics to your Athenna application using OpenTelemetry.
+---
+
+import Path from '@site/src/components/path'
+
+# Getting Started
+
+See how to add logs, traces and metrics to your Athenna application using OpenTelemetry.
+
+## Introduction
+
+Your application is running in production and a customer says
+that "the checkout is slow sometimes". Where do you start? Which
+request was slow? Was it the database, an external API or another
+service of your company? Observability is what allows you to
+answer these questions by looking at the data your application
+emits, instead of guessing.
+
+Observability is usually built on top of three pillars:
+
+- **Traces** tell the story of a single request (or CRON execution,
+  or queue job) through your entire stack. Each step of the journey
+  is a **span**, with a name, a duration and some attributes.
+- **Metrics** are numbers aggregated over time, like how many
+  orders were created per minute or how long your requests take
+  on the 99th percentile.
+- **Logs** are the messages your application writes. When they are
+  connected to traces, you can jump from a slow span directly to
+  the logs that were written during it.
+
+Athenna uses [OpenTelemetry](https://opentelemetry.io), the open
+standard for observability, to emit these three signals. This means
+that you are not tied to any vendor: you can send your data to
+[Grafana](https://grafana.com) (Tempo, Loki and Prometheus), Jaeger,
+Datadog, New Relic, Honeycomb, Elastic, or any other tool that
+speaks OTLP.
+
+The [`@athenna/otel`](https://www.npmjs.com/package/@athenna/otel)
+package is the glue between OpenTelemetry and Athenna. Once it is
+installed and configured, a lot of things start to work
+automatically:
+
+- Every HTTP request creates a span named like `GET /users/:id`.
+- Every CRON execution and queue job creates its own span (once you
+  enable `otel.contextEnabled` in their configuration files).
+- Exceptions handled by Athenna are recorded in the active span.
+- Your `json` and `request` logs gain `traceId` and `spanId` fields.
+- Calls between your Athenna services share the same trace, so you
+  can see the full journey of a request across all of them. Check
+  the [distributed tracing](/docs/observability/distributed-tracing)
+  documentation to see this magic in action.
+
+## Installation
+
+First of all you need to install the `@athenna/otel` package:
+
+```bash
+npm install @athenna/otel
+```
+
+### Creating the `otel` bootstrap file
+
+OpenTelemetry needs to be started **before** any other module of
+your application is imported. This is because it works by patching
+libraries like `node:http`, `fastify` and `undici` when they are
+loaded, so if they are imported first, there is nothing left to
+patch.
+
+To guarantee that, create a `bin/otel.ts` file in your application
+using the `OtelIgnite` class:
+
+```typescript title="Path.bin('otel.ts')"
+import { OtelIgnite } from '@athenna/otel'
+
+await new OtelIgnite().load(import.meta.url)
+```
+
+`OtelIgnite` is a lightweight version of the Athenna `Ignite` class.
+It loads your `.env` file, your `.athennarc.json` file and your
+<Path father="config" child="otel.ts" /> configuration file, registers
+the `Otel` facade and then starts the OpenTelemetry SDK.
+
+Now, import this file in the **first line** of your
+<Path father="bin" child="main.ts" /> file:
+
+```typescript title="Path.bin('main.ts')"
+import '#bin/otel' 👈
+import { Ignite } from '@athenna/core'
+
+const ignite = await new Ignite().load(import.meta.url)
+
+await ignite.httpServer()
+```
+
+:::warning
+
+Keep `import '#bin/otel'` as the very first import of your entrypoint.
+Any module imported before it will not be instrumented.
+
+:::
+
+### Registering the provider
+
+Add the `OtelProvider` as the first provider of your `.athennarc.json`
+file. This way the `Otel` service is available to the rest of your
+application and is shut down together with it:
+
+```json title=".athennarc.json"
+{
+  "providers": [
+    "@athenna/otel/providers/OtelProvider", 👈
+    "@athenna/core/providers/CoreProvider",
+    "@athenna/http/providers/HttpRouteProvider",
+    "@athenna/http/providers/HttpServerProvider"
+  ]
+}
+```
+
+## Configuration
+
+All the configuration of `@athenna/otel` lives in the
+<Path father="config" child="otel.ts" /> configuration file. Here is
+a complete example that sends traces, metrics and logs to any
+backend that supports OTLP over HTTP:
+
+```typescript title="Path.config('otel.ts')"
+import {
+  HttpOTLPLogExporter,
+  HttpOTLPTraceExporter,
+  HttpOTLPMetricExporter,
+  BatchLogRecordProcessor,
+  type NodeSDKConfiguration,
+  getNodeAutoInstrumentations,
+  PeriodicExportingMetricReader
+} from '@athenna/otel'
+import { Env } from '@athenna/config'
+
+const otlpUrl = Env('OTEL_EXPORTER_OTLP_URL', 'http://localhost:4318')
+
+export default {
+  /*
+  |--------------------------------------------------------------------------
+  | OpenTelemetry enabled
+  |--------------------------------------------------------------------------
+  |
+  | When disabled, the OpenTelemetry SDK will not be started and nothing
+  | will be exported.
+  |
+  */
+
+  enabled: Env('OTEL_ENABLED', false),
+
+  /*
+  |--------------------------------------------------------------------------
+  | OpenTelemetry SDK
+  |--------------------------------------------------------------------------
+  |
+  | All the options that will be used to create the NodeSDK instance of
+  | OpenTelemetry. Check the NodeSDKConfiguration type to see all of them.
+  |
+  */
+
+  sdk: {
+    serviceName: Env('APP_NAME', 'my-app'),
+
+    traceExporter: new HttpOTLPTraceExporter({
+      url: `${otlpUrl}/v1/traces`
+    }),
+
+    metricReaders: [
+      new PeriodicExportingMetricReader({
+        exporter: new HttpOTLPMetricExporter({
+          url: `${otlpUrl}/v1/metrics`
+        }),
+        exportIntervalMillis: 10000
+      })
+    ],
+
+    logRecordProcessors: [
+      new BatchLogRecordProcessor(
+        new HttpOTLPLogExporter({ url: `${otlpUrl}/v1/logs` })
+      )
+    ],
+
+    instrumentations: [getNodeAutoInstrumentations({})]
+  } satisfies Partial<NodeSDKConfiguration>
+}
+```
+
+Then enable it in your `.env` file:
+
+```bash title=".env"
+OTEL_ENABLED=true
+OTEL_EXPORTER_OTLP_URL=http://localhost:4318
+```
+
+:::tip
+
+Don't have an observability backend running yet? Check the
+[running Grafana locally](/docs/observability/distributed-tracing#running-grafana-locally)
+section to start one with a single Docker command.
+
+:::
+
+### Configuration options
+
+| Option                         | Default | Description                                                                                                                       |
+|:-------------------------------|:--------|:----------------------------------------------------------------------------------------------------------------------------------|
+| `enabled`                      | -       | Starts the OpenTelemetry SDK when `true`. When `false`, nothing is started or exported.                                           |
+| `sdk`                          | `{}`    | Any option of the OpenTelemetry [`NodeSDK`](https://opentelemetry.io/docs/languages/js/getting-started/nodejs/) constructor.      |
+| `contextNotInitializedWarning` | `false` | Writes a warning to `stdout` when you try to use a [context value](/docs/observability/context) outside of an initialized context. |
+
+The `sdk` option is passed straight to the OpenTelemetry `NodeSDK`
+class, so everything you find in the OpenTelemetry documentation
+works here. The most common options are:
+
+| Option                | Description                                                                         |
+|:----------------------|:------------------------------------------------------------------------------------|
+| `serviceName`         | The name of your service. This is how you will find it in Tempo, Jaeger, etc.      |
+| `traceExporter`       | Where your spans will be sent to.                                                  |
+| `metricReaders`       | How and where your metrics will be collected and sent to.                          |
+| `logRecordProcessors` | How and where your logs will be sent to.                                           |
+| `instrumentations`    | The libraries that will be automatically instrumented.                             |
+
+### Available exporters
+
+`@athenna/otel` re-exports the OTLP exporters for the three signals
+and for the three OTLP protocols, so you don't need to install
+anything else:
+
+| Signal  | HTTP/JSON                | HTTP/Protobuf             | gRPC                     |
+|:--------|:-------------------------|:--------------------------|:-------------------------|
+| Traces  | `HttpOTLPTraceExporter`  | `ProtoOTLPTraceExporter`  | `GrpcOTLPTraceExporter`  |
+| Metrics | `HttpOTLPMetricExporter` | `ProtoOTLPMetricExporter` | `GrpcOTLPMetricExporter` |
+| Logs    | `HttpOTLPLogExporter`    | `ProtoOTLPLogExporter`    | `GrpcOTLPLogExporter`    |
+
+It also exports some helpers that are very useful while developing:
+
+| Helper                          | Description                                                          |
+|:--------------------------------|:---------------------------------------------------------------------|
+| `ConsoleSpanExporter`           | Prints all the spans in your terminal instead of sending them away.  |
+| `ConsoleLogRecordExporter`      | Prints all the log records in your terminal.                         |
+| `BatchLogRecordProcessor`       | Sends logs in batches. Use it in production.                         |
+| `SimpleLogRecordProcessor`      | Sends each log as soon as it is written. Useful for debugging.       |
+| `PeriodicExportingMetricReader` | Collects and exports your metrics from time to time.                 |
+
+For example, to see your spans in the terminal without any backend:
+
+```typescript title="Path.config('otel.ts')"
+import { ConsoleSpanExporter } from '@athenna/otel'
+
+export default {
+  enabled: true,
+  sdk: {
+    serviceName: 'my-app',
+    traceExporter: new ConsoleSpanExporter()
+  }
+}
+```
+
+### Auto instrumentations
+
+The `getNodeAutoInstrumentations()` helper enables the official
+OpenTelemetry instrumentations for Node.js. They create spans
+automatically for HTTP servers and clients, `fetch`, Redis,
+MongoDB, AWS SDK, and [many other libraries](https://www.npmjs.com/package/@opentelemetry/auto-instrumentations-node).
+
+The Athenna version of this helper disables a few instrumentations
+by default because they are too noisy for most applications:
+
+| Instrumentation                              | Default  |
+|:---------------------------------------------|:---------|
+| `@opentelemetry/instrumentation-net`         | disabled |
+| `@opentelemetry/instrumentation-dns`         | disabled |
+| `@opentelemetry/instrumentation-socket.io`   | disabled |
+| `@opentelemetry/instrumentation-pg`          | disabled |
+| `@opentelemetry/instrumentation-mysql`       | disabled |
+| `@opentelemetry/instrumentation-mysql2`      | disabled |
+
+You can enable, disable or configure any instrumentation by its
+name. For example, to see your PostgreSQL queries as spans and to
+hide sensitive query params from your HTTP spans:
+
+```typescript title="Path.config('otel.ts')"
+import { getNodeAutoInstrumentations } from '@athenna/otel'
+
+export default {
+  enabled: true,
+  sdk: {
+    instrumentations: [
+      getNodeAutoInstrumentations({
+        '@opentelemetry/instrumentation-pg': {
+          enabled: true
+        },
+        '@opentelemetry/instrumentation-http': {
+          redactedQueryParams: ['token', 'api-key']
+        }
+      })
+    ]
+  }
+}
+```
+
+### OtelIgnite options
+
+The `load()` method of `OtelIgnite` accepts the same kind of options
+of the `Ignite` class, in case your application doesn't follow the
+default structure:
+
+```typescript title="Path.bin('otel.ts')"
+import { OtelIgnite } from '@athenna/otel'
+
+await new OtelIgnite().load(import.meta.url, {
+  envPath: '.env.production',
+  athennaRcPath: './.athennarc.json',
+  beforePath: '/build'
+})
+```
+
+| Option          | Default              | Description                                                                 |
+|:----------------|:---------------------|:----------------------------------------------------------------------------|
+| `envPath`       | -                    | The `.env` file that will be loaded. When not set, Athenna resolves it using `NODE_ENV`. |
+| `athennaRcPath` | `./.athennarc.json`  | The path of your `.athennarc.json` file.                                    |
+| `beforePath`    | -                    | A path that will be added in front of all `Path` helpers when running `.js` files. |
+
+## Disabling OpenTelemetry
+
+To disable OpenTelemetry, set the `OTEL_ENABLED` environment variable
+to `false`. The SDK will not be started and nothing will be exported.
+Spans, metrics and logs will keep working using the no-op implementation
+of OpenTelemetry, so your code doesn't need to change. This is very
+useful to keep it disabled in your local and test environments:
+
+```bash title=".env.test"
+OTEL_ENABLED=false
+```
+
+:::warning
+
+The only exception are the methods that read and write
+[context values](/docs/observability/context), like
+`Otel.setCurrentContextValue()`. They throw an exception when
+OpenTelemetry is disabled. Check the
+[OpenTelemetry is disabled](/docs/observability/context#opentelemetry-is-disabled)
+section to see how to handle it.
+
+:::
+
+:::info
+
+When running `node artisan test`, `OtelIgnite` doesn't register the
+module hooks used by the auto instrumentations, so your tests are
+not affected by them.
+
+:::
+
+## Next steps
+
+Now that OpenTelemetry is running, see how to use each of its signals:
+
+- [Traces](/docs/observability/traces): create your own spans.
+- [Metrics](/docs/observability/metrics): count and measure what matters to your business.
+- [Logs](/docs/observability/logs): send your logs to OpenTelemetry and connect them to traces.
+- [Context](/docs/observability/context): share values across your whole request without passing arguments.
+- [Distributed tracing](/docs/observability/distributed-tracing): follow a request across multiple Athenna applications.
+- [Sentry](/docs/observability/sentry): track and get notified about the errors of your application.
